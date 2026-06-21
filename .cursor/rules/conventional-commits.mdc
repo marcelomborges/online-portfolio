@@ -1,0 +1,68 @@
+---
+description: Conventional Commits — required format for all git commits
+alwaysApply: true
+---
+
+# Conventional Commits
+
+When creating git commits (including when the user asks you to commit), **always** use [Conventional Commits](https://www.conventionalcommits.org/).
+
+## Format
+
+```text
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+- **type** and **description** are required.
+- **scope** is recommended for this monorepo.
+- **description**: imperative mood, lowercase, no period at end, max ~72 chars on first line.
+- **body**: wrap at ~72 chars; explain *why*, not only *what*.
+- **footer**: `BREAKING CHANGE: ...` or `Refs DEV-123` when relevant.
+
+## Types
+
+| Type | Use when |
+|---|---|
+| `feat` | New user-facing capability |
+| `fix` | Bug fix |
+| `docs` | Documentation only |
+| `style` | Formatting, no logic change |
+| `refactor` | Code change, no feat/fix |
+| `perf` | Performance improvement |
+| `test` | Tests only |
+| `build` | Build system, dependencies |
+| `ci` | CI/CD, GitHub Actions |
+| `chore` | Maintenance, tooling, misc |
+| `revert` | Reverts a prior commit |
+
+## Scopes (this repo)
+
+`frontend` · `backend` · `docs` · `db` · `infra` · `docker` · `deps`
+
+Omit scope only for repo-wide changes (e.g. root README).
+
+## Examples
+
+```text
+feat(backend): add POST /api/v1/auth/login with Identity JWT
+
+fix(frontend): redirect unauthenticated users to /login on app host
+
+docs: document Identity completo and SendGrid noreply strategy
+
+ci: run EF migrations on Supabase direct connection in deploy workflow
+
+chore(deps): bump @nuxt/eslint to 0.5.0
+```
+
+## Rules
+
+- Never use vague messages: `update`, `fix stuff`, `wip`, `changes`.
+- One logical change per commit when possible.
+- Do **not** commit secrets (`.env`, API keys, connection strings).
+- Only commit when the user explicitly asks (unless their rules say otherwise).
+- Full reference: `docs/CONVENTIONAL_COMMITS.md`

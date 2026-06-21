@@ -1,0 +1,48 @@
+---
+description: Project architecture hard rules and implementation context
+alwaysApply: true
+---
+
+# online-portfolio — agent context
+
+**PRIORITY #1: SECURITY** — see `.cursor/rules/security-first.mdc` and `docs/AGENT_GUIDE.md` § Security.
+
+**Status:** docs-only repo until Epic 0 scaffold. Read `docs/AGENT_GUIDE.md` and `docs/BACKLOG.md` before coding.
+
+## Hard rules
+
+- **Security:** tenant isolation, no IDOR, secrets server-only, validate inputs, invite-only auth
+- **BFF:** browser → Nuxt proxy → API — never direct Render from browser
+- **Auth:** ASP.NET Identity **completo** + JWT on API; roles via `AspNetRoles` / `AspNetUserRoles`
+- **No** Supabase Auth, **no** `@nuxtjs/supabase`, **no** anon key in frontend
+- **Admin login:** only `app.onlineportfolio.com.br` — not tenant subdomains
+- **Public sites:** `{slug}.onlineportfolio.com.br` per tenant
+- **Email v1:** SendGrid `noreply@` send-only — no mailbox
+- **Secrets:** never commit `.env` or API keys; service role only on backend
+
+## Roles (v1)
+
+`PlatformAdmin` (add users, any tenant) · `Owner` · `Editor` — invite-only, no self-signup
+
+## Order
+
+Epic 0 scaffold → Epic 1.5 (login + add user) → Epic 1 (public sites). See BACKLOG sprint order.
+
+## Repository
+
+**Monorepo** — one Git repo; `frontend/` (Vercel) + `backend/` (Render). Not separate repos.
+
+## Commits
+
+Conventional Commits — see `.cursor/rules/conventional-commits.mdc`
+
+## Git flow & CI
+
+- **Workflows separados:** `ci-backend.yml` + `ci-frontend.yml` + `deploy-backend.yml` + `deploy-frontend.yml` — not one combined CI.
+- **Deploy:** production only on `main` ([ADR-015](docs/ARCHITECTURE.md#adr-015-deploy-somente-em-production)); no staging stack in v1.
+- **Before merge:** green CI + cross-stack component review (API ↔ proxy/types/UI, schema ↔ migration, auth/env both sides).
+- Full checklist: `docs/AGENT_GUIDE.md` § Git flow · `docs/ARCHITECTURE.md` §15
+
+## Docs map
+
+`docs/AGENT_GUIDE.md` · `docs/ARCHITECTURE.md` §18 · `docs/DATABASE.md` · `docs/BACKLOG.md` SEC-*

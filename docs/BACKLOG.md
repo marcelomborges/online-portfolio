@@ -4,7 +4,7 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 
 **Related:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) · [DATABASE.md](./DATABASE.md)
 
-**Domínio da plataforma:** `onlineportfolio.com.br` (Registro.br)
+**Domínio da plataforma:** `onlineportfolio.com.br` — ✅ registrado (Registro.br)
 
 **Mapa de domínios:** [ARCHITECTURE.md §2.1](./ARCHITECTURE.md#21-mapa-de-domínios-e-superfícies-do-produto) — site público por tenant (`ana.`, `mark.`), admin padronizado em `app.`, BFF via Nuxt → API .NET.
 
@@ -47,7 +47,7 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 
 ## Epic 0 — Foundation & tooling
 
-### DEV-000 — Register domain
+### DEV-000 — Register domain ✅
 
 | Field | Value |
 |---|---|
@@ -55,11 +55,12 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 | **Area** | infra |
 | **Priority** | P0 |
 | **Depends on** | — |
+| **Status** | ✅ **Done** — domínio comprado no Registro.br |
 
 **Description:** Register `onlineportfolio.com.br` at Registro.br. DNS configuration deferred until deploy.
 
 **Acceptance criteria:**
-- [ ] Domain status **Ativo** in Registro.br panel
+- [x] Domain status **Ativo** in Registro.br panel
 - [ ] Renewal reminder configured
 - [ ] Titular (CPF/CNPJ) and login credentials saved securely
 
@@ -162,7 +163,7 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 
 ---
 
-### DEV-006 — GitHub Actions CI (PR)
+### DEV-006 — GitHub Actions CI (PR) — workflows separados
 
 | Field | Value |
 |---|---|
@@ -171,17 +172,19 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 | **Priority** | P1 |
 | **Depends on** | DEV-003, DEV-005 |
 
-**Description:** `ci.yml` on pull request — backend tests + frontend lint/test.
+**Description:** Dois workflows de CI no PR — **separados** por stack (não um `ci.yml` único): `ci-backend.yml` e `ci-frontend.yml`, com path filters.
 
 **Acceptance criteria:**
-- [ ] Workflow runs on `pull_request` to `main`
-- [ ] `dotnet test` for backend
-- [ ] `npm run lint` (and test if configured) for frontend
-- [ ] Status check visible on PR
+- [ ] `ci-backend.yml` runs on `pull_request` to `main` (paths: `backend/**`, `docs/DATABASE.md`, …)
+- [ ] `ci-frontend.yml` runs on `pull_request` to `main` (paths: `frontend/**`, …)
+- [ ] Backend: `dotnet test` (+ build)
+- [ ] Frontend: `npm run lint` (and test if configured)
+- [ ] Status checks **Backend CI** and **Frontend CI** visible on PR
+- [ ] Documented cross-stack component review before merge ([AGENT_GUIDE § Git flow](./AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review))
 
 ---
 
-### DEV-007 — GitHub Actions deploy pipeline
+### DEV-007 — GitHub Actions deploy pipeline (backend)
 
 | Field | Value |
 |---|---|
@@ -190,13 +193,32 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 | **Priority** | P1 |
 | **Depends on** | DEV-006, DEV-004 |
 
-**Description:** `deploy-prod.yml` on push to `main` — test → EF migrate (Supabase direct) → pass status for Render Wait for CI.
+**Description:** `deploy-backend.yml` on push to `main` — backend test → EF migrate (Supabase direct) → pass status for Render Wait for CI.
 
 **Acceptance criteria:**
 - [ ] `SUPABASE_MIGRATION_CONNECTION_STRING` in GitHub Secrets
 - [ ] Migrations run before deploy status succeeds
-- [ ] Render **Wait for CI** documented and enabled
-- [ ] Branch protection on `main` requires CI (recommended)
+- [ ] Render **Wait for CI** documented and enabled (waits on `deploy-backend.yml`)
+- [ ] Branch protection on `main` requires Backend CI + Frontend CI (recommended)
+
+---
+
+### DEV-007b — GitHub Actions deploy pipeline (frontend)
+
+| Field | Value |
+|---|---|
+| **Phase** | 0 |
+| **Area** | devops |
+| **Priority** | P1 |
+| **Depends on** | DEV-006, DEV-005, DEV-010 |
+
+**Description:** `deploy-frontend.yml` on push to `main` — frontend lint/test → `vercel deploy --prod`. Disable Vercel production auto-deploy; PR previews stay on Vercel GitHub App.
+
+**Acceptance criteria:**
+- [ ] `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` in GitHub Secrets
+- [ ] Workflow runs on push to `main` (paths: `frontend/**`)
+- [ ] Production deploy only via Actions (Vercel dashboard auto-deploy **off** for prod)
+- [ ] PR preview deploys still work via Vercel integration
 
 ---
 
@@ -209,10 +231,10 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 | **Priority** | P1 |
 | **Depends on** | — |
 
-**Description:** Create Supabase prod project; store pooler + direct connection strings and API keys.
+**Description:** Create Supabase **production** project only; store pooler + direct connection strings and API keys. No separate deployed dev/staging Supabase in v1 ([ADR-015](./ARCHITECTURE.md#adr-015-deploy-somente-em-production)).
 
 **Acceptance criteria:**
-- [ ] Project created in chosen region
+- [ ] Single prod project `portfolio-prod` in chosen region
 - [ ] Pooler URI (6543) for API runtime
 - [ ] Direct URI (5432) for migrations/CI only
 - [ ] Anon key, service role key, JWT secret stored in password manager / secrets
@@ -248,11 +270,12 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 | **Priority** | P1 |
 | **Depends on** | DEV-005, DEV-009 |
 
-**Description:** Connect repo to Vercel; root directory `frontend`; PR previews enabled.
+**Description:** Connect repo to Vercel; root directory `frontend`; PR previews enabled; **production deploy via `deploy-frontend.yml`** (DEV-007b).
 
 **Acceptance criteria:**
-- [ ] Production deploy from `main`
-- [ ] Preview deploys on PR
+- [ ] Vercel project connected to GitHub (`frontend/` root)
+- [ ] PR preview deploys enabled
+- [ ] Production auto-deploy **disabled** in Vercel (prod = Actions)
 - [ ] Env vars configured in Vercel dashboard
 - [ ] Custom domains deferred until Registro.br DNS configured
 
@@ -1649,7 +1672,7 @@ DEV-150 → DEV-151 → DEV-152 → DEV-153 → DEV-154 → DEV-155 → DEV-156 
 DEV-101 → DEV-102 → DEV-103 → DEV-104 → DEV-105 → UT-002 → IT-001 → IT-002
 
 ### Sprint 3 — Contact + deploy
-DEV-107 → DEV-008 → DEV-009 → DEV-010 → DEV-007 → SEC-001 → UT-003 → IT-006
+DEV-107 → DEV-008 → DEV-009 → DEV-010 → DEV-007 → DEV-007b → SEC-001 → UT-003 → IT-006
 
 ### Sprint 4 — DNS + hardening
 DEV-011 → SEC-007 → SEC-003 → UT-005 → SEC-011 (partial)

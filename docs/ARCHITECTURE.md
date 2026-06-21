@@ -26,6 +26,7 @@ Multi-tenant SaaS platform for artist portfolios. One shared application stack s
 13. [Custom domains per tenant](#13-custom-domains-per-tenant)
 14. [Local development (Docker Compose)](#14-local-development-docker-compose)
 15. [Deployment & CI/CD](#15-deployment--cicd)
+    - [ADR-015: Deploy somente em production](#adr-015-deploy-somente-em-production)
 16. [Tenant provisioning](#16-tenant-provisioning)
 17. [Data model (v1)](#17-data-model-v1)
 18. [Security requirements](#18-security-requirements)
@@ -106,7 +107,7 @@ Sell portfolio sites to many artists. Each tenant gets:
 | **`.com` status** | `onlineportfolio.com` — **unavailable** (already registered) |
 | **Registrar** | [Registro.br](https://registro.br) — official `.br` registry |
 | **Cost** | R$ 40/year (fixed; Pix, boleto, or card) |
-| **Status** | Available — register ASAP to reserve `@onlineportfolio.com.br` emails |
+| **Status** | ✅ **Registrado** — titular ativo no Registro.br; DNS no deploy ([EXTERNAL_PROVIDERS §3](./EXTERNAL_PROVIDERS.md#3-domain--dns)) |
 
 ### Production hostnames
 
@@ -948,12 +949,72 @@ docker compose up
 
 ### Environments
 
-| Environment | Frontend | API | Database |
-|---|---|---|---|
-| Local | Docker Compose | Docker Compose | Postgres container |
-| Production | Vercel | Render (Docker) | Supabase |
+| Environment | Frontend | API | Database | Deploy na nuvem? |
+|---|---|---|---|---|
+| **Local** | Docker Compose (Nuxt) | Docker Compose (API) | Postgres container | ❌ |
+| **PR preview** | Vercel preview (por PR) | Local ou mock — **não** API staging | Local / CI | ❌ (efêmero, não é “dev deployado”) |
+| **Production** | Vercel (`main`) | Render (Docker) | Supabase | ✅ **único ambiente deployado** |
 
-Local Docker Compose is for development only — production deploys to Vercel + Render.
+Local Docker Compose is for day-to-day development. **Only production** is deployed to Vercel + Render + Supabase on merge to `main`.
+
+Ver [ADR-015](#adr-015-deploy-somente-em-production).
+
+### ADR-015: Deploy somente em production
+
+| | |
+|---|---|
+| **Status** | ✅ Aceito |
+| **Data** | 2025-06-21 |
+| **Contexto** | Monorepo v1, operador solo/pequeno time, free tiers (Vercel, Render, Supabase). Pergunta: espelhar **dev + prod** deployados (Render dev, Vercel staging, Supabase dev)? |
+| **Decisão** | **Somente production deployado** na nuvem. Não criar stack paralela de staging/homologação deployada no v1. |
+| **Alternativa rejeitada** | Par completo dev deployado (API dev + front dev + Supabase dev + DNS `dev.*` + workflows duplicados). |
+
+**Modelo em 3 camadas (v1):**
+
+```text
+Local (docker compose)     → desenvolvimento diário, Postgres local, API + Nuxt locais
+PR preview (Vercel)        → revisão de UI por pull request — efêmero, não substitui staging
+Production (main)          → único deploy persistente: Vercel + Render + Supabase prod
+```
+
+**O que entra:**
+
+- `deploy-backend.yml` e `deploy-frontend.yml` rodam **só contra production** (push em `main`).
+- Um projeto Supabase **`portfolio-prod`** — migrations via CI no prod após merge.
+- Render **um** web service (API prod).
+- Vercel **um** projeto (front prod); preview de PR nativo; **sem** segundo projeto “staging”.
+
+**O que fica fora do v1:**
+
+- Render service dev / API `api-dev.*`
+- Vercel project ou branch fixa de “homologação”
+- Supabase project `portfolio-dev` **deployado** (Postgres local cobre dev)
+- Workflows `deploy-*-staging.yml` ou matrix prod/dev
+- DNS `dev.onlineportfolio.com.br` / `staging.*`
+
+**Consequências:**
+
+| Positivo | Trade-off |
+|---|---|
+| Menos contas, secrets e DNS para manter | Migrations arriscosas exigem teste local + CI antes do merge |
+| Menos custo cognitivo (“qual URL?”) | Sem URL estável de homologação para terceiros |
+| Alinha com solo dev + 1–2 artistas iniciais | Reavaliar quando houver 2+ devs ou integrações webhook em homolog |
+
+**Mitigações (sem staging deployado):**
+
+- CI separado (`ci-backend`, `ci-frontend`) em todo PR.
+- Docker Compose local = paridade de stack.
+- Vercel preview por PR para front.
+- Migrations testadas localmente (`dotnet ef database update`) antes do merge; CI migrate só em `main`.
+
+**Quando reavaliar (criar staging deployado):**
+
+- Segundo dev full-time ou cliente precisando URL fixa de homologação.
+- Migration destrutiva que quebrou prod uma vez.
+- Stripe/webhooks/domínios exigindo ambiente não-prod persistente.
+- Tráfego ou dados reais onde “testar só local” deixou de bastar.
+
+Até lá: **local + preview + prod** — ver [EXTERNAL_PROVIDERS §9](./EXTERNAL_PROVIDERS.md#9-github-cicd).
 
 ### Decision: GitHub Actions as pipeline orchestrator
 
@@ -963,12 +1024,59 @@ Neither Vercel nor Render **requires** you to rely solely on their dashboard dep
 
 | Concern | Owner | Tool |
 |---|---|---|
-| Tests (backend + frontend) | GitHub Actions | `.github/workflows/` |
-| EF migrations (Supabase direct) | GitHub Actions | `dotnet ef database update` |
-| Deploy frontend | Vercel | Connected repo **or** Actions + Vercel CLI |
-| Deploy API | Render | Connected repo **or** Actions + deploy hook |
+| Tests — **backend** | GitHub Actions | `ci-backend.yml` |
+| Tests — **frontend** | GitHub Actions | `ci-frontend.yml` |
+| EF migrations (Supabase direct) | GitHub Actions | `deploy-backend.yml` |
+| Deploy **frontend** (prod) | GitHub Actions | `deploy-frontend.yml` → Vercel CLI |
+| Deploy **API** (prod) | Render | Wait for CI em `deploy-backend.yml` |
 | Preview deploys (PRs) | Vercel | Native GitHub integration (PR comments) |
 | Env vars / secrets | Vercel + Render dashboards + GitHub Secrets | Per platform |
+
+### Decision: **workflows CI separados** (backend + frontend)
+
+**Preferência do projeto:** **dois workflows de CI** no mesmo monorepo — **não** um único `ci.yml` que roda tudo junto.
+
+| Abordagem | Quando usar | Decisão |
+|---|---|---|
+| **Um `ci.yml` com jobs backend + frontend** | Repo pequeno, todo PR toca os dois lados | ❌ Não — PRs só-frontend esperam `dotnet restore` à toa |
+| **Dois workflows CI** (`ci-backend.yml`, `ci-frontend.yml`) | Monorepo com stacks distintas | ✅ **Escolhido** |
+| **Dois workflows deploy** (`deploy-backend.yml`, `deploy-frontend.yml`) | Prod simétrico; Actions orquestra os dois | ✅ **Escolhido** |
+| **Dois repositórios Git** | Times/release cycles totalmente independentes | ❌ Não — ver [§20](#20-repository-structure) |
+
+**Por que separado (no monorepo):**
+
+- **Path filters** — PR só em `frontend/` não dispara build .NET (e vice-versa).
+- **Status checks claros** no PR: “Backend CI” e “Frontend CI”.
+- **Alinha com deploy** — Render (API) e Vercel (Nuxt) já são pipelines distintos.
+- **Mesmo PR** pode disparar os dois quando `backend/` **e** `frontend/` mudam (ex.: Epic 1.5 auth).
+
+Isso **não** contradiz o monorepo: continua **um repo**, **um PR**; só os **arquivos de workflow** são separados.
+
+### Git flow — além dos testes, revisar componentes pareados
+
+Em todo PR (humano ou agente), **depois dos testes** e **antes do merge**, conferir se mudou só um lado da stack quando o contrato exige os dois:
+
+| Se alterou… | Conferir no **backend** | Conferir no **frontend** |
+|---|---|---|
+| Endpoint / DTO / contrato API | Controller, service, validação, `[Authorize]`, OpenAPI | Rota proxy `server/api/**`, composable, tipos TS, página/componente |
+| Schema / entidade EF | Migration + seed se necessário | Tipos/consumo da API; formulários se expõe o campo |
+| Auth / JWT / roles | Identity, policies, middleware tenant | Proxy (cookies/headers), middleware host, fluxo login em `app.*` |
+| Variável de ambiente | `appsettings`, Render env, `backend/.env.example` | `runtimeConfig`, Vercel env, `frontend/.env.example` |
+| Regra multi-tenant | Filtro EF + checagem membership | Nunca enviar `tenantId` confiável do client; UI admin vs público |
+| Feature admin | Rotas protegidas API | Páginas em host `app.*` |
+| Feature site público | API pública (só conteúdo publicado) | Páginas `{slug}.*`, middleware tenant |
+| Email transacional | SendGrid service + template | Só se houver UI (ex.: preview) |
+| Storage / upload (Fase 3) | Multipart API + service role | Proxy upload; `<img>` CDN URL |
+
+**Checklist rápido antes do merge:**
+
+1. CI relevante verde (`Backend CI` / `Frontend CI` conforme paths do PR).
+2. **Pareamento front↔back** — tabela acima; se API mudou, front **ou** docs do contrato atualizados.
+3. `.env.example` (ambos os lados) se novos env vars.
+4. `docs/DATABASE.md` se schema mudou de forma relevante.
+5. Commits [Conventional Commits](./CONVENTIONAL_COMMITS.md); escopo `frontend` / `backend` coerente com paths.
+
+Detalhes para agentes: [AGENT_GUIDE § Git flow](./AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review).
 
 ### Do Vercel and Render require repo connection?
 
@@ -983,47 +1091,71 @@ Neither Vercel nor Render **requires** you to rely solely on their dashboard dep
 
 ```text
 Pull request:
-  GitHub Actions → test backend, test/lint frontend
-  Vercel         → preview deployment (native PR integration)
+  ci-backend.yml   → dotnet test (paths: backend/**, …)
+  ci-frontend.yml  → npm lint/test (paths: frontend/**, …)
+  Revisão manual   → componentes pareados front↔back (tabela acima)
+  Vercel           → preview deployment (native PR integration)
 
 Push to main:
-  GitHub Actions → test → EF migrate (direct Supabase :5432)
-  Render         → deploy API (after CI passes — "Wait for CI")
-  Vercel         → deploy frontend (after CI passes, or in parallel*)
+  deploy-backend.yml  → dotnet test → EF migrate (direct :5432) → status check
+  Render              → deploy API (Wait for CI — após deploy-backend green)
+  deploy-frontend.yml → npm lint/test → vercel deploy --prod
 ```
 
-\*Frontend deploy does not depend on DB migrations; API deploy **must** run after migrations. Enable **Wait for CI** on Render so the API only deploys once the Actions workflow is green.
+**Prod simétrico:** backend e frontend têm workflow de deploy próprio. **Preview de PR** continua no Vercel (integração nativa).
+
+**Ordem:** API deploy **deve** rodar após migrations. Frontend **não** depende de migrate, mas **deve** passar pelos CIs de PR antes do merge (branch protection).
 
 ### Render: Wait for CI
 
 In Render service settings → enable **Wait for CI** (or equivalent). Render waits for GitHub commit status checks from Actions before deploying. Migrations must complete inside the Actions workflow **before** checks pass.
 
-### Vercel: sync with Actions
+### Vercel: prod via Actions (preview nativo no PR)
 
-Options (pick one):
-
-| Option | Setup | When |
+| Modo | Config | Decisão |
 |---|---|---|
-| **A — Auto-deploy after merge** | Vercel deploys on push; Actions runs tests + migrate in parallel | OK if API waits for CI; frontend can deploy independently |
-| **B — Required checks** | Branch protection on `main` requires Actions status | Safer; nothing merges broken |
-| **C — Actions-only deploy** | Disable Vercel auto-deploy; `vercel deploy --prod` in Actions | Full control in one workflow file |
+| **Preview (PR)** | Vercel GitHub App — auto preview por PR | ✅ Mantém |
+| **Production (`main`)** | `deploy-frontend.yml` → `vercel deploy --prod` | ✅ **Escolhido** |
+| **Production auto-deploy no dashboard Vercel** | Deploy a cada push em `main` | ❌ **Desligar** — evita deploy prod sem passar pelo workflow |
 
-**Recommendation:** **A + B** — PRs require green Actions; on merge, Actions migrates + tests; Render waits for CI; Vercel auto-deploys frontend.
+**Recommendation (atualizada):** **CI separado + deploy separado** — espelha Render/backend:
+
+- PR: `ci-backend.yml` + `ci-frontend.yml` + preview Vercel
+- `main`: `deploy-backend.yml` (migrate + gate Render) + `deploy-frontend.yml` (Vercel CLI)
+- Branch protection: exige Backend CI + Frontend CI antes do merge
 
 ### Example workflow structure
 
 ```text
 .github/workflows/
-  ci.yml              # on PR: test only
-  deploy-prod.yml     # on push to main: test → migrate → (Render waits for status)
+  ci-backend.yml       # pull_request + push: dotnet test, build (paths backend/**)
+  ci-frontend.yml      # pull_request + push: npm lint, test (paths frontend/**)
+  deploy-backend.yml   # push main → production: test → EF migrate → gate Render
+  deploy-frontend.yml  # push main → production: lint/test → vercel deploy --prod
 ```
+
+**Path filters (exemplo):**
+
+| Workflow | Dispara quando mudam |
+|---|---|
+| `ci-backend.yml` | `backend/**`, `docs/DATABASE.md`, `.github/workflows/ci-backend.yml`, `deploy-backend.yml` |
+| `ci-frontend.yml` | `frontend/**`, `.github/workflows/ci-frontend.yml`, `deploy-frontend.yml` |
+| `deploy-backend.yml` | `push` → `main`; paths `backend/**`, migrations |
+| `deploy-frontend.yml` | `push` → `main`; paths `frontend/**` |
+
+PRs **só em `docs/`** podem incluir ambos workflows (paths ampliados) ou um `ci-docs.yml` leve — ver [EXTERNAL_PROVIDERS §9](./EXTERNAL_PROVIDERS.md#93-workflow-files-planned).
+
+**Branch protection em `main`:** exigir status checks **Backend CI** e **Frontend CI** (checks skipped por path filter contam como OK no GitHub).
 
 **GitHub Secrets (Actions):**
 
 | Secret | Purpose |
 |---|---|
 | `SUPABASE_MIGRATION_CONNECTION_STRING` | Direct Postgres URI (port 5432) |
-| `RENDER_DEPLOY_HOOK_URL` | Optional — if auto-deploy disabled on Render |
+| `VERCEL_TOKEN` | Deploy prod via `deploy-frontend.yml` |
+| `VERCEL_ORG_ID` | Vercel CLI — org/team ID |
+| `VERCEL_PROJECT_ID` | Vercel CLI — project ID (`frontend`) |
+| `RENDER_DEPLOY_HOOK_URL` | Optional — if Render auto-deploy disabled |
 
 **Do not** run production migrations from Render startup — migrations live in Actions only.
 
@@ -1187,6 +1319,32 @@ Category (optional v1)
 
 ## 20. Repository structure
 
+### Decision: **monorepo** (single Git repository)
+
+| | Monorepo (chosen) | Repos separados |
+|---|---|---|
+| **Local dev** | Um `docker compose up` sobe Postgres + API + Nuxt | Dois clones, duas redes, env duplicado |
+| **CI/CD** | Workflows separados: `ci-backend`, `ci-frontend`, `deploy-backend`, `deploy-frontend` | Um `ci.yml` único; ou repos Git separados |
+| **Docs / BACKLOG** | Uma fonte de verdade (`docs/`, `DEV-xxx`) | Docs divergem entre repos |
+| **Epic 1.5 (auth)** | Front + back no mesmo PR quando API e proxy mudam juntos | PRs coordenados entre repos |
+| **Deploy** | Mesmo repo: Vercel `root=frontend`, Render `root=backend` | Funciona, mas mais overhead operacional |
+| **Escala do time** | Ideal para 1 dev / time pequeno | Faz sentido com times grandes e release cycles independentes |
+
+**Conclusão:** use **um repositório** `online-portfolio/` com pastas `frontend/` e `backend/`. Vercel e Render apontam para **subpastas do mesmo repo** — não são repos Git separados.
+
+Repos separados só valeria reconsiderar se no futuro frontend e backend tiverem **ciclos de release totalmente independentes** e **times distintos** — não é o caso no v1.
+
+```text
+online-portfolio/          ← um repo Git
+├── frontend/              → Vercel (Root Directory: frontend)
+├── backend/               → Render (Dockerfile: backend/Dockerfile)
+├── docs/
+├── docker-compose.yml
+└── .github/workflows/
+```
+
+### Layout
+
 ```text
 online-portfolio/
 ├── docker-compose.yml
@@ -1208,7 +1366,7 @@ online-portfolio/
 │   ├── Pdf/                         # QuestPDF document layouts
 │   ├── Data/                        # EF DbContext, migrations
 │   └── Middleware/                  # tenant context, JWT
-├── .github/workflows/               # CI: test, migrate; gate Render deploy
+└── .github/workflows/               # ci-backend, ci-frontend, deploy-backend, deploy-frontend
 └── README.md
 ```
 
@@ -1261,13 +1419,14 @@ Use `.env.example` in frontend and backend; never commit secrets.
 
 | Topic | Options | Notes |
 |---|---|---|
-| Admin auth | Identity completo vs enxuto vs manual | **Decidido** — Identity **completo** + JWT; ver [§9](#decisão-aspnet-identity-completo) |
+| Repo layout | Monorepo vs split | **Decidido** — monorepo; Vercel + Render same repo, different roots |
 | Subdomain vs path fallback | `ana.onlineportfolio.com.br` vs `onlineportfolio.com.br/ana` | Subdomain recommended |
 | Self-serve signup | Manual vs automated | Manual for first customers |
 | Contact message history | Email only vs store in DB | Email only for v1 (SendGrid) |
 | Operator inbox | Google Workspace | **Decidido** — fora do v1; v1 = só SendGrid `noreply@` |
 | Global `.com` domain | `onlineportfolio.com` taken | Revisit alternative `.com` later if expanding internationally |
-| CI/CD approach | GitHub Actions orchestrator | **Decided** — see [§15](#15-deployment--cicd) |
+| CI/CD approach | GitHub Actions orchestrator | **Decidido** — see [§15](#15-deployment--cicd) |
+| Ambientes deployados | Prod only vs prod + staging | **Decidido** — [ADR-015](#adr-015-deploy-somente-em-production); staging deployado **fora do v1** |
 | Image processing | On upload in API vs external worker | Phase 3 |
 | Thumbnail generation | API (ImageSharp) vs Supabase transform | TBD |
 | Postgres RLS | Enable as defense in depth | Optional while API-only access |
@@ -1292,6 +1451,7 @@ Email (ops):    Google Workspace (depois)                         →  caixa pos
 PDF:            QuestPDF                                          →  catálogo via API
 Domain:         onlineportfolio.com.br (Registro.br)
 Isolation:      TenantId + EF filters + Storage paths + API
-CI/CD:          GitHub Actions → tests + migrations; Vercel + Render
+CI/CD:          GitHub Actions → tests + migrations; deploy **prod only** (ADR-015)
+Environments:   local + PR preview + production (no staging deploy v1)
 Local dev:      docker compose up
 ```

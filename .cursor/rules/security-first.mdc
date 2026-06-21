@@ -1,0 +1,45 @@
+---
+description: "PRIORITY #1 — Security-first rules for all code and reviews"
+alwaysApply: true
+---
+
+# Security — maximum priority
+
+**Security overrides convenience.** When in doubt, choose the safer option and flag trade-offs to the user.
+
+Full guide: `docs/AGENT_GUIDE.md` § Security · `docs/ARCHITECTURE.md` §18 · BACKLOG SEC-001…011
+
+## Non-negotiable
+
+| Area | Rule |
+|---|---|
+| **Secrets** | Never commit `.env`, keys, JWT secret, connection strings. Service role + SendGrid **only** on Render. Nothing sensitive in Nuxt client bundle. |
+| **Multi-tenant** | Every tenant row has `TenantId`. EF global filters + API membership check on **every** protected read/write. |
+| **IDOR** | Never authorize from client `tenantId` / slug in body — use JWT user + DB. Verify `resource.TenantId == user.TenantId`. |
+| **Auth** | Identity completo + API JWT. Invite-only. Lockout + password policy. Generic login errors (no user enumeration). Short JWT expiry. |
+| **Public API** | Only `IsPublished` content. No draft/admin fields in public DTOs. |
+| **BFF** | Browser → Nuxt proxy → API (reduces secret exposure and CORS attack surface). |
+| **Input** | Validate all write DTOs (length, format). Reject unexpected fields. Parameterized queries only (EF). |
+| **Uploads** | API-only; whitelist MIME/extension; max size; path `tenants/{tenantId}/…` server-side. |
+| **Errors** | No stack traces or internal details in production responses. |
+| **Prod surface** | Disable or protect Swagger in production. |
+
+## Before finishing any feature
+
+- [ ] Cross-tenant access impossible for tenant A → tenant B?
+- [ ] Role enforced (`[Authorize(Roles)]` + tenant check)?
+- [ ] Secrets only in server env?
+- [ ] Public/contact endpoints rate-limited?
+- [ ] Security regression test or IT-* isolation test when touching auth/tenant?
+
+## Never do
+
+- Log passwords, tokens, or full JWTs
+- Return `"user not found"` vs `"wrong password"` differently on login
+- Add `eval`, raw SQL concatenation, or `v-html` with user HTML
+- Disable auth/CORS/validation "temporarily" without explicit user approval
+- Store uploads on Render disk or accept client-chosen Storage paths
+
+## When adding dependencies
+
+Prefer maintained packages; note if `npm audit` / `dotnet list package --vulnerable` would flag it (SEC-008).
