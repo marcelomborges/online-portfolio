@@ -154,7 +154,7 @@ erDiagram
 
 ```text
 artworks, artwork_images, categories  →  Phase 1 public gallery / Phase 3 uploads
-subscriptions, invoices               →  Phase 4 billing
+subscriptions, invoices               →  Phase 4 billing (optional — skip if not charging)
 audit_logs                            →  optional later
 ```
 

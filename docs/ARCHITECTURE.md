@@ -313,7 +313,7 @@ All tenants share one PostgreSQL database. Tenant-owned rows include a `TenantId
 |---|---|
 | **Tenant** | One artist or studio account on the platform |
 | **User** | Pessoa que faz login (`ApplicationUser` + roles via `AspNetUserRoles`) |
-| **Platform admin** | Operador (você) — cria tenants, billing, suporte |
+| **Platform admin** | Operador (você) — cria tenants, suporte; **billing manual/opcional no v1** |
 | **Public site** | Tenant gallery visible to anonymous visitors |
 
 ### Tenant resolution (public requests)
@@ -820,7 +820,7 @@ QuestPDF is **free under the Community license** for organizations with **less t
 | **Portfolio catalog PDF** | Phase 2+ | Public — published artworks, artist bio, contact |
 | **Admin export** | Phase 2+ | Authenticated owner — full or draft catalog |
 | **Exhibition catalog** | Later | Public or admin — grouped by exhibition |
-| **Invoices / receipts** | Phase 4 | With Stripe billing (future) |
+| **Invoices / receipts** | Phase 4 (opcional) | Com billing automatizado (Stripe/PSP), se implementado |
 
 ### Flow
 
@@ -1307,11 +1307,12 @@ Category (optional v1)
 - `ArtworkImage` metadata in EF
 - Public gallery renders images via Storage CDN URLs
 
-### Phase 4 — Custom domains + billing
+### Phase 4 — Custom domains (+ billing opcional)
 
 - Custom domain onboarding per tenant
 - Vercel Domains API automation
-- Stripe subscriptions per tenant (plan limits enforced)
+- **Billing / subscriptions (opcional — skip no v1):** Stripe preferível se expandir **fora do Brasil**; Asaas/Iugu se só BR — ver [EXTERNAL_PROVIDERS §13](./EXTERNAL_PROVIDERS.md#13-stripe--cobrança-saas-fase-4-opcional)
+- Plan limits (DEV-402) — opcional; pode ser manual
 - Self-serve signup (optional)
 - Google Workspace for operator inbox (optional)
 

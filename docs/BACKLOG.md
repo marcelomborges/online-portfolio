@@ -47,6 +47,26 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 
 ## Epic 0 — Foundation & tooling
 
+### Provider setup index
+
+Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNAL_PROVIDERS §2](./EXTERNAL_PROVIDERS.md#2-ordem-de-setup). Código local (DEV-001–005) pode correr em paralelo às contas (DEV-012–014).
+
+| Ordem | Provider | Issue | Quando |
+|---|---|---|---|
+| 1 | Registro.br | [DEV-000](#dev-000--register-domain-) | ✅ domínio comprado |
+| 2 | GitHub | [DEV-012](#dev-012--github-repository--platform-integrations) | Após DEV-001 (push) |
+| 3 | Linear | [DEV-013](#dev-013--linear-workspace) | Cedo — gestão de issues |
+| 4 | Supabase | [DEV-008](#dev-008--supabase-production-project) | Antes do deploy API |
+| 5 | Render | [DEV-009](#dev-009--render-api-deployment) | Após DEV-003 + DEV-008 |
+| 6 | SendGrid | [DEV-014](#dev-014--sendgrid-account--api-key) → [DEV-107](#dev-107--contact-form--sendgrid) | Conta antes do Render; código Epic 1 |
+| 7 | Vercel | [DEV-010](#dev-010--vercel-frontend-deployment) | Após DEV-005 |
+| 8 | DNS + email DNS | [DEV-011](#dev-011--dns--https-production) | Após Render + Vercel |
+| 9 | GitHub Actions | [DEV-006](#dev-006--github-actions-ci-pr--workflows-separados) · [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) · [DEV-007b](#dev-007b--github-actions-deploy-pipeline-frontend) | Secrets de DEV-008/010/012 |
+| — | Google Workspace | [DEV-404](#dev-404--google-workspace-operator-inbox) | Opcional, pós-lançamento |
+| — | Stripe / billing | [DEV-403](#dev-403--billing--subscriptions-optional--skip-until-charging) | **Opcional** — skip no v1 |
+
+---
+
 ### DEV-000 — Register domain ✅
 
 | Field | Value |
@@ -57,12 +77,13 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 | **Depends on** | — |
 | **Status** | ✅ **Done** — domínio comprado no Registro.br |
 
-**Description:** Register `onlineportfolio.com.br` at Registro.br. DNS configuration deferred until deploy.
+**Description:** Register `onlineportfolio.com.br` at Registro.br. DNS configuration deferred until [DEV-011](#dev-011--dns--https-production). Runbook: [EXTERNAL_PROVIDERS §3](./EXTERNAL_PROVIDERS.md#3-registrobr--domínio).
 
 **Acceptance criteria:**
 - [x] Domain status **Ativo** in Registro.br panel
-- [ ] Renewal reminder configured
-- [ ] Titular (CPF/CNPJ) and login credentials saved securely
+- [ ] Renewal date noted; renewal reminder configured
+- [ ] Titular (CPF/CNPJ) and login credentials saved securely (password manager)
+- [ ] DNS left at Registro.br default until deploy (DEV-011)
 
 ---
 
@@ -163,6 +184,65 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 
 ---
 
+### DEV-012 — GitHub repository & platform integrations
+
+| Field | Value |
+|---|---|
+| **Phase** | 0 |
+| **Area** | infra, devops |
+| **Priority** | P0 |
+| **Depends on** | DEV-001 |
+
+**Description:** Criar repo `online-portfolio` no GitHub, primeiro push do monorepo, conectar Render e Vercel via GitHub App, preparar secrets para Actions. Runbook: [EXTERNAL_PROVIDERS §4](./EXTERNAL_PROVIDERS.md#4-github-cicd--actions).
+
+**Acceptance criteria:**
+- [ ] Repo criado e código do monorepo em `main`
+- [ ] Render GitHub App instalado com acesso ao repo
+- [ ] Vercel GitHub App instalado — PR previews **on**; production auto-deploy **off**
+- [ ] GitHub Actions secrets preparados (placeholders OK até DEV-008/010): `SUPABASE_MIGRATION_CONNECTION_STRING`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+- [ ] (Recomendado) Branch protection em `main` exigindo Backend CI + Frontend CI
+
+---
+
+### DEV-013 — Linear workspace
+
+| Field | Value |
+|---|---|
+| **Phase** | 0 |
+| **Area** | docs, infra |
+| **Priority** | P2 |
+| **Depends on** | — |
+
+**Description:** Workspace Linear para issues `DEV-xxx`. Runbook: [EXTERNAL_PROVIDERS §5](./EXTERNAL_PROVIDERS.md#5-linear-project-management).
+
+**Acceptance criteria:**
+- [ ] Conta + workspace criados ([linear.app/signup](https://linear.app/signup))
+- [ ] Labels de `Area` configuradas (`backend`, `frontend`, `infra`, …)
+- [ ] DEV-000 marcado **Done**; DEV-001 (ou próxima issue ativa) criada
+- [ ] (Opcional) Integração GitHub → repo `online-portfolio`
+
+---
+
+### DEV-014 — SendGrid account & API key
+
+| Field | Value |
+|---|---|
+| **Phase** | 0 |
+| **Area** | infra |
+| **Priority** | P1 |
+| **Depends on** | — |
+
+**Description:** Conta SendGrid e API key para envio transacional (`noreply@onlineportfolio.com.br`). **Só configuração de conta** — integração na API em [DEV-107](#dev-107--contact-form--sendgrid); autenticação de domínio (DKIM) em [DEV-011](#dev-011--dns--https-production). Runbook: [EXTERNAL_PROVIDERS §8](./EXTERNAL_PROVIDERS.md#8-sendgrid-email).
+
+**Acceptance criteria:**
+- [ ] Conta SendGrid criada e verificada
+- [ ] API key `portfolio-api-prod` com permissão **Mail Send** only
+- [ ] Key guardada no password manager (Render env em DEV-009)
+- [ ] Remetente dev: single sender **ou** domínio prod adiado até DEV-011
+- [ ] `SendGrid__FromEmail` = `noreply@onlineportfolio.com.br` documentado
+
+---
+
 ### DEV-006 — GitHub Actions CI (PR) — workflows separados
 
 | Field | Value |
@@ -170,7 +250,7 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 | **Phase** | 0 |
 | **Area** | devops |
 | **Priority** | P1 |
-| **Depends on** | DEV-003, DEV-005 |
+| **Depends on** | DEV-003, DEV-005, DEV-012 |
 
 **Description:** Dois workflows de CI no PR — **separados** por stack (não um `ci.yml` único): `ci-backend.yml` e `ci-frontend.yml`, com path filters.
 
@@ -231,7 +311,7 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 | **Priority** | P1 |
 | **Depends on** | — |
 
-**Description:** Create Supabase **production** project only; store pooler + direct connection strings and API keys. No separate deployed dev/staging Supabase in v1 ([ADR-015](./ARCHITECTURE.md#adr-015-deploy-somente-em-production)).
+**Description:** Create Supabase **production** project only; store pooler + direct connection strings and API keys. No separate deployed dev/staging Supabase in v1 ([ADR-015](./ARCHITECTURE.md#adr-015-deploy-somente-em-production)). Runbook: [EXTERNAL_PROVIDERS §6](./EXTERNAL_PROVIDERS.md#6-supabase).
 
 **Acceptance criteria:**
 - [ ] Single prod project `portfolio-prod` in chosen region
@@ -249,15 +329,17 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 | **Phase** | 0 |
 | **Area** | devops |
 | **Priority** | P1 |
-| **Depends on** | DEV-003, DEV-008, DEV-007 |
+| **Depends on** | DEV-003, DEV-008, DEV-007, DEV-014 |
 
-**Description:** Deploy backend Docker image to Render free tier; connect GitHub repo.
+**Description:** Deploy backend Docker image to Render free tier; connect GitHub repo. Runbook: [EXTERNAL_PROVIDERS §7](./EXTERNAL_PROVIDERS.md#7-render-api).
 
 **Acceptance criteria:**
+- [ ] Conta Render criada; web service Docker (`backend/Dockerfile`) conectado ao repo
 - [ ] Web service live on Render default URL
 - [ ] Health check `/health` configured
-- [ ] Production env vars set (DB pooler, Jwt__Secret, SendGrid)
-- [ ] Custom domain `api.onlineportfolio.com.br` (can wait until DNS — stub OK with onrender.com URL first)
+- [ ] Production env vars set (DB pooler, `Jwt__Secret`, `SendGrid__ApiKey` de DEV-014)
+- [ ] **Wait for CI** habilitado (gate em `deploy-backend.yml`)
+- [ ] Custom domain `api.onlineportfolio.com.br` (pode aguardar DEV-011 — OK com URL `*.onrender.com` primeiro)
 
 ---
 
@@ -268,16 +350,16 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 | **Phase** | 0 |
 | **Area** | devops |
 | **Priority** | P1 |
-| **Depends on** | DEV-005, DEV-009 |
+| **Depends on** | DEV-005, DEV-012 |
 
-**Description:** Connect repo to Vercel; root directory `frontend`; PR previews enabled; **production deploy via `deploy-frontend.yml`** (DEV-007b).
+**Description:** Connect repo to Vercel; root directory `frontend`; PR previews enabled; **production deploy via `deploy-frontend.yml`** (DEV-007b). Runbook: [EXTERNAL_PROVIDERS §9](./EXTERNAL_PROVIDERS.md#9-vercel-frontend).
 
 **Acceptance criteria:**
-- [ ] Vercel project connected to GitHub (`frontend/` root)
+- [ ] Conta Vercel criada; projeto importado do GitHub (`frontend/` root)
 - [ ] PR preview deploys enabled
 - [ ] Production auto-deploy **disabled** in Vercel (prod = Actions)
-- [ ] Env vars configured in Vercel dashboard
-- [ ] Custom domains deferred until Registro.br DNS configured
+- [ ] Env vars configured in Vercel dashboard (`NUXT_PUBLIC_*`, `NUXT_API_INTERNAL_BASE`)
+- [ ] Custom domains deferred until [DEV-011](#dev-011--dns--https-production)
 
 ---
 
@@ -290,14 +372,16 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 | **Priority** | P1 |
 | **Depends on** | DEV-000, DEV-009, DEV-010 |
 
-**Description:** Configure Registro.br nameservers → Vercel; add apex, `app.`, wildcard; CNAME `api.` → Render.
+**Description:** DNS de produção: Registro.br nameservers → Vercel; domínios apex/`app.`/wildcard; CNAME `api.` → Render; registros SendGrid (DKIM/SPF). Runbook: [EXTERNAL_PROVIDERS §10](./EXTERNAL_PROVIDERS.md#10-dns-no-deploy) · email [§10.4](./EXTERNAL_PROVIDERS.md#104-dns-de-email--sendgrid-v1-só-envio).
 
 **Acceptance criteria:**
 - [ ] Nameservers `ns1.vercel-dns.com` / `ns2.vercel-dns.com` at Registro.br
 - [ ] Domains added in Vercel: apex, `app.`, `*.onlineportfolio.com.br`
 - [ ] HTTPS active on Vercel domains (auto)
 - [ ] `api.onlineportfolio.com.br` verified on Render with HTTPS (auto)
-- [ ] Documented in provider checklist
+- [ ] SendGrid domain authentication: CNAMEs DKIM (+ SPF TXT se indicado) na Vercel DNS
+- [ ] SendGrid dashboard mostra domínio `onlineportfolio.com.br` autenticado
+- [ ] Checklist [EXTERNAL_PROVIDERS §10](./EXTERNAL_PROVIDERS.md#10-dns-no-deploy) marcado
 
 ---
 
@@ -450,9 +534,9 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 | **Phase** | 1 |
 | **Area** | backend, frontend |
 | **Priority** | P1 |
-| **Depends on** | DEV-103 |
+| **Depends on** | DEV-103, DEV-014 |
 
-**Description:** Formulário de contato POST → API → SendGrid (`noreply@`) → `ContactEmail` do tenant. Sem caixa postal na plataforma.
+**Description:** Formulário de contato POST → API → SendGrid (`noreply@`) → `ContactEmail` do tenant. Requer [DEV-014](#dev-014--sendgrid-account--api-key) (conta) e DKIM em [DEV-011](#dev-011--dns--https-production) para prod. Runbook: [EXTERNAL_PROVIDERS §8](./EXTERNAL_PROVIDERS.md#8-sendgrid-email).
 
 **Acceptance criteria:**
 - [ ] `POST /api/v1/tenants/{slug}/contact` with validation
@@ -460,9 +544,8 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 - [ ] `SendGrid__FromEmail` = `noreply@onlineportfolio.com.br`
 - [ ] Reply-To = email do visitante (artista responde direto)
 - [ ] Rate limiting on contact endpoint (basic)
-- [ ] Reply-To set to visitor email
 - [ ] Contact form UI on public site
-- [ ] SendGrid domain auth on `onlineportfolio.com.br` (or single sender for dev)
+- [ ] Dev: single sender OK; prod: domínio autenticado via [DEV-011](#dev-011--dns--https-production)
 - [ ] Honeypot or basic anti-spam field
 
 ---
@@ -1022,7 +1105,9 @@ Tenant user (Owner/Editor)
 
 ---
 
-## Epic 4 — Custom domains & billing (Phase 4)
+## Epic 4 — Custom domains (+ billing opcional)
+
+**v1:** sem cobrança automática — tenants criados manualmente. Domínios custom (DEV-400+) podem ser feitos **sem** billing. DEV-402/403 são **opcionais** até decidir cobrar.
 
 ### DEV-400 — Tenant custom domain fields + resolution
 
@@ -1060,38 +1145,38 @@ Tenant user (Owner/Editor)
 
 ---
 
-### DEV-402 — Plan entity + limits enforcement
+### DEV-402 — Plan entity + limits enforcement (optional)
 
 | Field | Value |
 |---|---|
 | **Phase** | 4 |
 | **Area** | backend |
-| **Priority** | P1 |
+| **Priority** | P2 |
 | **Depends on** | DEV-100 |
 
-**Description:** Enforce `MaxArtworks`, `MaxStorageMb`, `CustomDomainAllowed` per plan.
+**Description:** Enforce `MaxArtworks`, `MaxStorageMb`, `CustomDomainAllowed` per plan. **Opcional no v1** — pode operar sem planos rígidos ou atribuir plano manualmente no banco.
 
 **Acceptance criteria:**
 - [ ] Plan seeded (Basic / Pro or similar)
 - [ ] API rejects over-limit operations with clear error
-- [ ] Tenant assigned to plan on provisioning
+- [ ] Tenant assigned to plan on provisioning (manual OK)
 
 ---
 
-### DEV-403 — Stripe subscriptions (optional)
+### DEV-403 — Billing / subscriptions (optional — skip until charging)
 
 | Field | Value |
 |---|---|
 | **Phase** | 4 |
 | **Area** | backend, infra |
-| **Priority** | P2 |
-| **Depends on** | DEV-402 |
+| **Priority** | P3 |
+| **Depends on** | DEV-402 (if limits tied to paid plans) |
 
-**Description:** Stripe checkout + webhook for tenant billing.
+**Description:** Checkout + webhook for tenant billing. **Fora do escopo inicial — não implementar enquanto não cobrar.** Provider TBD: **Stripe** se expandir fora do BR (multi-moeda, cartões globais); **Asaas/Iugu** se permanecer só Brasil (PIX, fiscal). Ver [EXTERNAL_PROVIDERS §13](./EXTERNAL_PROVIDERS.md#13-stripe--cobrança-saas-fase-4-opcional).
 
 **Acceptance criteria:**
-- [ ] Stripe products/prices configured
-- [ ] Webhook `POST /api/v1/webhooks/stripe` on Render
+- [ ] PSP account + products/prices configured
+- [ ] Webhook `POST /api/v1/webhooks/...` on Render
 - [ ] Webhook secret in Render env
 - [ ] Plan updated on successful subscription events
 
@@ -1106,7 +1191,7 @@ Tenant user (Owner/Editor)
 | **Priority** | P3 |
 | **Depends on** | DEV-000, DEV-011 |
 
-**Description:** Configure Google Workspace for `hello@onlineportfolio.com.br` when needed.
+**Description:** Configure Google Workspace for `hello@onlineportfolio.com.br` when needed. Runbook: [EXTERNAL_PROVIDERS §14](./EXTERNAL_PROVIDERS.md#14-google-workspace-caixa-postal-operador--futuro).
 
 **Acceptance criteria:**
 - [ ] MX + SPF merged with SendGrid
@@ -1663,7 +1748,7 @@ Dedicated security activities (beyond tests). Cross-reference ARCHITECTURE §18.
 ## Suggested implementation order (first sprints)
 
 ### Sprint 0 — Bootstrap
-DEV-000 → DEV-001 → DEV-002 → DEV-003 → DEV-004 → DEV-005 → DEV-006
+DEV-000 → DEV-001 → DEV-002 → DEV-003 → DEV-004 → DEV-005 → DEV-012 → DEV-013
 
 ### Sprint 1 — Multi-tenant DB + login MVP
 DEV-150 → DEV-151 → DEV-152 → DEV-153 → DEV-154 → DEV-155 → DEV-156 → DEV-157 → DEV-158 → DEV-159 → DEV-161 → DEV-162 → UT-012 → IT-011 → IT-012 → IT-013
@@ -1671,8 +1756,8 @@ DEV-150 → DEV-151 → DEV-152 → DEV-153 → DEV-154 → DEV-155 → DEV-156 
 ### Sprint 2 — Public gallery (local)
 DEV-101 → DEV-102 → DEV-103 → DEV-104 → DEV-105 → UT-002 → IT-001 → IT-002
 
-### Sprint 3 — Contact + deploy
-DEV-107 → DEV-008 → DEV-009 → DEV-010 → DEV-007 → DEV-007b → SEC-001 → UT-003 → IT-006
+### Sprint 3 — Contact + cloud providers + deploy
+DEV-014 → DEV-008 → DEV-107 → DEV-009 → DEV-010 → DEV-006 → DEV-007 → DEV-007b → SEC-001 → UT-003 → IT-006
 
 ### Sprint 4 — DNS + hardening
 DEV-011 → SEC-007 → SEC-003 → UT-005 → SEC-011 (partial)
@@ -1711,4 +1796,4 @@ DEV-yyy
 
 ---
 
-*Last updated: 2025-06-21 — align with ARCHITECTURE.md and EXTERNAL_PROVIDERS.md*
+*Last updated: 2025-06-21 — provider setup index (DEV-012–014); align with EXTERNAL_PROVIDERS.md*

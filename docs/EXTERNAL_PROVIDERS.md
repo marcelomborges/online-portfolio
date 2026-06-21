@@ -6,29 +6,33 @@ Step-by-step configuration for every third-party service required to run the art
 **Platform domain:** `onlineportfolio.com.br` — **registrado** no [Registro.br](https://registro.br)  
 **Email v1:** SendGrid `noreply@onlineportfolio.com.br` — só envio transacional, sem caixa postal  
 **Project management:** [Linear](https://linear.app) — issues a partir do BACKLOG (`DEV-xxx`)  
-**Operator inbox (futuro):** Google Workspace — depois do lançamento
+**Operator inbox (futuro):** Google Workspace — depois do lançamento  
+**Cobrança / billing:** **opcional** — v1 **sem cobrança**; tenants provisionados manualmente pelo operador
 
 ---
 
 ## Table of contents
 
+**Ordem de leitura = ordem de setup.** Fase 4 e serviços futuros no final.
+
 1. [Overview](#1-overview)
-   - [1.1 Master checklist — criar contas](#11-master-checklist--criar-contas)
-2. [Recommended setup order](#2-recommended-setup-order)
-3. [Domain & DNS](#3-domain--dns)
-4. [Supabase](#4-supabase)
-5. [Render (API)](#5-render-api)
-6. [Vercel (Frontend)](#6-vercel-frontend)
-7. [SendGrid (Email)](#7-sendgrid-email)
-8. [Google Workspace (caixa postal operador — futuro)](#8-google-workspace-caixa-postal-operador--futuro)
-9. [GitHub (CI/CD)](#9-github-cicd)
-10. [Linear (project management)](#10-linear-project-management)
-11. [QuestPDF (no external config)](#11-questpdf-no-external-config)
-12. [Per-tenant setup (custom domains)](#12-per-tenant-setup-custom-domains)
-13. [Future: Stripe (Phase 4)](#13-future-stripe-phase-4)
-14. [Secrets & environment variable map](#14-secrets--environment-variable-map)
-15. [Phase checklists](#15-phase-checklists)
-16. [Troubleshooting](#16-troubleshooting)
+2. [Ordem de setup](#2-ordem-de-setup)
+3. [Registro.br — domínio](#3-registrobr--domínio)
+4. [GitHub & CI/CD](#4-github-cicd--actions)
+5. [Linear](#5-linear-project-management)
+6. [Supabase](#6-supabase)
+7. [Render (API)](#7-render-api)
+8. [SendGrid (Email)](#8-sendgrid-email)
+9. [Vercel (Frontend)](#9-vercel-frontend)
+10. [DNS no deploy](#10-dns-no-deploy)
+11. [QuestPDF (sem conta)](#11-questpdf-sem-conta-externa)
+12. [Domínios custom por tenant (Fase 4)](#12-domínios-custom-por-tenant-fase-4)
+13. [Stripe — cobrança SaaS (opcional)](#13-stripe--cobrança-saas-fase-4-opcional)
+14. [Google Workspace (futuro)](#14-google-workspace-caixa-postal-operador--futuro)
+15. [Secrets & environment map](#15-secrets--environment-variable-map)
+16. [Phase checklists](#16-phase-checklists)
+17. [Troubleshooting](#17-troubleshooting)
+18. [Quick reference — URLs](#quick-reference--urls-to-bookmark)
 
 ---
 
@@ -38,15 +42,16 @@ Step-by-step configuration for every third-party service required to run the art
 
 | Provider | Purpose | Contas | Guia |
 |---|---|---|---|
-| **Registro.br** | Domínio `onlineportfolio.com.br` | ✅ 1 (feito) | [§3.1](#31-domínio-onlineportfoliocombr-registrobr) |
-| **GitHub** | Repo monorepo + CI | 1 repo | [§9](#9-github-cicd) |
-| **Linear** | Issues, sprints, backlog (`DEV-xxx`) | 1 workspace | [§10](#10-linear-project-management) |
-| **Supabase** | PostgreSQL, Storage | 1 prod (+ dev opcional) | [§4](#4-supabase) |
-| **Render** | ASP.NET Core API (Docker) | 1 web service | [§5](#5-render-api) |
-| **Vercel** | Nuxt frontend | 1 project | [§6](#6-vercel-frontend) |
-| **SendGrid** | Email transacional (`noreply@`) | 1 conta; sem inbox | [§7](#7-sendgrid-email) |
-| **Google Workspace** | Caixa postal operador (futuro) | Fora do v1 | [§8](#8-google-workspace-caixa-postal-operador--futuro) |
-| **QuestPDF** | PDF generation | Sem conta (NuGet) | [§11](#11-questpdf-no-external-config) |
+| **Registro.br** | Domínio `onlineportfolio.com.br` | ✅ 1 (feito) | [§3](#3-registrobr--domínio) |
+| **GitHub** | Repo monorepo + CI/CD | 1 repo | [§4](#4-github-cicd--actions) |
+| **Linear** | Issues, sprints (`DEV-xxx`) | 1 workspace | [§5](#5-linear-project-management) |
+| **Supabase** | PostgreSQL, Storage | 1 prod | [§6](#6-supabase) |
+| **Render** | ASP.NET Core API (Docker) | 1 web service | [§7](#7-render-api) |
+| **SendGrid** | Email transacional (`noreply@`) | 1 conta | [§8](#8-sendgrid-email) |
+| **Vercel** | Nuxt frontend | 1 project | [§9](#9-vercel-frontend) |
+| **Stripe** | Cobrança SaaS (**opcional**, futuro) | ⏸️ não usar agora | [§13](#13-stripe--cobrança-saas-fase-4-opcional) |
+| **Google Workspace** | Inbox operador (futuro) | ⏸️ pós-lançamento | [§14](#14-google-workspace-caixa-postal-operador--futuro) |
+| **QuestPDF** | PDF (NuGet) | Sem conta | [§11](#11-questpdf-sem-conta-externa) |
 
 ### 1.1 Master checklist — criar contas
 
@@ -54,19 +59,19 @@ Use esta tabela para abrir cada serviço na ordem. Marque conforme for concluind
 
 | # | Provider | Criar conta | Painel | Doc deste repo | Status |
 |---|---|---|---|---|---|
-| 1 | **Registro.br** | [registro.br](https://registro.br) | [Painel NIC](https://registro.br/login/) | [§3.1](#31-domínio-onlineportfoliocombr-registrobr) | ✅ **Feito** — domínio comprado |
-| 2 | **GitHub** | [github.com/signup](https://github.com/signup) | [github.com](https://github.com) | [§9](#9-github-cicd) | ⬜ Criar repo `online-portfolio` |
-| 3 | **Linear** | [linear.app/signup](https://linear.app/signup) | [linear.app](https://linear.app) | [§10](#10-linear-project-management) | ⬜ Workspace + import BACKLOG |
-| 4 | **Supabase** | [supabase.com/dashboard](https://supabase.com/dashboard) | [Dashboard](https://supabase.com/dashboard) | [§4](#4-supabase) | ⬜ Projeto `portfolio-prod` |
-| 5 | **Render** | [dashboard.render.com/register](https://dashboard.render.com/register) | [Render](https://dashboard.render.com) | [§5](#5-render-api) | ⬜ Web service API |
-| 6 | **Vercel** | [vercel.com/signup](https://vercel.com/signup) | [Vercel](https://vercel.com/dashboard) | [§6](#6-vercel-frontend) | ⬜ Projeto Nuxt |
-| 7 | **SendGrid** | [signup.sendgrid.com](https://signup.sendgrid.com/) | [SendGrid](https://app.sendgrid.com) | [§7](#7-sendgrid-email) | ⬜ API key + domínio |
-| 8 | **Google Workspace** | [workspace.google.com](https://workspace.google.com/) | [Admin](https://admin.google.com) | [§8](#8-google-workspace-caixa-postal-operador--futuro) | ⏸️ Depois do lançamento |
-| 9 | **Stripe** | [dashboard.stripe.com/register](https://dashboard.stripe.com/register) | [Stripe](https://dashboard.stripe.com) | [§13](#13-future-stripe-phase-4) | ⏸️ Fase 4 |
+| 1 | **Registro.br** | [registro.br](https://registro.br) | [Painel NIC](https://registro.br/login/) | [§3.1](#31-domínio-onlineportfoliocombr) | ✅ **Feito** — domínio comprado |
+| 2 | **GitHub** | [github.com/signup](https://github.com/signup) | [github.com](https://github.com) | [§4](#4-github-cicd--actions) | ⬜ Criar repo `online-portfolio` |
+| 3 | **Linear** | [linear.app/signup](https://linear.app/signup) | [linear.app](https://linear.app) | [§5](#5-linear-project-management) | ⬜ Workspace + import BACKLOG |
+| 4 | **Supabase** | [supabase.com/dashboard](https://supabase.com/dashboard) | [Dashboard](https://supabase.com/dashboard) | [§6](#6-supabase) | ⬜ Projeto `portfolio-prod` |
+| 5 | **Render** | [dashboard.render.com/register](https://dashboard.render.com/register) | [Render](https://dashboard.render.com) | [§7](#7-render-api) | ⬜ Web service API |
+| 6 | **SendGrid** | [signup.sendgrid.com](https://signup.sendgrid.com/) | [SendGrid](https://app.sendgrid.com) | [§8](#8-sendgrid-email) | ⬜ API key (domínio no deploy §10) |
+| 7 | **Vercel** | [vercel.com/signup](https://vercel.com/signup) | [Vercel](https://vercel.com/dashboard) | [§9](#9-vercel-frontend) | ⬜ Projeto Nuxt |
+| 8 | **Google Workspace** | [workspace.google.com](https://workspace.google.com/) | [Admin](https://admin.google.com) | [§14](#14-google-workspace-caixa-postal-operador--futuro) | ⏸️ Depois do lançamento |
+| 9 | **Stripe** | [dashboard.stripe.com/register](https://dashboard.stripe.com/register) | [Stripe](https://dashboard.stripe.com) | [§13](#13-stripe--cobrança-saas-fase-4-opcional) | ⏸️ **Opcional** — só se/quando cobrar |
 
-**O que guardar em password manager / GitHub Secrets:** ver [§14](#14-secrets--environment-variable-map).
+**O que guardar em password manager / GitHub Secrets:** ver [§15](#15-secrets--environment-variable-map).
 
-**Ordem recomendada de configuração:** [§2](#2-recommended-setup-order) (não precisa criar todas as contas no mesmo dia — domínio já está ok).
+**Ordem recomendada:** [§2](#2-ordem-de-setup).
 
 ### Domain layout (production)
 
@@ -102,32 +107,36 @@ Mapa completo: [ARCHITECTURE.md §2.1](./ARCHITECTURE.md#21-mapa-de-domínios-e-
 
 ---
 
-## 2. Recommended setup order
+## 2. Ordem de setup
 
-Configure in this order to avoid circular dependencies:
+Siga esta ordem para evitar dependências circulares. As seções **§3–§9** seguem a mesma sequência.
 
-```text
-1. Registro.br          → ✅ onlineportfolio.com.br registrado (DNS no deploy — §3)
-2. GitHub               → repo monorepo + push inicial
-3. Linear               → workspace + importar BACKLOG (§10) — pode ser cedo, ajuda no tracking
-4. Supabase             → projeto, connection strings, keys (Postgres + Storage)
-5. Render               → conta + conectar repo (deploy após DEV-001)
-6. SendGrid             → conta + API key (domínio auth no deploy — §7)
-7. Vercel               → conta + conectar repo (deploy após DEV-001)
-8. DNS (no deploy)      → nameservers Vercel + api. → Render (§3.2)
-9. GitHub Actions       → secrets migration + workflows (§9)
-10. SendGrid (prod)     → autenticar onlineportfolio.com.br na Vercel DNS
-11. Por tenant          → domínios custom Vercel (Fase 4)
-12. Google Workspace    → inbox operador (futuro)
-```
+| Passo | Provider | Ação | Seção |
+|---|---|---|---|
+| 1 | **Registro.br** | ✅ Domínio registrado | [§3](#3-registrobr--domínio) |
+| 2 | **GitHub** | Repo monorepo + push | [§4](#4-github-cicd--actions) |
+| 3 | **Linear** | Workspace + BACKLOG (pode ser cedo) | [§5](#5-linear-project-management) |
+| 4 | **Supabase** | `portfolio-prod`, connection strings | [§6](#6-supabase) |
+| 5 | **Render** | Conta + web service (após DEV-001) | [§7](#7-render-api) |
+| 6 | **SendGrid** | Conta + API key | [§8](#8-sendgrid-email) |
+| 7 | **Vercel** | Conta + projeto Nuxt (após DEV-001) | [§9](#9-vercel-frontend) |
+| 8 | **DNS** | NS Vercel, `api.`, DKIM SendGrid | [§10](#10-dns-no-deploy) |
+| 9 | **GitHub Actions** | Workflows + secrets | [§4.3](#43-workflow-files-planned) |
+| — | **Por tenant** | Domínio custom do artista | [§12](#12-domínios-custom-por-tenant-fase-4) |
+| — | **Stripe** | Cobrança — **opcional, não agora** | [§13](#13-stripe--cobrança-saas-fase-4-opcional) |
+| — | **Google Workspace** | Inbox operador — **futuro** | [§14](#14-google-workspace-caixa-postal-operador--futuro) |
+
+**Deploy na nuvem:** somente **production** ([ADR-015](./ARCHITECTURE.md#adr-015-deploy-somente-em-production)).
+
+**Issues no backlog:** cada passo acima tem issue `DEV-xxx` — ver [BACKLOG § Provider setup index](./BACKLOG.md#provider-setup-index).
 
 ---
 
-## 3. Domain & DNS
+## 3. Registro.br — domínio
 
-### 3.1 Domínio `onlineportfolio.com.br` (Registro.br)
+### 3.1 Domínio `onlineportfolio.com.br`
 
-**Status:** ✅ **Registrado** — titular ativo no Registro.br. Próximo passo no deploy: DNS ([§3.2](#32-dns-strategy-at-deploy-time)).
+**Status:** ✅ **Registrado** — titular ativo no Registro.br. DNS de produção → [§10](#10-dns-no-deploy) (após Render + Vercel).
 
 | Item | Valor |
 |---|---|
@@ -137,7 +146,7 @@ Configure in this order to avoid circular dependencies:
 | **Renovação** | ~R$ 40/ano (Pix, boleto ou cartão) |
 | **Titular** | Seu CPF/CNPJ — não transfere para Vercel |
 | **DNS agora** | Pode manter DNS padrão Registro.br até deploy |
-| **DNS no deploy** | Nameservers Vercel (recomendado) — [§3.2](#32-dns-strategy-at-deploy-time) |
+| **DNS no deploy** | Nameservers Vercel — [§10](#10-dns-no-deploy) |
 
 | Check | Result |
 |---|---|
@@ -149,7 +158,7 @@ Configure in this order to avoid circular dependencies:
 - [x] Domínio `onlineportfolio.com.br` com status **Ativo** / **Publicado**
 - [ ] Anotar data de expiração / renovação automática
 - [ ] Guardar login Registro.br no password manager
-- [ ] DNS: deixar padrão **ou** já apontar NS Vercel se for deploy em breve ([§3.2](#32-dns-strategy-at-deploy-time))
+- [ ] DNS: deixar padrão **ou** apontar NS Vercel no deploy ([§10](#10-dns-no-deploy))
 
 #### Referências Registro.br
 
@@ -176,8 +185,8 @@ Configure in this order to avoid circular dependencies:
 |---|---|
 | **Agora (pós-compra)** | Confirmar **Ativo** no painel; guardar credenciais; opcional: criar contas GitHub, Linear, Supabase |
 | **Epic 0 (DEV-001)** | Push monorepo no GitHub |
-| **Deploy** | Nameservers Vercel + domínios Vercel/Render ([§3.2](#32-dns-strategy-at-deploy-time)) |
-| **Pós-deploy** | SendGrid DKIM na Vercel DNS ([§3.5](#35-dns-de-email--sendgrid-v1-só-envio)) |
+| **Deploy** | Nameservers Vercel + domínios ([§10](#10-dns-no-deploy)) |
+| **Pós-deploy** | SendGrid DKIM na Vercel DNS ([§10.4](#104-dns-de-email--sendgrid-v1-só-envio)) |
 
 #### Registro.br + Vercel nameservers (titular continua no Registro.br)
 
@@ -211,79 +220,114 @@ All providers accept `.com.br` and subdomains.
 
 `onlineportfolio.com` is taken. If needed later, consider monitoring it for expiry or registering an alternative (e.g. `portfolioonline.com`, `getonlineportfolio.com`) and pointing it to the same Vercel app as an alias.
 
-### 3.2 DNS strategy (at deploy time)
+---
 
-#### Option A — Vercel nameservers (recommended)
+## 4. GitHub (CI/CD) & Actions
 
-1. Registro.br panel → **Alterar servidores DNS**:
-   ```text
-   ns1.vercel-dns.com
-   ns2.vercel-dns.com
-   ```
-2. Vercel project → **Settings → Domains** → add:
-   ```text
-   onlineportfolio.com.br
-   app.onlineportfolio.com.br
-   *.onlineportfolio.com.br
-   ```
-3. Vercel DNS → add CNAME for API:
-   ```text
-   api  →  CNAME  →  your-service.onrender.com
-   ```
-4. Wait for SSL (automatic, usually minutes after DNS propagates)
+| | |
+|---|---|
+| **Criar conta** | [github.com/signup](https://github.com/signup) |
+| **Novo repositório** | [github.com/new](https://github.com/new) — nome sugerido: `online-portfolio` |
+| **Actions secrets** | Repo → **Settings → Secrets and variables → Actions** |
+| **Docs Actions** | [docs.github.com/actions](https://docs.github.com/en/actions) |
 
-#### Option B — DNS at Registro.br (manual records)
+**Decision:** GitHub Actions is the **pipeline orchestrator**. Vercel and Render are deploy targets — not a substitute for tests and migrations.
 
-Add records in Registro.br panel after Vercel shows required values (`vercel domains inspect` or dashboard):
+### 4.1 Repository
 
-| Type | Name | Value | Purpose |
-|---|---|---|---|
-| `A` | `@` | Vercel IP (from dashboard) | Apex |
-| `CNAME` | `www` | `cname.vercel-dns.com` | www |
-| `CNAME` | `app` | `cname.vercel-dns.com` | Admin |
-| `CNAME` | `ana` | `cname.vercel-dns.com` | Per-tenant (repeat per slug) |
-| `CNAME` | `api` | Render hostname | API |
+- [ ] Code hosted on GitHub
+- [ ] Branch protection on `main` (recommended)
+- [ ] Vercel connected — PR previews on; **production auto-deploy off**
+- [ ] Render connected — **Wait for CI** on `deploy-backend.yml`
 
-Wildcard `*.onlineportfolio.com.br` SSL on Vercel **requires** Option A (Vercel nameservers).
+### 4.2 GitHub Actions secrets
 
-### 3.3 DNS records reference (Vercel)
+| Secret | Purpose |
+|---|---|
+| `SUPABASE_MIGRATION_CONNECTION_STRING` | Direct Postgres URI (port 5432) for EF migrations |
+| `VERCEL_TOKEN` | `deploy-frontend.yml` — `vercel deploy --prod` |
+| `VERCEL_ORG_ID` | Vercel CLI org/team ID |
+| `VERCEL_PROJECT_ID` | Vercel project ID (root `frontend`) |
+| `RENDER_DEPLOY_HOOK_URL` | Optional — if Render auto-deploy disabled |
 
-Add these in your DNS provider **after** connecting the domain in Vercel (Vercel shows exact values — use theirs if different):
+### 4.3 Workflow files (planned)
 
-| Type | Name | Value | Purpose |
-|---|---|---|---|
-| `A` | `@` | Vercel IP (shown in dashboard) | Apex → marketing site |
-| `CNAME` | `www` | `cname.vercel-dns.com` | www alias |
-| `CNAME` | `app` | `cname.vercel-dns.com` | Admin app |
-| `CNAME` | `*` | `cname.vercel-dns.com` | Wildcard tenant subdomains |
+```text
+.github/workflows/
+  ci-backend.yml       # pull_request + push: dotnet test/build
+  ci-frontend.yml      # pull_request + push: npm lint/test
+  deploy-backend.yml   # push main: test → EF migrate → Render Wait for CI
+  deploy-frontend.yml  # push main: lint/test → vercel deploy --prod
+```
 
-**Wildcard note:** Some registrars require DNS on Cloudflare or similar to support `*.onlineportfolio.com.br`. Verify wildcard SSL is issued in Vercel after DNS propagates.
+**Decisão:** CI **e deploy separados**; **somente production** ([ADR-015](./ARCHITECTURE.md#adr-015-deploy-somente-em-production)).
 
-### 3.4 Records for Render (API)
+### 4.4 Git flow — revisão de componentes (front + back)
 
-In Vercel **or** DNS provider (Render dashboard gives instructions):
+Além dos testes, conferir pareamento front↔back antes do merge. Referência: [ARCHITECTURE §15](./ARCHITECTURE.md#git-flow--além-dos-testes-revisar-componentes-pareados) · [AGENT_GUIDE](./AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review).
 
-| Type | Name | Value | Purpose |
-|---|---|---|---|
-| `CNAME` | `api` | Render-provided hostname (e.g. `xxx.onrender.com`) | API custom domain |
+### 4.5 GitHub checklist
 
-Enable **HTTPS** on Render after DNS verification.
-
-### 3.5 DNS de email — SendGrid (v1, só envio)
-
-Para autenticar `noreply@onlineportfolio.com.br` no SendGrid, adicione CNAME/TXT na **Vercel DNS** (não precisa de MX — **sem caixa postal** no v1):
-
-| Type | Name | Value |
-|---|---|---|
-| `CNAME` | `emXXXX` (SendGrid provides) | SendGrid target |
-| `CNAME` | `s1._domainkey` | SendGrid DKIM |
-| `CNAME` | `s2._domainkey` | SendGrid DKIM |
-
-Add **SPF** TXT record if SendGrid instructs (include `sendgrid.net`).
+- [ ] Repo created and pushed
+- [ ] `ci-backend.yml`, `ci-frontend.yml`, `deploy-backend.yml`, `deploy-frontend.yml`
+- [ ] Secrets configured; Render **Wait for CI** enabled
 
 ---
 
-## 4. Supabase
+## 5. Linear (project management)
+
+Gestão de issues e sprints. Cada `DEV-xxx` do [BACKLOG.md](./BACKLOG.md) vira uma issue no Linear.
+
+| | |
+|---|---|
+| **Criar conta** | [linear.app/signup](https://linear.app/signup) |
+| **Painel** | [linear.app](https://linear.app) |
+| **Docs** | [linear.app/docs](https://linear.app/docs) |
+| **Import CSV** | Linear → **Settings → Import** (opcional) |
+| **Backlog fonte** | [docs/BACKLOG.md](./BACKLOG.md) |
+| **Template issue** | [BACKLOG.md § Linear import template](./BACKLOG.md#linear-import-template-copy-per-issue) |
+
+**Custo:** plano **Free** cobre workspace pequeno — confirmar em [linear.app/pricing](https://linear.app/pricing).
+
+### 5.1 Criar workspace
+
+1. Acesse [linear.app/signup](https://linear.app/signup) — login com GitHub (recomendado) ou Google
+2. **Create a workspace** — nome sugerido: `Online Portfolio`
+3. Escolha template **Software development** (ou blank)
+
+### 5.2 Estrutura sugerida (espelha BACKLOG.md)
+
+| BACKLOG.md | Linear |
+|---|---|
+| `## Epic 0 — Foundation` etc. | **Project** ou **Initiative** |
+| `### DEV-xxx` | **Issue** (título: `DEV-xxx — …`) |
+| Campo `Area` | **Label** (`backend`, `frontend`, `infra`, …) |
+| Campo `Priority` (P0–P3) | **Priority** (Urgent / High / Medium / Low) |
+| `Depends on` | Relação **Blocked by** |
+| Acceptance criteria | Checklist na descrição da issue |
+
+**Labels a criar:** `infra` · `backend` · `frontend` · `database` · `devops` · `docs` · `security`
+
+### 5.3 Importar backlog (Epic 0)
+
+**Manual (recomendado):** DEV-000 ✅ Done → criar **DEV-001** como próxima issue; copiar acceptance criteria do BACKLOG.
+
+**CSV:** colunas `ID`, `Title`, `Description`, `Priority`, `Labels`, `Epic`.
+
+### 5.4 Integração GitHub (opcional)
+
+Linear → **Settings → Integrations → GitHub** → repo `online-portfolio`. PRs linkam se título/commit mencionar `DEV-001`.
+
+### 5.5 Linear checklist
+
+- [ ] Workspace criado
+- [ ] Labels de `Area` configuradas
+- [ ] DEV-000 Done; DEV-001 ativo
+- [ ] (Opcional) GitHub integration
+
+---
+
+## 6. Supabase
 
 | | |
 |---|---|
@@ -292,7 +336,7 @@ Add **SPF** TXT record if SendGrid instructs (include `sendgrid.net`).
 | **Docs** | [supabase.com/docs](https://supabase.com/docs) |
 | **Pricing** | [supabase.com/pricing](https://supabase.com/pricing) — free tier ok para v1 |
 
-### 4.1 Create project
+### 6.1 Create project
 
 | Setting | Recommendation |
 |---|---|
@@ -303,7 +347,7 @@ Add **SPF** TXT record if SendGrid instructs (include `sendgrid.net`).
 
 Wait for project provisioning (~2 minutes).
 
-### 4.2 Database — connection strings for EF Core
+### 6.2 Database — connection strings for EF Core
 
 Go to **Project Settings → Database → Connection string**.
 
@@ -333,7 +377,7 @@ Não criar segundo projeto Supabase deployado para homologação. Desenvolviment
 
 Reavaliar projeto Supabase staging apenas quando ADR-015 indicar (ex.: segundo dev, webhooks em homolog).
 
-### 4.3 API keys
+### 6.3 API keys
 
 Go to **Project Settings → API**.
 
@@ -344,7 +388,7 @@ Go to **Project Settings → API**.
 
 The **service role** bypasses Storage policies — treat like a root password. **Anon key is not used in v1** (no client-side Supabase SDK).
 
-### 4.4 Autenticação — **não usa Supabase Auth**
+### 6.4 Autenticação — **não usa Supabase Auth**
 
 Login admin usa **ASP.NET Identity + JWT** na API .NET. Supabase fornece **Postgres + Storage** apenas.
 
@@ -357,7 +401,7 @@ Login admin usa **ASP.NET Identity + JWT** na API .NET. Supabase fornece **Postg
 
 Nenhuma configuração do dashboard Supabase Auth no v1.
 
-### 4.5 Storage (Phase 3+)
+### 6.5 Storage (Phase 3+)
 
 Go to **Storage → New bucket**.
 
@@ -373,14 +417,14 @@ Go to **Storage → New bucket**.
 
 Path prefix: `tenants/{tenantId}/...`
 
-### 4.6 Network / security (optional hardening)
+### 6.6 Network / security (optional hardening)
 
 | Setting | Location | Note |
 |---|---|---|
 | **Network restrictions** | Database settings | Optional IP allowlist for prod DB (Render egress IPs change on free tier — often skip on free) |
 | **RLS on Postgres tables** | SQL | Optional defense-in-depth; API uses service role or direct connection — primary isolation remains in EF |
 
-### 4.8 Supabase checklist summary
+### 6.7 Supabase checklist summary
 
 **Phase 1 (database only):**
 
@@ -403,7 +447,7 @@ Path prefix: `tenants/{tenantId}/...`
 
 ---
 
-## 5. Render (API)
+## 7. Render (API)
 
 | | |
 |---|---|
@@ -413,7 +457,7 @@ Path prefix: `tenants/{tenantId}/...`
 | **GitHub App** | [Render → Account Settings → GitHub](https://dashboard.render.com) (conectar após login) |
 | **Pricing** | [render.com/pricing](https://render.com/pricing) — free tier com cold start |
 
-### 5.1 Create web service
+### 7.1 Create web service
 
 | Setting | Value |
 |---|---|
@@ -426,7 +470,7 @@ Path prefix: `tenants/{tenantId}/...`
 | **Region** | Same as Supabase when possible |
 | **Instance type** | Free |
 
-### 5.2 Service configuration
+### 7.2 Service configuration
 
 | Setting | Value |
 |---|---|
@@ -441,13 +485,13 @@ Path prefix: `tenants/{tenantId}/...`
 - Cold starts 5–30+ seconds
 - No persistent disk — do not store uploads locally
 
-### 5.3 Custom domain
+### 7.3 Custom domain
 
 1. **Settings → Custom Domains → Add** `api.onlineportfolio.com.br`
-2. Add CNAME at DNS provider (see [§3.4](#34-records-for-render-api))
+2. Add CNAME at DNS provider (see [§10.3](#103-records-for-render-api))
 3. Wait for SSL certificate provisioning
 
-### 5.4 Environment variables
+### 7.4 Environment variables
 
 Set in **Environment → Environment Variables** (or `render.yaml`):
 
@@ -467,7 +511,7 @@ Set in **Environment → Environment Variables** (or `render.yaml`):
 
 **Do not set** `ConnectionStrings__Migration` on Render unless you intentionally run migrations from the container (not recommended — use CI instead).
 
-### 5.5 Render checklist
+### 7.5 Render checklist
 
 - [ ] Web service created (Docker)
 - [ ] Health check returns 200 at `/health`
@@ -479,87 +523,7 @@ Set in **Environment → Environment Variables** (or `render.yaml`):
 
 ---
 
-## 6. Vercel (Frontend)
-
-| | |
-|---|---|
-| **Criar conta** | [vercel.com/signup](https://vercel.com/signup) |
-| **Painel** | [vercel.com/dashboard](https://vercel.com/dashboard) |
-| **Docs** | [vercel.com/docs](https://vercel.com/docs) |
-| **GitHub App** | Import project → conectar repositório GitHub |
-| **Domínios** | [vercel.com/docs/projects/domains](https://vercel.com/docs/projects/domains) |
-
-### 6.1 Create project
-
-| Setting | Value |
-|---|---|
-| **Import** | GitHub repository |
-| **Root directory** | `frontend` |
-| **Framework preset** | Nuxt.js (auto-detected) |
-| **Build command** | `npm run build` (default) |
-| **Output** | Nuxt preset (`.output` — Vercel handles) |
-| **Install command** | `npm install` |
-
-### 6.2 Environment variables
-
-Set for **Production**, **Preview**, and **Development** as appropriate:
-
-| Variable | Production example | Secret |
-|---|---|---|
-| `NUXT_PUBLIC_API_BASE` | `/api` (Nuxt proxy) | No |
-| `NUXT_PUBLIC_PLATFORM_HOST` | `onlineportfolio.com.br` | No |
-| `NUXT_PUBLIC_APP_HOST` | `app.onlineportfolio.com.br` | No |
-
-**Server-only variables** (not prefixed `NUXT_PUBLIC_`) for Nuxt server routes:
-
-| Variable | Purpose |
-|---|---|
-| `NUXT_API_INTERNAL_BASE` | `https://api.onlineportfolio.com.br` — proxy target to Render |
-
-No Supabase keys on Vercel in v1.
-
-### 6.3 Domains
-
-Go to **Project → Settings → Domains**.
-
-Add:
-
-| Domain | Purpose |
-|---|---|
-| `onlineportfolio.com.br` | Marketing |
-| `www.onlineportfolio.com.br` | Redirect to apex (configure in Vercel) |
-| `app.onlineportfolio.com.br` | Admin |
-| `*.onlineportfolio.com.br` | Tenant subdomains |
-
-**Per-tenant custom domains** — add manually (Phase 4) or via API later. See [§12](#12-per-tenant-setup-custom-domains).
-
-### 6.4 Vercel project settings
-
-| Setting | Recommendation |
-|---|---|
-| **Node.js version** | Match `frontend/package.json` engines (e.g. 20.x) |
-| **Deployment protection** | Optional password for preview envs |
-| **Serverless function region** | Close to Render/Supabase region |
-
-**Nuxt on Vercel:**
-
-- Ensure `nitro` preset is `vercel` (Nuxt 3 default when deployed to Vercel)
-- Server routes (`server/api/*`) run as serverless functions — used for API proxy
-
-### 6.5 Vercel checklist
-
-- [ ] Project connected to GitHub
-- [ ] Root directory = `frontend`
-- [ ] Environment variables set
-- [ ] Production deploy succeeds
-- [ ] Domains added and SSL active
-- [ ] Wildcard subdomain works (`test.onlineportfolio.com.br`)
-- [ ] `app.onlineportfolio.com.br` loads admin routes
-- [ ] Server proxy reaches Render API (check network tab / logs)
-
----
-
-## 7. SendGrid (Email)
+## 8. SendGrid (Email)
 
 **Decisão v1:** `noreply@onlineportfolio.com.br` — só envio (contato, convites). Sem caixa postal.
 
@@ -569,374 +533,138 @@ Add:
 | **Painel** | [app.sendgrid.com](https://app.sendgrid.com) |
 | **Docs** | [docs.sendgrid.com](https://docs.sendgrid.com/) |
 | **API Keys** | Painel → **Settings → API Keys** |
-| **Domínio (prod)** | **Settings → Sender Authentication → Authenticate Your Domain** |
+| **Domínio (prod)** | **Settings → Sender Authentication** — registros DNS em [§10.4](#104-dns-de-email--sendgrid-v1-só-envio) |
 | **Pricing** | [sendgrid.com/pricing](https://sendgrid.com/pricing) — 100 emails/dia free |
 
-### 7.0 Escopo v1 (o que entra / o que não entra)
+### 8.1 Escopo v1
 
 | Incluído | Fora do v1 |
 |---|---|
-| Envio: formulário de contato | Caixa `noreply@` (não recebe mail) |
-| Envio: convite de usuário (accept-invite) | Google Workspace / Zoho |
-| Remetente fixo `noreply@onlineportfolio.com.br` | MX no Registro.br para inbox |
-| API key só no Render | SendGrid no frontend |
+| Formulário de contato, convites | Caixa postal / MX |
+| `noreply@onlineportfolio.com.br` | SendGrid no frontend |
 
-**Reply-To no contato:** email do visitante (artista responde direto) ou conforme regra da API — não depende de inbox `@onlineportfolio.com.br`.
+### 8.2 API key
 
-### 7.1 Account setup
+- [ ] Conta SendGrid + verificação
+- [ ] API key `portfolio-api-prod` — permissão **Mail Send** only
+- [ ] Guardar no Render como `SendGrid__ApiKey`
 
-- [ ] Create SendGrid account (free tier: **100 emails/day**)
-- [ ] Complete account verification
+### 8.3 Remetente (`noreply@`)
 
-### 7.2 API key
+- **Dev:** single sender verification (rápido)
+- **Prod:** autenticar domínio `onlineportfolio.com.br` — DNS em [§10.4](#104-dns-de-email--sendgrid-v1-só-envio)
 
-Go to **Settings → API Keys → Create API Key**.
+### 8.4 SendGrid checklist
+
+- [ ] API key no Render
+- [ ] Domínio autenticado (prod)
+- [ ] Teste de envio via API
+
+---
+
+## 9. Vercel (Frontend)
+
+| | |
+|---|---|
+| **Criar conta** | [vercel.com/signup](https://vercel.com/signup) |
+| **Painel** | [vercel.com/dashboard](https://vercel.com/dashboard) |
+| **Docs** | [vercel.com/docs](https://vercel.com/docs) |
+| **GitHub App** | Import project → conectar repositório GitHub |
+| **Domínios** | [vercel.com/docs/projects/domains](https://vercel.com/docs/projects/domains) |
+
+### 9.1 Create project
 
 | Setting | Value |
 |---|---|
-| **Name** | `portfolio-api-prod` |
-| **Permissions** | Restricted → **Mail Send** only |
+| **Import** | GitHub repository |
+| **Root directory** | `frontend` |
+| **Framework preset** | Nuxt.js (auto-detected) |
+| **Production auto-deploy** | **Off** — prod via `deploy-frontend.yml` ([§4.3](#43-workflow-files-planned)) |
 
-Store in Render as `SendGrid__ApiKey`. **Never** expose in Vercel or frontend.
+### 9.2 Environment variables
 
-### 7.3 Identidade do remetente (`noreply@`)
+| Variable | Production example | Secret |
+|---|---|---|
+| `NUXT_PUBLIC_API_BASE` | `/api` (Nuxt proxy) | No |
+| `NUXT_PUBLIC_PLATFORM_HOST` | `onlineportfolio.com.br` | No |
+| `NUXT_PUBLIC_APP_HOST` | `app.onlineportfolio.com.br` | No |
+| `NUXT_API_INTERNAL_BASE` | `https://api.onlineportfolio.com.br` | No |
 
-**Produção:** autenticar domínio `onlineportfolio.com.br` (SPF/DKIM na **Vercel DNS**).
+### 9.3 Domains
 
-**Início rápido (dev/teste):** verificação de remetente único — link no email de confirmação (não cria caixa postal).
+Add in **Project → Settings → Domains** (detalhes DNS em [§10](#10-dns-no-deploy)):
 
-**Opção A — Single sender (início rápido):**
-
-- Verificar `noreply@onlineportfolio.com.br` no SendGrid (link por email — use um email pessoal seu para clicar, **não** cria inbox no domínio)
-- Bom para testes iniciais
-
-**Opção B — Autenticação de domínio (recomendado para produção):**
-
-Go to **Settings → Sender Authentication → Authenticate Your Domain**.
-
-- [ ] Informar `onlineportfolio.com.br`
-- [ ] Adicionar CNAME/TXT na **Vercel DNS** (registros que o SendGrid passar)
-- [ ] Verificar domínio no painel SendGrid
-
-| Setting | Valor |
+| Domain | Purpose |
 |---|---|
-| **From email** | `noreply@onlineportfolio.com.br` |
-| **From name** | Online Portfolio |
-| **Reply-To** | Dinâmico — email do visitante no contato; convites sem reply esperado |
+| `onlineportfolio.com.br` | Marketing |
+| `app.onlineportfolio.com.br` | Admin |
+| `*.onlineportfolio.com.br` | Tenant subdomains |
 
-### 7.4 SendGrid checklist
+Domínios custom por artista → [§12](#12-domínios-custom-por-tenant-fase-4).
 
-- [ ] API key created (Mail Send only)
-- [ ] Domain authenticated (or single sender verified)
-- [ ] DNS records propagated
-- [ ] Test email from API contact endpoint
-- [ ] Check spam folder / SendGrid activity feed if not received
+### 9.4 Vercel checklist
 
-### 7.5 Local development
-
-- Use separate API key with restricted access, or
-- Log emails to console in Development, or
-- SendGrid sandbox / only send to verified addresses
+- [ ] Project connected; root `frontend`
+- [ ] Env vars set; PR previews on
+- [ ] Production auto-deploy **off**
+- [ ] Proxy reaches Render API
 
 ---
 
-## 8. Google Workspace (caixa postal operador — futuro)
+## 10. DNS no deploy
 
-**Status:** **Fora do v1.** No início só SendGrid `noreply@` (envio). Documentado para quando precisar **ler/responder** em `@onlineportfolio.com.br`.
+Configurar **depois** de Render (§7) e Vercel (§9) existirem.
 
-| | |
-|---|---|
-| **Criar conta** | [workspace.google.com](https://workspace.google.com/) |
-| **Painel admin** | [admin.google.com](https://admin.google.com) |
-| **Pricing** | [workspace.google.com/pricing](https://workspace.google.com/pricing) — ~US$ 6–7/usuário/mês |
-| **Quando** | Após lançamento, quando precisar inbox `@onlineportfolio.com.br` |
+### 10.1 DNS strategy (recommended — Vercel nameservers)
 
-### What it is (vs SendGrid)
+1. Registro.br → **Alterar servidores DNS**:
+   ```text
+   ns1.vercel-dns.com
+   ns2.vercel-dns.com
+   ```
+2. Vercel → **Settings → Domains** → add:
+   ```text
+   onlineportfolio.com.br
+   app.onlineportfolio.com.br
+   *.onlineportfolio.com.br
+   ```
+3. Vercel DNS → CNAME `api` → `your-service.onrender.com`
+4. Aguardar SSL (minutos após propagação)
 
-| | SendGrid (v1) | Google Workspace (futuro) |
-|---|---|---|
-| **Função** | App **envia** (`noreply@`, contato, convites) | Você **lê/responde** (`hello@`, `marcelo@`, etc.) |
-| **Caixa postal** | **Não** | Sim |
-| **Quando** | v1 | Após lançamento (quando precisar inbox) |
-| **Custo** | Free tier (100/dia) | ~US$ 6–7/usuário/mês |
+**Alternativa:** DNS manual no Registro.br — sem wildcard SSL fácil; ver registros abaixo.
 
-Registrar `onlineportfolio.com.br` **agora** já reserva os endereços `@onlineportfolio.com.br`. Google Workspace pode esperar — v1 usa só SendGrid.
+### 10.2 DNS records reference (Vercel)
 
-### When to configure
-
-- You want daily business email on your domain
-- You outgrow forwarding or personal Gmail for support/sales
-
-### Setup steps (when ready)
-
-1. Go to [Google Workspace](https://workspace.google.com/)
-2. Choose **Business Starter** (~US$ 6/user/month)
-3. Enter domain: `onlineportfolio.com.br`
-4. Verify domain ownership (TXT record in Cloudflare DNS)
-5. Add **MX records** Google provides (may coexist with SendGrid SPF/DKIM for `noreply@`)
-6. Create users: e.g. `hello@onlineportfolio.com.br`, `marcelo@onlineportfolio.com.br`
-
-### DNS coexistence (SendGrid + Google)
-
-Both can work on the same domain:
-
-| Record type | SendGrid | Google Workspace |
-|---|---|---|
-| **MX** | Not used (SendGrid sends via API, not your MX) | Required for receiving mail |
-| **SPF (TXT)** | Include `sendgrid.net` | Include `google.com` — merge into one SPF record |
-| **DKIM** | SendGrid CNAMEs | Google CNAMEs |
-
-When adding Google later, **merge SPF** rather than creating duplicate TXT records. Example intent:
-
-```text
-v=spf1 include:sendgrid.net include:_spf.google.com ~all
-```
-
-### Google Workspace checklist (future)
-
-- [ ] Domínio `onlineportfolio.com.br` já registrado (você)
-- [ ] Workspace subscription active
-- [ ] Domain verified in Google Admin
-- [ ] MX records configured
-- [ ] SPF/DKIM updated alongside SendGrid
-- [ ] Test send/receive from `hello@onlineportfolio.com.br`
-
----
-
-## 9. GitHub (CI/CD)
-
-| | |
-|---|---|
-| **Criar conta** | [github.com/signup](https://github.com/signup) |
-| **Novo repositório** | [github.com/new](https://github.com/new) — nome sugerido: `online-portfolio` |
-| **Actions secrets** | Repo → **Settings → Secrets and variables → Actions** |
-| **Docs Actions** | [docs.github.com/actions](https://docs.github.com/en/actions) |
-
-**Decision:** GitHub Actions is the **pipeline orchestrator** (project preference). Vercel and Render are deploy targets connected to the repo — they do not replace Actions for tests and migrations.
-
-### Do Vercel / Render require repo connection?
-
-| Platform | Must connect GitHub? | Default behavior | Actions alternative |
+| Type | Name | Value | Purpose |
 |---|---|---|---|
-| **Vercel** | Recommended, not mandatory | Auto-deploy on push to connected branch | `vercel deploy --prod` with `VERCEL_TOKEN` |
-| **Render** | Recommended for Docker builds | Auto-deploy on push | `RENDER_DEPLOY_HOOK_URL` curl from Actions |
+| `A` | `@` | Vercel IP (dashboard) | Apex |
+| `CNAME` | `www` | `cname.vercel-dns.com` | www |
+| `CNAME` | `app` | `cname.vercel-dns.com` | Admin |
+| `CNAME` | `*` | `cname.vercel-dns.com` | Wildcard tenants |
 
-**Neither platform forces you to deploy only from their dashboard.** Connect the repo for builds, env vars, and PR previews; use Actions to control **when** deploy is safe (after tests + migrations).
+### 10.3 Records for Render (API)
 
-### Recommended setup
-
-```text
-GitHub repo
-  ├── Vercel GitHub App     → PR previews (prod via Actions)
-  ├── Render GitHub App     → API build + deploy (Wait for CI)
-  └── GitHub Actions        → CI + deploy separados (backend e frontend)
-
-Pull request:
-  ci-backend.yml    → dotnet test (paths backend/**)
-  ci-frontend.yml   → npm lint/test (paths frontend/**)
-  Revisão           → componentes pareados front↔back (ver §9.7)
-  Vercel            → preview URL on PR (native — mantém)
-
-Push to main:
-  deploy-backend.yml  → test → migrate (direct :5432) → status check
-  Render              → deploy API (Wait for CI — after deploy-backend green)
-  deploy-frontend.yml → lint/test → vercel deploy --prod
-```
-
-**Decisão:** CI **e deploy separados** — quatro workflows, **somente production** ([ADR-015](./ARCHITECTURE.md#adr-015-deploy-somente-em-production)). Sem Render/Vercel/Supabase “dev” deployados no v1.
-
-**Critical order:** migrations in `deploy-backend.yml` **before** Render deploys. Enable **Wait for CI** on Render.
-
-### 9.1 Repository
-
-- [ ] Code hosted on GitHub
-- [ ] Branch protection on `main` (optional but recommended)
-- [ ] Vercel connected — PR previews on; **production auto-deploy off**
-- [ ] Render connected — **Wait for CI** on `deploy-backend.yml`
-
-### 9.2 GitHub Actions secrets
-
-Go to **Repository → Settings → Secrets and variables → Actions**.
-
-| Secret | Purpose |
-|---|---|
-| `SUPABASE_MIGRATION_CONNECTION_STRING` | Direct Postgres URI (port 5432) for EF migrations |
-| `VERCEL_TOKEN` | `deploy-frontend.yml` — `vercel deploy --prod` |
-| `VERCEL_ORG_ID` | Vercel CLI org/team ID |
-| `VERCEL_PROJECT_ID` | Vercel project ID (root `frontend`) |
-| `RENDER_DEPLOY_HOOK_URL` | Optional — if Render auto-deploy disabled |
-
-**Do not** store service role key in Actions unless a workflow explicitly needs it.
-
-### 9.3 Workflow files (planned)
-
-**Decisão:** CI **e deploy separados** — quatro workflows.
-
-```text
-.github/workflows/
-  ci-backend.yml       # pull_request + push: dotnet test/build
-  ci-frontend.yml      # pull_request + push: npm lint/test
-  deploy-backend.yml   # push main: test → EF migrate → Render Wait for CI
-  deploy-frontend.yml  # push main: lint/test → vercel deploy --prod
-```
-
-| Workflow | Trigger | Paths (filtro) | Jobs |
+| Type | Name | Value | Purpose |
 |---|---|---|---|
-| `ci-backend.yml` | `pull_request`, `push` | `backend/**`, `docs/DATABASE.md`, workflows backend | `dotnet test`, build |
-| `ci-frontend.yml` | `pull_request`, `push` | `frontend/**`, workflows frontend | `npm run lint`, test |
-| `deploy-backend.yml` | `push` → `main` | `backend/**`, migrations | test → `dotnet ef database update` |
-| `deploy-frontend.yml` | `push` → `main` | `frontend/**` | lint/test → `vercel deploy --prod` |
+| `CNAME` | `api` | Render hostname (`xxx.onrender.com`) | API custom domain |
 
-**Vercel dashboard:**
+Enable **HTTPS** on Render after DNS verification.
 
-| Setting | Valor |
-|---|---|
-| GitHub App conectado | Sim — **PR previews** |
-| Production Branch | `main` |
-| **Auto-deploy production** | **Off** (prod via `deploy-frontend.yml`) |
-| Root Directory | `frontend` |
-| Env vars | Production + Preview no painel Vercel |
+### 10.4 DNS de email — SendGrid (v1, só envio)
 
-### 9.4 Platform dashboard settings (still required)
+Na **Vercel DNS** (sem MX — sem caixa postal):
 
-| Platform | Configure in dashboard |
-|---|---|
-| **Vercel** | Env vars, domains, root dir `frontend`, PR previews |
-| **Render** | Env vars, Dockerfile path, health check `/health`, **Wait for CI** |
-| **GitHub** | Secrets, branch protection requiring Actions on `main` |
-
-### 9.5 Example workflow responsibilities
-
-```text
-on pull_request:
-  ci-backend.yml  → dotnet test (if backend paths changed)
-  ci-frontend.yml → npm lint/test (if frontend paths changed)
-  reviewer/agent  → cross-stack component checklist (§9.7)
-
-on push to main:
-  deploy-backend.yml:
-    1. dotnet test
-    2. dotnet ef database update (SUPABASE_MIGRATION_CONNECTION_STRING, port 5432)
-    3. GitHub commit status → success
-  Render → deploy API (Wait for CI)
-  deploy-frontend.yml:
-    1. npm run lint / test
-    2. vercel deploy --prod (VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID)
-```
-
-Migrations must use **direct** connection (5432), not pooler.
-
-### 9.6 GitHub checklist
-
-- [ ] Repo created and pushed
-- [ ] `ci-backend.yml` and `ci-frontend.yml` with path filters
-- [ ] `deploy-backend.yml` and `deploy-frontend.yml` on `main`
-- [ ] Migration connection string + Vercel secrets in Actions
-- [ ] Vercel **production auto-deploy disabled** (prod via Actions only)
-- [ ] Both CI status checks visible on PR
-- [ ] Render + Vercel GitHub apps installed with repo access
-- [ ] Render **Wait for CI** enabled (gate on `deploy-backend.yml`)
-- [ ] Branch protection on `main` requires Backend CI + Frontend CI (recommended)
-
-### 9.7 Git flow — revisão de componentes (front + back)
-
-Além dos testes automatizados, **sempre** conferir atualizações pareadas antes do merge:
-
-| Se alterou… | Backend | Frontend |
+| Type | Name | Value |
 |---|---|---|
-| Endpoint / DTO / contrato | Controller, service, validação, auth | Proxy `server/api/**`, composable, tipos, UI |
-| Schema EF | Migration | Consumo API / formulários |
-| Auth / JWT / roles | Identity, policies | Proxy headers, login `app.*` |
-| Env var | Render + `backend/.env.example` | Vercel + `frontend/.env.example` |
-| Multi-tenant | EF filter + membership | Sem `tenantId` confiável do client |
-| Admin vs público | Rotas `[Authorize]` vs public API | Host `app.*` vs `{slug}.*` |
+| `CNAME` | `emXXXX` (SendGrid) | SendGrid target |
+| `CNAME` | `s1._domainkey` | SendGrid DKIM |
+| `CNAME` | `s2._domainkey` | SendGrid DKIM |
 
-Checklist: CI verde → pareamento front↔back → `.env.example` → `DATABASE.md` se schema → commits convencionais.
-
-Referência completa: [ARCHITECTURE §15](./ARCHITECTURE.md#git-flow--além-dos-testes-revisar-componentes-pareados) · [AGENT_GUIDE](./AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review).
+Add **SPF** TXT if SendGrid instructs (`include:sendgrid.net`).
 
 ---
 
-## 10. Linear (project management)
-
-Gestão de issues e sprints. Cada `DEV-xxx` do [BACKLOG.md](./BACKLOG.md) vira uma issue no Linear.
-
-| | |
-|---|---|
-| **Criar conta** | [linear.app/signup](https://linear.app/signup) |
-| **Painel** | [linear.app](https://linear.app) |
-| **Docs** | [linear.app/docs](https://linear.app/docs) |
-| **Import CSV** | Linear → **Settings → Import** (opcional) |
-| **Backlog fonte** | [docs/BACKLOG.md](./BACKLOG.md) |
-| **Template issue** | [BACKLOG.md § Linear import template](./BACKLOG.md#linear-import-template-copy-per-issue) |
-
-**Custo:** plano **Free** cobre workspace pequeno (issues ilimitadas no free tier atual — confirmar em [linear.app/pricing](https://linear.app/pricing)).
-
-### 10.1 Criar workspace
-
-1. Acesse [linear.app/signup](https://linear.app/signup) — login com GitHub (recomendado) ou Google
-2. **Create a workspace** — nome sugerido: `Online Portfolio` ou seu nome pessoal
-3. Escolha template **Software development** (ou blank)
-4. Convide só você no v1 — sem custo extra
-
-### 10.2 Estrutura sugerida (espelha BACKLOG.md)
-
-| BACKLOG.md | Linear |
-|---|---|
-| `## Epic 0 — Foundation` etc. | **Project** ou **Initiative** |
-| `### DEV-xxx` | **Issue** (título: `DEV-xxx — …`) |
-| Campo `Area` | **Label** (`backend`, `frontend`, `infra`, `security`, …) |
-| Campo `Priority` (P0–P3) | **Priority** (Urgent / High / Medium / Low) |
-| Campo `Phase` | **Cycle** ou **Milestone** |
-| `Depends on` | Relação **Blocked by** |
-| Acceptance criteria | Checklist na descrição da issue |
-
-**Labels a criar:** `infra` · `backend` · `frontend` · `database` · `devops` · `docs` · `unit-test` · `integration-test` · `security`
-
-### 10.3 Importar backlog (primeira sprint)
-
-**Opção A — Manual (recomendado para Epic 0):**
-
-1. Abra [BACKLOG.md](./BACKLOG.md) → Epic 0
-2. Marque **DEV-000** como **Done** (domínio já registrado)
-3. Crie issue **DEV-001 — Monorepo scaffold** como próxima (P0)
-4. Copie descrição + acceptance criteria do markdown
-5. Repita conforme avança — não precisa importar os 50+ issues de uma vez
-
-**Opção B — CSV:**
-
-Colunas: `ID`, `Title`, `Description`, `Priority`, `Labels`, `Epic` — export manual a partir do BACKLOG.
-
-**Opção C — Linear API:** script futuro; ver [developers.linear.app](https://developers.linear.app/docs/graphql/working-with-the-graphql-api).
-
-### 10.4 Integração com GitHub (opcional)
-
-1. Linear → **Settings → Integrations → GitHub**
-2. Conecte o repo `online-portfolio`
-3. Issues `DEV-xxx` linkam PRs automaticamente se o título/commit mencionar `DEV-001` etc.
-
-### 10.5 Ordem das issues (referência rápida)
-
-Ver [BACKLOG.md § Sprint order](./BACKLOG.md):
-
-```text
-Epic 0:  DEV-000 ✅ → DEV-001 → DEV-002 → …
-Epic 1.5: login + add user (após scaffold)
-Epic 1:  sites públicos por tenant
-```
-
-### 10.6 Linear checklist
-
-- [ ] Conta criada em [linear.app](https://linear.app)
-- [ ] Workspace criado
-- [ ] Labels de `Area` configuradas
-- [ ] DEV-000 marcado Done (domínio Registro.br)
-- [ ] DEV-001 criado como issue ativa (próximo passo)
-- [ ] (Opcional) GitHub integration ligada ao repo
-
----
-
-## 11. QuestPDF (no external config)
+## 11. QuestPDF (sem conta externa)
 
 QuestPDF is a **NuGet package** in the .NET API — no external account or API key.
 
@@ -950,59 +678,118 @@ See [QuestPDF license](https://www.questpdf.com/license/).
 
 ---
 
-## 12. Per-tenant setup (custom domains)
+## 12. Domínios custom por tenant (Fase 4)
 
-When onboarding an artist with their own domain (Phase 4):
+Quando um artista usar domínio próprio (ex.: `ana-art.com`) em vez de `{slug}.onlineportfolio.com.br`.
 
 ### 12.1 Platform (your side)
 
-1. Add domain in **Vercel → Project → Domains** (e.g. `ana-art.com`)
+1. Add domain in **Vercel → Project → Domains**
 2. Vercel shows DNS records for artist to configure
-3. After verification, store in database:
-   - `Tenant.CustomDomain = "ana-art.com"`
-   - `Tenant.CustomDomainVerifiedAt = now()`
+3. After verification, store in database: `Tenant.CustomDomain`, `CustomDomainVerifiedAt`
 4. Nuxt middleware resolves tenant from `Host` header
 
 ### 12.2 Artist (their side)
 
-At their domain registrar:
-
 | Record | Value |
 |---|---|
 | `CNAME` `www` | `cname.vercel-dns.com` |
-| `A` `@` or ALIAS | Vercel apex records (as shown in dashboard) |
+| `A` `@` or ALIAS | Vercel apex records (dashboard) |
 
-**No configuration needed** on Render or Supabase for tenant custom domains (public site only).
-
-Admin remains at `app.onlineportfolio.com.br` — artist domain is gallery-only.
+Admin permanece em `app.onlineportfolio.com.br` — domínio do artista é só galeria pública.
 
 ### 12.3 Subdomain tenants (default)
 
-For `ana.onlineportfolio.com.br`:
-
-- Wildcard DNS `*.onlineportfolio.com.br` → Vercel handles SSL automatically
-- Create tenant with `Slug = "ana"` in database — no extra Vercel config per tenant
+`ana.onlineportfolio.com.br` — wildcard `*.onlineportfolio.com.br` no Vercel; `Slug = "ana"` no banco.
 
 ---
 
-## 13. Future: Stripe (Phase 4)
+## 13. Stripe — cobrança SaaS (Fase 4, **opcional**)
 
-Not required for initial launch. When adding billing:
+**Status:** ⏸️ **Fora do escopo inicial** — **não cobrar no v1**; **não criar conta Stripe** até decidir cobrar ([DEV-403](./BACKLOG.md), P3 / skip).
 
-| Item | Configuration |
+### Decisão v1
+
+| Item | v1 (agora) | Futuro (se/quando cobrar) |
+|---|---|---|
+| Cobrança automática | **Não** | Checkout + assinatura |
+| Conta Stripe / PSP | **Não criar** | Avaliar na hora |
+| Planos / limites | Operador define manualmente (ou sem limite rígido) | `subscriptions` + webhooks |
+| Onboarding artista | Manual pelo operador | Pode continuar manual |
+
+### Para que serve (quando implementar)
+
+Processador de **pagamentos** para **assinatura mensal** dos artistas (tenants). Só entra se você passar a cobrar pela plataforma.
+
+| Função | O que faz |
 |---|---|
-| **Stripe account** | [dashboard.stripe.com](https://dashboard.stripe.com) |
-| **Products / prices** | One price per plan (Basic, Pro, etc.) |
-| **Webhook** | `https://api.onlineportfolio.com.br/api/v1/webhooks/stripe` on Render |
-| **Webhook secret** | Render env `Stripe__WebhookSecret` |
-| **API keys** | `Stripe__SecretKey` on Render only |
-| **Customer portal** | Enable in Stripe for self-service billing |
+| **Assinatura recorrente** | Artista paga mensalmente (planos Basic, Pro, …) |
+| **Checkout** | Link/página de pagamento |
+| **Customer Portal** | Artista atualiza pagamento, vê faturas, cancela |
+| **Webhooks** | API recebe eventos e atualiza `subscriptions` no Postgres |
+| **Limites por plano** | Ex.: nº de obras, domínio custom só no Pro |
+
+**Não substitui:** SendGrid, Vercel/Render, Identity (login).
+
+```text
+Artista → Checkout → webhook → API .NET → Postgres (subscription) → limites do tenant
+```
+
+### Brasil vs. expansão internacional
+
+| Cenário | Preferência | Motivo |
+|---|---|---|
+| **Só Brasil** | Asaas, Iugu ou similar | PIX recorrente, boleto, rotina fiscal BR |
+| **Exportar para fora do BR** | **Stripe** (ou Adyen) | Multi-moeda, cartões globais, mesma API em vários países |
+| **Brasil agora + global depois** | Stripe ou híbrido (avaliar na ADR) | Stripe cobre BR (PIX/cartão) e escala internacionalmente |
+
+**Resumo:** se a meta incluir **artistas fora do Brasil**, Stripe (ou gateway global equivalente) tende a ser **melhor** que PSP só-BR. Para **100% Brasil**, players locais podem ser mais práticos. Decisão **aberta** — implementar só quando cobrar.
+
+| | |
+|---|---|
+| **Criar conta** | [dashboard.stripe.com/register](https://dashboard.stripe.com/register) |
+| **Painel** | [dashboard.stripe.com](https://dashboard.stripe.com) |
+| **Docs** | [docs.stripe.com](https://docs.stripe.com/) |
+
+### Configuração prevista (se DEV-403 for feito)
+
+| Item | Onde |
+|---|---|
+| Products / Prices | Dashboard do PSP escolhido |
+| Webhook URL | `https://api.onlineportfolio.com.br/api/v1/webhooks/stripe` (ou equivalente) |
+| `Stripe__WebhookSecret` | Render env |
+| `Stripe__SecretKey` | Render env — **nunca** no frontend |
+
+### Stripe checklist (só quando cobrar)
+
+- [ ] Decisão PSP documentada (Stripe vs. local vs. híbrido)
+- [ ] Conta verificada; products/prices criados
+- [ ] Webhook + handler na API
+- [ ] Customer Portal habilitado (se Stripe)
+- [ ] Teste com cartões/métodos de teste
 
 ---
 
-## 14. Secrets & environment variable map
+## 14. Google Workspace (caixa postal operador — futuro)
 
-Where each value is configured and consumed:
+**Status:** ⏸️ Fora do v1. SendGrid cobre **envio**; Google Workspace cobre **inbox** (`hello@`, `marcelo@`, …).
+
+| | SendGrid (v1) | Google Workspace (futuro) |
+|---|---|---|
+| **Função** | App **envia** (`noreply@`, contato, convites) | Você **lê/responde** |
+| **Caixa postal** | Não | Sim |
+| **Custo** | Free tier (100/dia) | ~US$ 6–7/usuário/mês |
+
+| | |
+|---|---|
+| **Criar conta** | [workspace.google.com](https://workspace.google.com/) |
+| **Painel** | [admin.google.com](https://admin.google.com) |
+
+Ao adicionar Google, **mesclar SPF** com SendGrid: `v=spf1 include:sendgrid.net include:_spf.google.com ~all`
+
+---
+
+## 15. Secrets & environment variable map
 
 | Secret / config | Configured in | Used by |
 |---|---|---|
@@ -1013,105 +800,69 @@ Where each value is configured and consumed:
 | SendGrid API key | Render env | API email (invites + contact) |
 | SendGrid from email/name | Render env | API email headers |
 | `NUXT_PUBLIC_*` vars | Vercel env | Nuxt client + build |
+| Stripe keys (opcional) | Render env | Billing webhooks — só se DEV-403 |
 | Database password | Supabase (set at create) | Embedded in connection strings |
 
-### Never commit to git
-
-- All connection strings
-- `service_role` key
-- `Jwt__Secret`
-- SendGrid API key
-- Stripe keys (future)
-
-Use `.env.example` with placeholder values in `frontend/` and `backend/`.
+**Never commit:** connection strings, `service_role`, `Jwt__Secret`, SendGrid/Stripe keys. Use `.env.example` in `frontend/` and `backend/`.
 
 ---
 
-## 15. Phase checklists
+## 16. Phase checklists
 
-### Phase 0 — Foundation (contas + scaffold)
-
-| Provider | Configure |
-|---|---|
-| **Registro.br** | ✅ Domínio ativo — DNS no deploy ([§3.2](#32-dns-strategy-at-deploy-time)) |
-| **GitHub** | Repo monorepo + push ([§9](#9-github-cicd)) |
-| **Linear** | Workspace + DEV-001 issue ([§10](#10-linear-project-management)) |
-| **Supabase** | **Só `portfolio-prod`** — dev local via Docker ([ADR-015](./ARCHITECTURE.md#adr-015-deploy-somente-em-production)) |
-
-### Phase 1 — Public portfolio + contact form
+### Phase 0 — Foundation
 
 | Provider | Configure |
 |---|---|
-| **Domain DNS** | Nameservers Vercel + `api.` → Render ([§3](#3-domain--dns)) |
-| Supabase | Project, DB strings, apply EF migrations |
-| Render | API + health check + DB connection + SendGrid |
-| SendGrid | API key + sender/domain verification |
-| Vercel | Nuxt deploy + API URL env var + platform domains |
-| DNS | `api.`, apex, `app.`, wildcard → correct targets |
-| GitHub | Repo, CI migrations |
+| **Registro.br** | ✅ Domínio — DNS no deploy [§10](#10-dns-no-deploy) |
+| **GitHub** | Repo + workflows [§4](#4-github-cicd--actions) |
+| **Linear** | Workspace [§5](#5-linear-project-management) |
+| **Supabase** | `portfolio-prod` only [ADR-015](./ARCHITECTURE.md#adr-015-deploy-somente-em-production) |
 
-### Phase 1.5 — Admin login + add user
+### Phase 1 — Public portfolio + contact
 
 | Provider | Configure |
 |---|---|
-| Render | Identity + JWT env vars; auth endpoints |
-| SendGrid | Invite email templates |
-| Vercel | BFF proxy to API; `app.` domain |
+| Render, SendGrid, Vercel | [§7](#7-render-api) · [§8](#8-sendgrid-email) · [§9](#9-vercel-frontend) |
+| DNS | [§10](#10-dns-no-deploy) |
 
-### Phase 2 — Admin features (post-login)
-
-| Provider | Configure |
-|---|---|
-| Render | Artwork CRUD endpoints |
-| Vercel | Admin UI pages via proxy |
-
-### Phase 3 — Image uploads
+### Phase 4 — Custom domains (+ billing opcional)
 
 | Provider | Configure |
 |---|---|
-| Supabase | Storage buckets; public read |
-| Vercel | Proxy upload routes |
-| Render | Service role for Storage writes |
-
-### Phase 4 — Custom domains + billing
-
-| Provider | Configure |
-|---|---|
-| Vercel | Per-tenant domains (manual or Domains API) |
-| Stripe | Products, webhooks, API keys on Render |
-| DNS | Artist-owned domains → Vercel |
-| Google Workspace | Operator inbox at `@onlineportfolio.com.br` (optional) |
+| Vercel | Domínios por tenant [§12](#12-domínios-custom-por-tenant-fase-4) |
+| Stripe / PSP | **Opcional** — só se cobrar [§13](#13-stripe--cobrança-saas-fase-4-opcional) |
+| Google Workspace | Inbox operador (opcional) [§14](#14-google-workspace-caixa-postal-operador--futuro) |
 
 ---
 
-## 16. Troubleshooting
+## 17. Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| API 500 on DB connect | Wrong connection string or pooler mode | Use transaction pooler on 6543; check password and SSL |
-| EF migrations fail | Using pooler for migrations | Use direct connection on port 5432 |
-| Login 401 | Wrong password or inactive user | Check Identity seed; verify proxy forwards body |
-| CORS error browser → API | Direct browser call to Render | Use Nuxt `/api` proxy only |
-| SendGrid emails not arriving | Domain not authenticated | Complete DKIM/SPF; check SendGrid activity |
-| Cold API first request slow | Render free tier sleep | Expected; upgrade or accept for admin use |
-| Wildcard subdomain SSL fail | DNS wildcard missing | Add `*.onlineportfolio.com.br` CNAME; wait for propagation |
-| Storage upload fails | API path/tenant validation | Check multipart proxy + service role key |
-| JWT invalid in API | Wrong `Jwt__Secret` or expired token | Verify Render env matches API config |
+| API 500 on DB connect | Wrong connection string or pooler mode | Transaction pooler on 6543; check SSL |
+| EF migrations fail | Using pooler for migrations | Direct connection port 5432 |
+| Login 401 | Wrong password or inactive user | Identity seed; proxy forwards body |
+| CORS error | Direct browser → Render | Nuxt `/api` proxy only |
+| SendGrid emails not arriving | Domain not authenticated | DKIM/SPF [§10.4](#104-dns-de-email--sendgrid-v1-só-envio) |
+| Wildcard SSL fail | DNS wildcard missing | [§10.2](#102-dns-records-reference-vercel) |
+| JWT invalid | Wrong `Jwt__Secret` | Verify Render env |
 
 ---
 
 ## Quick reference — URLs to bookmark
 
+**Ordem de setup:** Registro.br → GitHub → Linear → Supabase → Render → SendGrid → Vercel → DNS.
+
 | Service | Criar conta | Painel | Docs |
 |---|---|---|---|
 | **Registro.br** | [registro.br](https://registro.br) | [Login](https://registro.br/login/) | [Ajuda](https://registro.br/ajuda) |
-| **GitHub** | [Signup](https://github.com/signup) | [github.com](https://github.com) | [Actions docs](https://docs.github.com/en/actions) |
+| **GitHub** | [Signup](https://github.com/signup) | [github.com](https://github.com) | [Actions](https://docs.github.com/en/actions) |
 | **Linear** | [Signup](https://linear.app/signup) | [linear.app](https://linear.app) | [Docs](https://linear.app/docs) |
 | **Supabase** | [Dashboard](https://supabase.com/dashboard) | [Dashboard](https://supabase.com/dashboard) | [Docs](https://supabase.com/docs) |
-| **Render** | [Register](https://dashboard.render.com/register) | [Dashboard](https://dashboard.render.com) | [Custom domains](https://render.com/docs/custom-domains) |
-| **Vercel** | [Signup](https://vercel.com/signup) | [Dashboard](https://vercel.com/dashboard) | [Domains](https://vercel.com/docs/projects/domains) |
+| **Render** | [Register](https://dashboard.render.com/register) | [Dashboard](https://dashboard.render.com) | [Domains](https://render.com/docs/custom-domains) |
 | **SendGrid** | [Signup](https://signup.sendgrid.com/) | [App](https://app.sendgrid.com) | [Sender auth](https://docs.sendgrid.com/ui/account-and-settings/how-to-set-up-domain-authentication) |
+| **Vercel** | [Signup](https://vercel.com/signup) | [Dashboard](https://vercel.com/dashboard) | [Domains](https://vercel.com/docs/projects/domains) |
+| **Stripe** (opcional) | [Register](https://dashboard.stripe.com/register) | [Dashboard](https://dashboard.stripe.com) | [Webhooks](https://docs.stripe.com/webhooks) |
 | **Google Workspace** | [workspace.google.com](https://workspace.google.com/) | [Admin](https://admin.google.com) | — |
-| **Stripe** (Fase 4) | [Register](https://dashboard.stripe.com/register) | [Dashboard](https://dashboard.stripe.com) | [Webhooks](https://docs.stripe.com/webhooks) |
 | **QuestPDF** | — | — | [License](https://www.questpdf.com/license/) |
-| **BACKLOG (issues)** | — | — | [BACKLOG.md](./BACKLOG.md) |
+| **BACKLOG** | — | — | [BACKLOG.md](./BACKLOG.md) |
