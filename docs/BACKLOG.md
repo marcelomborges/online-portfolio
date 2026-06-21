@@ -1,6 +1,8 @@
 # Development Backlog — Online Portfolio Platform
 
-Detailed activity list for building the multi-tenant artist portfolio SaaS. Structured for migration to [Linear](https://linear.app) (one issue per activity).
+Detailed activity list for building the multi-tenant artist portfolio SaaS.
+
+**Execução:** issues no [Linear](https://linear.app) (import feito). **Documentação:** este arquivo permanece fonte de verdade para agentes e PRs — mantenha `DEV-xxx` nos commits e descrições.
 
 **Related:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) · [DATABASE.md](./DATABASE.md)
 
@@ -10,25 +12,20 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS. Stru
 
 ---
 
-## How to use / migrate to Linear
+## How to use with Linear
 
-### Suggested Linear structure
-
-| Markdown | Linear |
+| BACKLOG.md | Linear |
 |---|---|
-| `## Epic` / Phase heading | **Project** or **Epic** |
-| `### DEV-xxx` | **Issue** |
-| `Area` field | **Label** (`backend`, `frontend`, `infra`, …) |
-| `Priority` field | **Priority** (Urgent / High / Medium / Low) |
-| `Phase` field | **Cycle** or **Milestone** |
-| `Depends on` | **Blocked by** relation |
-| Acceptance criteria bullets | Issue **description** checklist |
+| `## Epic` / Phase heading | **Project** |
+| `### DEV-xxx` | **Issue** (título `DEV-xxx — …`) |
+| `Area` | **Labels** (`backend`, `frontend`, `infra`, …) |
+| `Priority` P0–P3 | **Priority** |
+| `Depends on` | **Blocked by** |
+| Acceptance criteria | Descrição / checklist |
 
-### Import options
+**Sincronizar:** ao concluir trabalho, marque Done no Linear e atualize checkboxes aqui quando fizer sentido para docs.
 
-1. **Manual** — copy each `DEV-xxx` block as a Linear issue (recommended for first sprint).
-2. **CSV** — export columns: `ID`, `Title`, `Description`, `Priority`, `Labels`, `Epic`.
-3. **Linear API** — script from this file later.
+**Re-export CSV (opcional):** `python scripts/generate-linear-import.py` → `docs/BACKLOG_LINEAR.csv` (gitignored). Labels no CSV usam `", "` entre valores — exigido pelo importador Linear.
 
 ### Priority legend
 
@@ -1773,27 +1770,4 @@ DEV-207, DEV-400+, DEV-403, DEV-404, IT-010, SEC-009, SEC-010
 
 ---
 
-## Linear import template (copy per issue)
-
-```markdown
-**ID:** DEV-xxx
-**Epic:** [Phase name]
-**Area:** backend
-**Priority:** P1
-
-## Description
-...
-
-## Acceptance criteria
-- [ ] ...
-
-## Depends on
-DEV-yyy
-
-## References
-- docs/ARCHITECTURE.md §...
-```
-
----
-
-*Last updated: 2025-06-21 — provider setup index (DEV-012–014); align with EXTERNAL_PROVIDERS.md*
+*Last updated: 2025-06-21 — Linear import done; BACKLOG syncs with Linear + EXTERNAL_PROVIDERS*

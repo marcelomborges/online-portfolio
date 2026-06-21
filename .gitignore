@@ -1,0 +1,6 @@
+# Generated
+docs/BACKLOG_LINEAR.csv
+
+# Python
+__pycache__/
+*.py[cod]

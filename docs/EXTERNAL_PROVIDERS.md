@@ -61,7 +61,7 @@ Use esta tabela para abrir cada serviço na ordem. Marque conforme for concluind
 |---|---|---|---|---|---|
 | 1 | **Registro.br** | [registro.br](https://registro.br) | [Painel NIC](https://registro.br/login/) | [§3.1](#31-domínio-onlineportfoliocombr) | ✅ **Feito** — domínio comprado |
 | 2 | **GitHub** | [github.com/signup](https://github.com/signup) | [github.com](https://github.com) | [§4](#4-github-cicd--actions) | ⬜ Criar repo `online-portfolio` |
-| 3 | **Linear** | [linear.app/signup](https://linear.app/signup) | [linear.app](https://linear.app) | [§5](#5-linear-project-management) | ⬜ Workspace + import BACKLOG |
+| 3 | **Linear** | [linear.app/signup](https://linear.app/signup) | [linear.app](https://linear.app) | [§5](#5-linear-project-management) | ✅ Backlog importado |
 | 4 | **Supabase** | [supabase.com/dashboard](https://supabase.com/dashboard) | [Dashboard](https://supabase.com/dashboard) | [§6](#6-supabase) | ⬜ Projeto `portfolio-prod` |
 | 5 | **Render** | [dashboard.render.com/register](https://dashboard.render.com/register) | [Render](https://dashboard.render.com) | [§7](#7-render-api) | ⬜ Web service API |
 | 6 | **SendGrid** | [signup.sendgrid.com](https://signup.sendgrid.com/) | [SendGrid](https://app.sendgrid.com) | [§8](#8-sendgrid-email) | ⬜ API key (domínio no deploy §10) |
@@ -285,7 +285,6 @@ Gestão de issues e sprints. Cada `DEV-xxx` do [BACKLOG.md](./BACKLOG.md) vira u
 | **Docs** | [linear.app/docs](https://linear.app/docs) |
 | **Import CSV** | Linear → **Settings → Import** (opcional) |
 | **Backlog fonte** | [docs/BACKLOG.md](./BACKLOG.md) |
-| **Template issue** | [BACKLOG.md § Linear import template](./BACKLOG.md#linear-import-template-copy-per-issue) |
 
 **Custo:** plano **Free** cobre workspace pequeno — confirmar em [linear.app/pricing](https://linear.app/pricing).
 
