@@ -1,0 +1,104 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/ci-frontend.yml'
+      - '.github/workflows/deploy-frontend.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/ci-frontend.yml'
+      - '.github/workflows/deploy-frontend.yml'
+
+concurrency:
+  group: frontend-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lint-and-test:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (typecheck)
+        run: npm run lint
+
+      - name: Test with coverage
+        run: npm run test:coverage
+
+      - name: Format PR comment
+        if: github.event_name == 'pull_request'
+        working-directory: ${{ github.workspace }}
+        run: |
+          node <<'EOF'
+          const fs = require('node:fs')
+          const raw = JSON.parse(fs.readFileSync('frontend/coverage/coverage-final.json', 'utf8'))
+          const totals = {
+            statements: { covered: 0, total: 0 },
+            branches: { covered: 0, total: 0 },
+            functions: { covered: 0, total: 0 },
+            lines: { covered: 0, total: 0 },
+          }
+          for (const file of Object.values(raw)) {
+            for (const hit of Object.values(file.s || {})) {
+              totals.statements.total++
+              if (hit > 0) totals.statements.covered++
+            }
+            for (const hits of Object.values(file.b || {})) {
+              totals.branches.total += hits.length
+              totals.branches.covered += hits.filter((v) => v > 0).length
+            }
+            for (const hit of Object.values(file.f || {})) {
+              totals.functions.total++
+              if (hit > 0) totals.functions.covered++
+            }
+            for (const hit of Object.values(file.l || file.s || {})) {
+              totals.lines.total++
+              if (hit > 0) totals.lines.covered++
+            }
+          }
+          const pct = (m) =>
+            m.total === 0 ? '0% (0/0)' : `${((m.covered / m.total) * 100).toFixed(1)}% (${m.covered}/${m.total})`
+          const md = [
+            '## Frontend coverage',
+            '',
+            '| Metric | Coverage |',
+            '|--------|----------|',
+            `| Statements | ${pct(totals.statements)} |`,
+            `| Branches | ${pct(totals.branches)} |`,
+            `| Functions | ${pct(totals.functions)} |`,
+            `| Lines | ${pct(totals.lines)} |`,
+          ].join('\n')
+          fs.writeFileSync('frontend-coverage-comment.md', md)
+          EOF
+
+      - name: Publish coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: frontend-coverage
+          path: frontend-coverage-comment.md
