@@ -22,6 +22,7 @@ Credenciais via **ASP.NET Identity completo** (mesmo Postgres, migrations EF). `
 ## Table of contents
 
 1. [Design principles](#1-design-principles)
+   - [Primary keys & identifiers](#primary-keys--identifiers)
 2. [Auth vs application data](#2-auth-vs-application-data)
 3. [Entity relationship diagram](#3-entity-relationship-diagram)
 4. [Tables (initial migration)](#4-tables-initial-migration)
@@ -45,6 +46,45 @@ Credenciais via **ASP.NET Identity completo** (mesmo Postgres, migrations EF). `
 | **Auth** | **ASP.NET Identity completo** — `ApplicationUser` + `AspNetRoles` + JWT |
 | **Membership in DB** | `users`: `tenant_id` + `role` por conta |
 | **Slug uniqueness** | Global unique on `tenants.slug`; tenant-scoped slugs later on content tables |
+| **Primary keys** | **`uuid` / `Guid`** on all domain entities — see [Primary keys & identifiers](#primary-keys--identifiers) |
+
+### Primary keys & identifiers
+
+**Status:** Decided for v1 (SaaS multi-tenant + ASP.NET Identity `Guid`).
+
+| Topic | Decision |
+|---|---|
+| **PK type** | Postgres `uuid` (`gen_random_uuid()`), EF `Guid` — **not** `serial` / `bigint` for domain tables |
+| **Storage** | Native Postgres type `uuid` (16 bytes) — **not** `varchar` |
+| **API JSON** | `"id": "550e8400-e29b-41d4-a716-446655440000"` (string with hyphens) |
+| **Public URLs** | **`slug`** for tenant/site routing (`{slug}.onlineportfolio.com.br`); resource IDs in admin API as uuid |
+| **Foreign keys** | Same `uuid` references parent PK (`tenant_id → tenants.id`, `user_id → users.id`, …) — **expected** in many tables |
+
+#### Why uuid (not serial)
+
+- Aligns with **`IdentityUser<Guid>`** — no mixed PK types across FK graph.
+- **Non-guessable** IDs in admin API (reduces enumeration / IDOR risk vs sequential integers).
+- Safe for **distributed generation** (seeds, invites, Storage paths) without central sequences.
+- Standard for **Postgres SaaS** (Supabase, B2B products); performance cost is acceptable at this product’s scale.
+
+#### FKs in multiple tables
+
+Repeating `tenant_id` (or other FKs) across tenant-owned rows is **normal relational design**, not duplication of entity data — each row stores a **reference** (16 bytes), not a copy of the parent row. The same pattern would apply with `bigint` PKs.
+
+#### Performance
+
+- Random uuid (v4) indexes are slightly larger than `bigint`; inserts can fragment B-tree pages at **very high** write volume.
+- For expected tenant/artwork scale, this is **not** a v1 bottleneck.
+- **Indexes that matter more:** `(tenant_id)`, `(tenant_id, slug) UNIQUE`, FK columns indexed for joins.
+- **Future (only if metrics prove need):** UUID v7 (time-ordered) or `bigint` PK + `public_id uuid` on a specific hot table — not the default for the whole schema.
+
+#### Do not
+
+- Expose **sequential integer** PKs on public or multi-tenant admin APIs.
+- Use one “global uuid” as PK for unrelated entity types — each table has **its own** PK; FKs point to the correct parent.
+- Store uuid as untyped string in Postgres when `uuid` type exists.
+
+**Cross-ref:** [ARCHITECTURE.md §7](./ARCHITECTURE.md#7-database-supabase-postgresql--ef-core) · Identity `Guid` in [ARCHITECTURE §9](./ARCHITECTURE.md#9-authentication--authorization)
 
 ---
 
@@ -354,7 +394,7 @@ DbSet<ApplicationUser> Users   // AspNetUsers + perfil tenant
 
 | Topic | Approach |
 |---|---|
-| **PK** | `Guid` / `uuid` |
+| **PK** | `Guid` / `uuid` — see [§1 Primary keys & identifiers](./DATABASE.md#primary-keys--identifiers) |
 | **Timestamps** | `DateTimeOffset` UTC |
 | **Soft delete** | Not used v1; use `is_active` |
 | **Global filters** | `User` filtered by `tenant_id` when in tenant context; **no filter** on `User` for platform admin queries |

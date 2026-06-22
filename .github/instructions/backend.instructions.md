@@ -8,6 +8,7 @@ applyTo: "backend/**"
 - JWT issued and validated by API (`Jwt__Secret`); not Supabase JWT.
 - **Security:** `[Authorize(Roles)]` + tenant membership on every protected action; never trust body `TenantId`.
 - EF Core only for Postgres; snake_case columns; migrations via CI (`dotnet ef database update`), not on prod API startup.
+- **PKs:** `Guid` / Postgres `uuid` on domain entities; FKs reference parent PKs; public tenant URLs use **slug** — [DATABASE.md § PK](../docs/DATABASE.md#primary-keys--identifiers).
 - Multi-tenant: global query filters on tenant-scoped entities; validate membership on every write.
 - Platform routes: `[Authorize(Roles = "PlatformAdmin")]`.
 - Secrets (SendGrid, Supabase service role, JWT) — Render env only.

@@ -492,6 +492,10 @@ ConnectionStrings__Migration    → direct URL (migrations / CI only)
 - Scoped indexes: unique on `(TenantId, Slug)` not globally on `Slug`
 - All tenant-scoped entities include `TenantId`
 
+### Primary keys
+
+**Decided:** `uuid` / `Guid` PKs and FKs on domain entities; slugs for human-facing tenant URLs. Rationale, performance notes, and anti-patterns: [DATABASE.md § Primary keys & identifiers](./DATABASE.md#primary-keys--identifiers).
+
 ---
 
 ## 8. Storage (Supabase Storage)
@@ -1440,6 +1444,7 @@ Use `.env.example` in frontend and backend; never commit secrets.
 | Render cold starts | Accept vs upgrade to paid / Fly.io | Revisit after launch |
 | Multi-user per tenant | Owner invites Editors | v1: **PlatformAdmin** adds users; v2: Owner self-service |
 | Custom domain admin | `ana-art.com/admin` | Defer; use platform app host |
+| Primary keys (PK/FK) | `uuid` vs `serial` / hybrid | **Decidido** — `uuid`/`Guid` domain PKs; slug in public URLs — [DATABASE.md § PK](./DATABASE.md#primary-keys--identifiers) |
 
 ---
 
@@ -1515,6 +1520,7 @@ Email (ops):    Google Workspace (depois)                         →  caixa pos
 PDF:            QuestPDF                                          →  catálogo via API
 Domain:         onlineportfolio.com.br (Registro.br)
 Isolation:      TenantId + EF filters + Storage paths + API
+IDs:            uuid PK/FK (Guid); slug for public tenant URLs — DATABASE.md § PK
 CI/CD:          GitHub Actions → dotnet test + migrations; deploy **prod only** (ADR-015)
 Backend tests:  xUnit · Moq · FluentAssertions · Coverlet · dotnet test
 Environments:   local + PR preview + production (no staging deploy v1)
