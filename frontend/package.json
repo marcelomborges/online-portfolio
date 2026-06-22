@@ -8,14 +8,20 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "lint": "echo \"lint: configure in DEV-006\""
+    "lint": "nuxi typecheck",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage --coverage.provider=istanbul"
   },
   "dependencies": {
     "nuxt": "3.21.8",
     "vue": "3.5.38"
   },
   "devDependencies": {
-    "typescript": "^5.9.2"
+    "@types/node": "^26.0.0",
+    "@vitest/coverage-istanbul": "^3.2.4",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4",
+    "vue-tsc": "^2.2.12"
   },
   "overrides": {
     "vue": "3.5.38"
