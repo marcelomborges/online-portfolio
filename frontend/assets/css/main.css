@@ -1,0 +1,18 @@
+:root {
+  --op-font-sans: system-ui, sans-serif;
+  --op-font-mono: ui-monospace, monospace;
+  --op-color-text: #0f172a;
+  --op-color-muted: #64748b;
+  --op-color-border: #e2e8f0;
+  --op-color-surface: #f8fafc;
+  --op-color-primary: #0f172a;
+  --op-color-primary-hover: #1e293b;
+  --op-radius: 0.375rem;
+  --op-page-width: 40rem;
+}
+
+body {
+  color: var(--op-color-text);
+  font-family: var(--op-font-sans);
+  margin: 0;
+}

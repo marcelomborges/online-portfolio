@@ -1,0 +1,26 @@
+/**
+ * Área privada (app.*) — dark mode fixo para login, admin e rotas /platform/*.
+ * Não customizável por tenant. Tokens --op-* sobrescrevem os de :root em main.css.
+ */
+html.surface-app {
+  --op-color-bg: #0b1120;
+  --op-color-text: #e2e8f0;
+  --op-color-muted: #94a3b8;
+  --op-color-border: #334155;
+  --op-color-surface: #1e293b;
+  --op-color-primary: #3b82f6;
+  --op-color-primary-hover: #2563eb;
+}
+
+html.surface-app,
+html.surface-app body {
+  background-color: var(--op-color-bg);
+  color: var(--op-color-text);
+}
+
+html.surface-app code {
+  background: var(--op-color-surface);
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  padding: 0.1em 0.35em;
+}
