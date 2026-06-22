@@ -185,7 +185,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 - [x] Default layout + error page
 - [x] Nitro preset compatible with Vercel
 - [x] Estrutura de componentes por superfície (ADR-016) — ver [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md)
-- [x] Dark mode fixo na superfície `app` (`surface-app`, `assets/css/surfaces/app.css`)
+- [x] Dark mode estrutural (`surface-dark`, `assets/css/surfaces/dark.css`) — tudo exceto site público tenant
 
 ---
 
@@ -783,11 +783,11 @@ Tenant user (Owner/Editor)
 | **Priority** | P0 |
 | **Depends on** | DEV-155, DEV-154 |
 
-**Description:** Login UI at `/login` on **centralized** `app.{host}` — form posts via Nuxt proxy to `POST /auth/login`. UI em `components/app/` (padronizada, sem variantes por tenant — ADR-016). **Dark mode fixo** (`surface-app`) — ver [FRONTEND_COMPONENTS.md § Área privada](./FRONTEND_COMPONENTS.md#área-privada--dark-mode-fixo).
+**Description:** Login UI at `/login` on **centralized** `app.{host}` — form posts via Nuxt proxy to `POST /auth/login`. UI em `components/app/` (padronizada, sem variantes por tenant — ADR-016). **Dark mode** (`surface-dark`) — ver [FRONTEND_COMPONENTS.md § Dark mode estrutural](./FRONTEND_COMPONENTS.md#dark-mode-estrutural-tudo-exceto-site-público-do-tenant).
 
 **Acceptance criteria:**
 - [x] Page at `app.{host}/login` only (stub `pages/login.vue` + guard; not on tenant subdomains)
-- [x] Dark mode completo na superfície app (login + layout `app`)
+- [x] Dark mode (`surface-dark`) na superfície app
 - [ ] Email + password → proxy → API login
 - [ ] Error messages for invalid credentials (no user enumeration)
 - [ ] Redirect: Owner/Editor → `/admin`; PlatformAdmin → `/platform/tenants`
@@ -823,11 +823,11 @@ Tenant user (Owner/Editor)
 | **Priority** | P0 |
 | **Depends on** | DEV-157 |
 
-**Description:** `/admin` for tenant users; PlatformAdmin also has link to `/platform/tenants` for add user. Herda **dark mode** da superfície `app` (`layouts/app.vue`).
+**Description:** `/admin` for tenant users; PlatformAdmin also has link to `/platform/tenants` for add user. Herda **dark mode** estrutural (`surface-dark`, `layouts/app.vue`).
 
 **Acceptance criteria:**
 - [ ] Unauthenticated access → redirect `/login`
-- [x] Layout e tokens dark (`surface-app`) — mesmo padrão visual do login
+- [x] Layout e tokens dark (`surface-dark`) — mesmo padrão do login, platform e error
 - [ ] Shows logged-in email, role, tenant name (from `/auth/me`)
 - [ ] Logout control visible
 - [ ] **PlatformAdmin:** nav link to `/platform/tenants` (add user flow)

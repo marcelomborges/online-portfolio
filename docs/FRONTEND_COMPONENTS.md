@@ -62,26 +62,26 @@ frontend/
 │   │   └── layout/
 │   ├── platform/              # Marketing da plataforma (apex)
 │   └── public/
-│       ├── shared/            # Fallbacks: LandingHero.vue, ContactSection.vue, …
+│       ├── shared/            # Orquestração (TenantHome.vue) — não blocos de página
 │       └── tenants/
-│           ├── ana/           # Exemplo no repo
-│           ├── joao/          # Exemplo no repo (landing + contato custom)
-│           └── maria/         # Exemplo doc — novo cliente (ver § Onboard maria)
+│           ├── ana/           # LandingHero + ContactSection
+│           └── joao/          # LandingHero + ContactSection
 ├── layouts/
-│   ├── app.vue                # app.*
-│   ├── platform.vue           # apex
-│   ├── tenant.vue             # {slug}.*
-│   └── default.vue            # localhost / dev
+│   ├── app.vue                # app.* — admin/login
+│   ├── platform.vue           # apex — marketing
+│   ├── tenant.vue             # {slug}.* — site público do artista
+│   ├── structural.vue         # error + shells sem header tenant
+│   └── default.vue            # localhost / dev skeleton
 ├── assets/css/
 │   ├── main.css
 │   ├── surfaces/
-│   │   └── app.css            # dark mode fixo — área privada
-│   └── themes/                # por artista (site público)
+│   │   └── dark.css           # dark mode — tudo exceto site público tenant
+│   └── themes/                # ana.css, joao.css — só site público
 ├── middleware/
 │   └── resolve-host.global.ts # Host → surface + tenant slug
 └── composables/
     ├── useRequestSurface.ts   # app | platform | tenant | dev
-    ├── useSurfaceHtmlClass.ts # surface-app | theme-{slug} no <html>
+    ├── useSurfaceHtmlClass.ts # surface-dark | theme-{slug} no <html>
     ├── useTenantContext.ts    # slug (só em tenant público)
     └── useTenantComponent.ts  # resolve por slug + nome do arquivo (import.meta.glob)
 ```
@@ -90,37 +90,50 @@ frontend/
 
 | Local | Nome do arquivo | Resolvido por |
 |---|---|---|
-| `public/shared/` | `LandingHero.vue` | Fallback quando o slug não tem override |
-| `public/tenants/ana/` | `LandingHero.vue` | Slug `ana` |
-| `public/tenants/joao/` | `ContactSection.vue` | Slug `joao` — só o blocos que existirem na pasta |
-| `public/tenants/maria/` | `LandingHero.vue` | Slug `maria` — exemplo de onboarding (§ abaixo) |
+| `public/tenants/ana/` | `LandingHero.vue`, `ContactSection.vue` | Slug `ana` |
+| `public/tenants/joao/` | `LandingHero.vue`, `ContactSection.vue` | Slug `joao` |
+| `public/shared/` | `TenantHome.vue` | Orquestração da landing (`/` tenant) |
 
-**Sem prefixo Ana/Joao/Public no filename** — o slug vem da **pasta** (`tenants/{slug}/`).
+**Sem prefixo no filename** — o slug vem da **pasta** (`tenants/{slug}/`). Landing e contato são **exclusivos por tenant** (sem fallback genérico). Tenants no repo: **ana** e **joao** (seed DEV-002).
 
-**Admin/login (`components/app/`):** UI única em `app.onlineportfolio.com.br`. Tenant ativo vem do **usuário logado** (`/auth/me`), não do hostname. **Dark mode fixo** em toda a área privada — ver § Área privada (dark mode).
+**Admin/login (`components/app/`):** UI única em `app.onlineportfolio.com.br`. Tenant ativo vem do **usuário logado** (`/auth/me`), não do hostname. Ver § Dark mode estrutural.
 
 ---
 
-## Área privada — dark mode fixo
+## Dark mode estrutural (tudo exceto site público do tenant)
 
-**Decisão:** login, admin (`/admin`), platform admin (`/platform/*`) e qualquer rota em `app.onlineportfolio.com.br` usam **dark mode completo**, padronizado, **sem** customização por tenant.
+**Decisão:** somente as **páginas exclusivas do site público do artista** (`surface=tenant`, layout `tenant`, rotas como `/` e `/contact` em `{slug}.*`) usam tema claro/customizável (`theme-{slug}`). **Todo o resto** usa **dark mode completo** (`surface-dark`).
 
-| Superfície | Tema | Classe `<html>` | CSS |
-|---|---|---|---|
-| **App (privado)** | Dark fixo | `surface-app` | `assets/css/surfaces/app.css` |
-| **Tenant público** | Por artista | `theme-{slug}` | `assets/css/themes/{slug}.css` |
-| **Platform / dev** | Light (default) | — | `assets/css/main.css` |
+| Contexto | Tema | Classe `<html>` |
+|---|---|---|
+| **Site público tenant** (`ana.*`, `joao.*`) | Por artista | `theme-{slug}` |
+| **Admin, login, platform, dev skeleton** | Dark fixo | `surface-dark` |
+| **Páginas de erro** (`error.vue`) | Dark fixo | `surface-dark` (mesmo em host de tenant) |
+| **Layouts estruturais** (`app`, `platform`, `default`, `structural`) | Dark fixo | `surface-dark` |
+| **Componentes `app/*`** e `ui/*` em telas admin | Dark fixo | herdam `surface-dark` |
 
-Aplicado globalmente por `useSurfaceHtmlClass()` em `app.vue` conforme `useRequestSurface()`.
+CSS: `assets/css/surfaces/dark.css`. Aplicado por `useSurfaceHtmlClass()` em `app.vue`.
+
+**O que entra no dark:**
+
+- `app.onlineportfolio.com.br` — login, `/admin`, `/platform/*`
+- `onlineportfolio.com.br` — marketing da plataforma
+- Modo `dev` no localhost — skeleton
+- `error.vue` + `components/error/`
+- Futuras telas admin compartilhadas em `components/app/`
+
+**O que NÃO entra (só tenant público):**
+
+- `components/public/tenants/{slug}/` — blocos de página por artista
+- `assets/css/themes/{slug}.css` — paleta do artista
 
 **Regras:**
 
-- Componentes em `components/app/` e páginas com `layout: 'app'` herdam tokens `--op-*` do dark theme.
-- **Não** criar `themes/` por tenant para admin — não existe `theme-ana` no app.
-- **Não** expor toggle claro/escuro no admin no v1.
-- Site público (`{slug}.*`) continua 100% sob controle do artista (paletas + componentes por pasta).
+- **Não** customizar dark por tenant no admin.
+- **Não** toggle claro/escuro no v1.
+- Novos tenants no repo: pasta `tenants/{slug}/` + `themes/{slug}.css` (hoje: `ana`, `joao`).
 
-Preview local: `NUXT_PUBLIC_DEV_SURFACE=app` → http://localhost:3000/login (fundo escuro).
+Preview: `NUXT_PUBLIC_DEV_SURFACE=app` → `/login` escuro · `tenant` + `ana` → landing clara/custom.
 
 ---
 
@@ -145,10 +158,7 @@ Tokens em `main.css` (`--op-color-primary`, etc.). Cada tenant sobrescreve via c
 
 `utils/tenantComponentResolver.ts` usa `import.meta.glob` — **sem registry manual**.
 
-`useTenantComponent('LandingHero')` resolve:
-
-1. `components/public/tenants/{slug}/LandingHero.vue`
-2. fallback `components/public/shared/LandingHero.vue`
+`useTenantComponent('LandingHero')` resolve `components/public/tenants/{slug}/LandingHero.vue` — **obrigatório por tenant** (sem fallback genérico).
 
 ```vue
 <script setup lang="ts">
@@ -160,52 +170,22 @@ const LandingHero = useTenantComponent('LandingHero')
 </template>
 ```
 
-Para adicionar um novo cliente com UI própria:
+Para adicionar um novo tenant com UI própria (além de `ana` / `joao`):
 
 1. Criar pasta `components/public/tenants/{slug}/`
-2. Adicionar blocos nomeados (`LandingHero.vue`, `ContactSection.vue`, …)
+2. Adicionar `LandingHero.vue` e `ContactSection.vue` (e futuros blocos por página)
 3. Criar `assets/css/themes/{slug}.css` (carregado automaticamente)
 4. Estender `TenantComponentKey` em `types/frontend.ts` se for um **novo tipo** de bloco (ex.: `GalleryGrid`)
 
-Tenant **sem** pasta custom usa só `public/shared/`. Slugs com pasta no repo: `listTenantUiSlugs()` → `ana`, `joao` (e `maria` após criar os arquivos abaixo).
-
-### Exemplo — onboard do tenant `maria`
-
-Novo artista sem código duplicado de ana/joao — só pasta + tema:
-
-```text
-components/public/tenants/maria/
-  LandingHero.vue          # opcional — senão usa shared/LandingHero.vue
-  ContactSection.vue       # opcional
-
-assets/css/themes/maria.css
-```
-
-```css
-/* assets/css/themes/maria.css */
-.theme-maria {
-  --op-color-primary: #7c3aed;
-  --op-color-primary-hover: #6d28d9;
-  --op-color-surface: #faf5ff;
-}
-```
-
-Preview local no `.env`:
-
-```text
-NUXT_PUBLIC_DEV_SURFACE=tenant
-NUXT_PUBLIC_DEV_TENANT_SLUG=maria
-```
-
-Em produção: `maria.onlineportfolio.com.br` (após DNS + DEV-104 validar slug na API).
+Cada tenant ativo no repo precisa da pasta completa. Slugs: `listTenantUiSlugs()` → `ana`, `joao`.
 
 ### 3. Páginas compartilhadas, conteúdo variável
 
-Rotas como `/` e `/contact` são **as mesmas URLs** em todos os tenants; o middleware define o slug e a página escolhe o componente certo. Ana, João e Maria podem ter landings e formulários de contato totalmente diferentes sem duplicar rotas.
+Rotas como `/` e `/contact` são **as mesmas URLs** em todos os tenants; o middleware define o slug e a página escolhe o componente certo. Ana e João podem ter landings e formulários de contato totalmente diferentes sem duplicar rotas.
 
-### 4. Login/admin permanece igual (e sempre dark)
+### 4. Login/admin (sempre dark, nunca por tenant)
 
-`/login`, `/admin` e `/platform/*` em `app.onlineportfolio.com.br` usam `layouts/app.vue` + `components/app/` + classe `surface-app`. **Não** colocar lógica de tenant no login nem tema claro por artista.
+`/login`, `/admin` e `/platform/*` usam `layouts/app.vue` + `components/app/` + `surface-dark`. **Não** colocar lógica de tenant no login.
 
 ---
 
@@ -215,23 +195,16 @@ Em `localhost` não há subdomínio. Copie `frontend/.env.example` → `.env` e 
 
 | `NUXT_PUBLIC_DEV_SURFACE` | Simula em produção | O que abrir |
 |---|---|---|
-| `dev` | — | http://localhost:3000 — skeleton DEV-005 |
-| `tenant` | `{slug}.onlineportfolio.com.br` | `/` e `/contact` do slug (`NUXT_PUBLIC_DEV_TENANT_SLUG`) |
-| `platform` | `onlineportfolio.com.br` | Marketing da plataforma |
-| `app` | `app.onlineportfolio.com.br` | `/login` — admin padronizado, **dark mode fixo** |
+| `dev` | — | http://localhost:3000 — skeleton DEV-005 (**dark**) |
+| `tenant` | `{slug}.onlineportfolio.com.br` | `/` e `/contact` — tema do artista (`ana`, `joao`) |
+| `platform` | `onlineportfolio.com.br` | Marketing (**dark**) |
+| `app` | `app.onlineportfolio.com.br` | `/login` — admin (**dark**) |
 
 Exemplo site público da Ana:
 
 ```text
 NUXT_PUBLIC_DEV_SURFACE=tenant
 NUXT_PUBLIC_DEV_TENANT_SLUG=ana
-```
-
-Exemplo novo tenant Maria (após criar pasta `tenants/maria/` — ver § Onboard maria):
-
-```text
-NUXT_PUBLIC_DEV_SURFACE=tenant
-NUXT_PUBLIC_DEV_TENANT_SLUG=maria
 ```
 
 Reinicie o dev server após mudar o `.env`.

@@ -437,29 +437,30 @@ Browser → {tenant-host}/api/...  (Nuxt server route)
 |---|---|---|---|---|
 | **App** | `app.{platform}` | `layouts/app.vue` | `components/app/` | **Não** — UI padronizada |
 | **Platform** | apex / `www.` | `layouts/platform.vue` | `components/platform/` | N/A (produto) |
-| **Tenant público** | `{slug}.{platform}` ou domínio custom | `layouts/tenant.vue` | `components/public/shared/` + `components/public/tenants/{slug}/` | **Sim** |
+| **Tenant público** | `{slug}.{platform}` ou domínio custom | `layouts/tenant.vue` | `components/public/tenants/{slug}/` (+ `shared/` só orquestração) | **Sim** |
 | **Dev** | `localhost` | `layouts/default.vue` | `components/dev/` | Simulável via env |
 
 **Resolução de host:** middleware global `resolve-host.global.ts` define `surface` + `tenantSlug` (composable `useRequestSurface`). Em localhost: `NUXT_PUBLIC_DEV_SURFACE` e `NUXT_PUBLIC_DEV_TENANT_SLUG`.
 
 **Customização por tenant (site público):**
 
-1. **Componentes** — pasta `components/public/tenants/{slug}/{Bloco}.vue` com fallback `shared/{Bloco}.vue`. Descoberta automática via `import.meta.glob` (`tenantComponentResolver.ts`); resolução via `useTenantComponent('LandingHero')`.
+1. **Componentes** — pasta `components/public/tenants/{slug}/{Bloco}.vue` (landing, contato e demais blocos **exclusivos por tenant**). Orquestração compartilhada em `shared/` (ex.: `TenantHome`). Descoberta via `import.meta.glob` (`tenantComponentResolver.ts`); resolução via `useTenantComponent('LandingHero')`.
 2. **Temas** — tokens CSS `--op-*` em `assets/css/main.css`; override por tenant em `assets/css/themes/{slug}.css` + classe `theme-{slug}` no `<html>` (`useTenantTheme()`). CSS de temas carregado por plugin (sem editar `nuxt.config` por slug).
 3. **Rotas compartilhadas** — URLs iguais (`/`, `/contact`) em todos os tenants; conteúdo varia por slug, não por path duplicado.
-4. **Primitivos globais** — `components/ui/` (`UiButton`, `UiCard`) usam tokens `--op-*`; no app herdam dark via `surface-app`, no público herdam `theme-{slug}`.
+4. **Primitivos globais** — `components/ui/` (`UiButton`, `UiCard`) usam tokens `--op-*`; em rotas tenant herdam `theme-{slug}`, no resto herdam `surface-dark`.
 
-**Área privada — dark mode (fixo):**
+**Dark mode estrutural (fixo):**
 
-- Host `app.*` → classe `html.surface-app` + `assets/css/surfaces/app.css`.
-- Abrange login, `/admin`, `/platform/*` e futuras telas autenticadas.
-- **Não** customizável por tenant; artistas customizam só o site público.
+- **Exceção única:** site público do tenant (`surface=tenant`) → `theme-{slug}`.
+- **Todo o resto** → `html.surface-dark` + `assets/css/surfaces/dark.css`: admin, login, platform marketing, dev skeleton, `error.vue`, layouts `app`/`platform`/`default`/`structural`, componentes `app/*`.
+- Erros forçam `surface-dark` mesmo em host de tenant.
+- Tenants no repo: **ana** e **joao** apenas.
 
 **Regras obrigatórias:**
 
 - Código em `components/app/` **não** importa de `components/public/tenants/`.
-- Novo cliente com UI própria → pasta `public/tenants/{slug}/` + `themes/{slug}.css` — **sem** registry manual
-- Tenant sem pasta custom usa apenas `public/shared/` + tema default.
+- Novo cliente com UI própria → pasta `public/tenants/{slug}/` com `LandingHero.vue`, `ContactSection.vue`, etc. + `themes/{slug}.css` — **sem** registry manual
+- Tenant sem pasta no repo → erro em runtime (cada artista ativo precisa de UI versionada)
 
 **Consequências:**
 
@@ -470,7 +471,7 @@ Browser → {tenant-host}/api/...  (Nuxt server route)
 | Páginas finas + composables — menos repetição | Registry de `TenantComponentKey` cresce conforme novos blocos |
 | Alinha com SSG/ISR por slug (cache key inclui tenant) | DEV-104 ainda deve validar slug desconhecido na API (404) |
 
-**Implementação (skeleton):** ver `frontend/` — layouts `app`, `platform`, `tenant`; exemplos `tenants/ana/`, `tenants/joao/`; onboard doc `maria` em [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md).
+**Implementação (skeleton):** ver `frontend/` — layouts `app`, `platform`, `tenant`, `structural`; tenants `ana`, `joao`; guia [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md).
 
 **Quando reavaliar:**
 

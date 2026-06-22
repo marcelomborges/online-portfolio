@@ -146,12 +146,12 @@ npm run dev
 
 | `NUXT_PUBLIC_DEV_SURFACE` | Simula | Preview |
 |---|---|---|
-| `dev` (default) | — | Skeleton DEV-005 |
-| `tenant` | `{slug}.onlineportfolio.com.br` | Site do slug (`ana`, `joao`, ou `maria` após onboard) |
-| `platform` | `onlineportfolio.com.br` | Landing da plataforma |
-| `app` | `app.onlineportfolio.com.br` | Admin/login em `/login` — **dark mode fixo** |
+| `dev` (default) | — | Skeleton DEV-005 (**dark**) |
+| `tenant` | `{slug}.onlineportfolio.com.br` | Site do slug — **ana** ou **joao** (tema artista) |
+| `platform` | `onlineportfolio.com.br` | Marketing (**dark**) |
+| `app` | `app.onlineportfolio.com.br` | Admin/login (**dark**) |
 
-Detalhes e exemplo tenant **maria**: [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md) · [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant).
+Detalhes: [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md) · [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant).
 
 ---
 

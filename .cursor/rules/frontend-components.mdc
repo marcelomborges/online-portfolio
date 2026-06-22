@@ -10,23 +10,20 @@ alwaysApply: false
 
 ## Três superfícies (mesma app Nuxt)
 
-| Superfície | Host | Componentes |
+| Superfície | Host | Tema |
 |---|---|---|
-| **App** | `app.*` | `components/app/` — login/admin **padronizado**, **dark fixo** (`surface-app`); tenant via JWT |
-| **Platform** | apex | `components/platform/` |
-| **Tenant público** | `{slug}.*` | `public/tenants/{slug}/` → fallback `public/shared/` |
-
-Resolução pública: `import.meta.glob` em `utils/tenantComponentResolver.ts` — **nunca** registry manual por slug.
+| **Tenant público** | `{slug}.*` | `theme-{slug}` — só páginas do artista (ana, joao) |
+| **Todo o resto** | `app.*`, apex, dev, error | `surface-dark` fixo |
 
 ## Regras obrigatórias
 
-1. **Páginas finas** — rotas compartilhadas (`/`, `/contact`); conteúdo via `useTenantComponent('LandingHero')`.
-2. **Novo tenant UI** = pasta `components/public/tenants/{slug}/` + `{Bloco}.vue` + `assets/css/themes/{slug}.css`.
-3. **Nunca** customizar login/admin por tenant — só `components/app/`; **sempre dark** (`html.surface-app`).
-4. Filename = block key (`LandingHero.vue`), **sem** prefixo Ana/Joao/Public.
+1. **Dark (`surface-dark`)** — admin, login, platform, dev skeleton, `error.vue`, `components/app/`, layouts estruturais.
+2. **Tema artista** — somente rotas com layout `tenant` em `{slug}.*`.
+3. **Novo tenant UI** = `public/tenants/{slug}/` (`LandingHero`, `ContactSection`, …) + `themes/{slug}.css` (glob automático).
+4. **Nunca** customizar dark por tenant no admin.
 
 ## Anti-patterns
 
+- Tema claro em `/login`, `/admin`, `error.vue` ou marketing platform.
 - Imports manuais por tenant em composables.
-- Login em `{slug}.*` ou componentes de tenant em `components/app/`.
-- Registrar cada slug em `nuxt.config.ts`.
+- Login em `{slug}.*`.
