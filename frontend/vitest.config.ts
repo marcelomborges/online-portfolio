@@ -14,12 +14,12 @@ export default defineConfig({
     environment: 'node',
     include: ['**/*.{test,spec}.ts'],
     exclude: ['node_modules', '.nuxt', '.output', '.vercel'],
-  },
-  coverage: {
-    provider: 'istanbul',
-    reporter: ['text-summary', 'json-summary'],
-    reportsDirectory: './coverage',
-    include: ['utils/**/*.ts', 'composables/**/*.ts'],
-    exclude: ['**/*.{test,spec}.ts'],
+    coverage: {
+      provider: 'istanbul',
+      reporter: ['text-summary', 'json-summary', 'json'],
+      reportsDirectory: './coverage',
+      include: ['utils/**/*.ts', 'composables/**/*.ts'],
+      exclude: ['**/*.{test,spec}.ts'],
+    },
   },
 })
