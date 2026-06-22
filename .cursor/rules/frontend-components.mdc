@@ -1,0 +1,32 @@
+---
+description: Frontend component reuse — surfaces (app/platform/tenant), folder-based tenant UI
+globs: frontend/**
+alwaysApply: false
+---
+
+# Frontend — componentes e reutilização
+
+**Prioridade:** evitar código repetitivo. ADR: `docs/ARCHITECTURE.md` § [ADR-016](../docs/ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant). Guia: `docs/FRONTEND_COMPONENTS.md`.
+
+## Três superfícies (mesma app Nuxt)
+
+| Superfície | Host | Componentes |
+|---|---|---|
+| **App** | `app.*` | `components/app/` — login/admin **padronizado**, **dark fixo** (`surface-app`); tenant via JWT |
+| **Platform** | apex | `components/platform/` |
+| **Tenant público** | `{slug}.*` | `public/tenants/{slug}/` → fallback `public/shared/` |
+
+Resolução pública: `import.meta.glob` em `utils/tenantComponentResolver.ts` — **nunca** registry manual por slug.
+
+## Regras obrigatórias
+
+1. **Páginas finas** — rotas compartilhadas (`/`, `/contact`); conteúdo via `useTenantComponent('LandingHero')`.
+2. **Novo tenant UI** = pasta `components/public/tenants/{slug}/` + `{Bloco}.vue` + `assets/css/themes/{slug}.css`.
+3. **Nunca** customizar login/admin por tenant — só `components/app/`; **sempre dark** (`html.surface-app`).
+4. Filename = block key (`LandingHero.vue`), **sem** prefixo Ana/Joao/Public.
+
+## Anti-patterns
+
+- Imports manuais por tenant em composables.
+- Login em `{slug}.*` ou componentes de tenant em `components/app/`.
+- Registrar cada slug em `nuxt.config.ts`.

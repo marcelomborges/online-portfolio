@@ -19,6 +19,7 @@ Cursor: `.cursor/rules/security-first.mdc` · GitHub: `.github/instructions/secu
 | Topic | Document |
 |---|---|
 | Architecture & domains | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| Frontend surfaces & tenant UI | [ADR-016](docs/ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant) · [FRONTEND_COMPONENTS.md](docs/FRONTEND_COMPONENTS.md) |
 | Database & Identity | [docs/DATABASE.md](docs/DATABASE.md) |
 | Tasks (DEV-xxx) | [docs/BACKLOG.md](docs/BACKLOG.md) |
 | Commits | [docs/CONVENTIONAL_COMMITS.md](docs/CONVENTIONAL_COMMITS.md) |
@@ -27,7 +28,7 @@ Cursor: `.cursor/rules/security-first.mdc` · GitHub: `.github/instructions/secu
 
 ## Repository status
 
-Documentation phase complete. **No `frontend/` or `backend/` yet** — start with BACKLOG Epic 0 (DEV-001).
+Documentation phase complete. Monorepo scaffold in progress (`frontend/`, `backend/`). Frontend surfaces: [ADR-016](docs/ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant).
 
 ## Non-negotiables
 

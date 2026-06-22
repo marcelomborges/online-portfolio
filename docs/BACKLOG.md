@@ -4,7 +4,9 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS.
 
 **Execução:** issues no [Linear](https://linear.app) (import feito). **Documentação:** este arquivo permanece fonte de verdade para agentes e PRs — mantenha `DEV-xxx` nos commits e descrições.
 
-**Related:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) · [DATABASE.md](./DATABASE.md)
+**Related:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md) · [EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) · [DATABASE.md](./DATABASE.md)
+
+**Frontend (superfícies + UI por tenant):** [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant) — não exige ticket novo; escopo distribuído em DEV-005, DEV-104, DEV-105, DEV-109 e Epic 1.5 (DEV-155–158).
 
 **Domínio da plataforma:** `onlineportfolio.com.br` — ✅ registrado (Registro.br)
 
@@ -165,7 +167,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 
 ---
 
-### DEV-005 — Nuxt 3 frontend skeleton
+### DEV-005 — Nuxt 3 frontend skeleton ✅
 
 | Field | Value |
 |---|---|
@@ -173,14 +175,17 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Area** | frontend |
 | **Priority** | P0 |
 | **Depends on** | DEV-001 |
+| **Status** | ✅ Done |
 
-**Description:** Nuxt 3 app with TypeScript, basic layout, env config for API base URL.
+**Description:** Nuxt 3 app with TypeScript, basic layout, env config for API base URL. Inclui fundação [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant): pastas `app/` / `platform/` / `public/`, layouts por superfície, middleware `resolve-host`, composables de tenant.
 
 **Acceptance criteria:**
-- [ ] Nuxt 3 + TypeScript runs locally and in Docker
-- [ ] `NUXT_PUBLIC_API_BASE` and platform host env vars defined
-- [ ] Default layout + error page
-- [ ] Nitro preset compatible with Vercel
+- [x] Nuxt 3 + TypeScript runs locally and in Docker
+- [x] `NUXT_PUBLIC_API_BASE` and platform host env vars defined
+- [x] Default layout + error page
+- [x] Nitro preset compatible with Vercel
+- [x] Estrutura de componentes por superfície (ADR-016) — ver [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md)
+- [x] Dark mode fixo na superfície `app` (`surface-app`, `assets/css/surfaces/app.css`)
 
 ---
 
@@ -495,16 +500,17 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Area** | frontend |
 | **Priority** | P0 |
 | **Depends on** | DEV-005, DEV-103 |
+| **Status** | 🟡 Parcial — falta 404 para slug desconhecido (validação API) |
 
-**Description:** Resolve tenant pelo `Host` — subdomínio `{slug}.onlineportfolio.com.br` ou domínio custom. Host `app.*` e apex da plataforma **não** são tenants.
+**Description:** Resolve tenant pelo `Host` — subdomínio `{slug}.onlineportfolio.com.br` ou domínio custom. Host `app.*` e apex da plataforma **não** são tenants. Arquitetura de superfícies: [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant).
 
 **Acceptance criteria:**
-- [ ] Middleware: `{slug}.onlineportfolio.com.br` → tenant slug
-- [ ] Middleware: `app.*` → modo admin (sem tenant público)
-- [ ] Middleware: `onlineportfolio.com.br` → landing da plataforma
-- [ ] Dev local: slug configurável via host ou env
-- [ ] Tenant desconhecido → página 404
-- [ ] Composable expõe contexto do tenant nas páginas públicas
+- [x] Middleware: `{slug}.onlineportfolio.com.br` → tenant slug (`resolve-host.global.ts`)
+- [x] Middleware: `app.*` → modo admin (sem tenant público)
+- [x] Middleware: `onlineportfolio.com.br` → landing da plataforma
+- [x] Dev local: slug configurável via env (`NUXT_PUBLIC_DEV_SURFACE`, `NUXT_PUBLIC_DEV_TENANT_SLUG`)
+- [ ] Tenant desconhecido → página 404 (validar slug na API — DEV-103)
+- [x] Composable expõe contexto do tenant nas páginas públicas (`useRequestSurface`, `useTenantContext`)
 
 ---
 
@@ -516,14 +522,15 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Area** | frontend |
 | **Priority** | P0 |
 | **Depends on** | DEV-104, DEV-103 |
+| **Status** | 🟡 Parcial — landing skeleton + temas; dados reais e galeria pendentes (DEV-103) |
 
-**Description:** Site público por tenant em `{slug}.onlineportfolio.com.br` — home/landing, listagem de posts/obras, detalhe, about. Dados via proxy Nuxt → API. Layout base compartilhado; tema por tenant pode vir depois.
+**Description:** Site público por tenant em `{slug}.onlineportfolio.com.br` — home/landing, listagem de posts/obras, detalhe, about. Dados via proxy Nuxt → API. Layout base compartilhado; overrides por tenant em `components/public/tenants/{slug}/` — [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant).
 
 **Acceptance criteria:**
-- [ ] Landing/home por tenant
+- [x] Landing/home por tenant (skeleton: `useTenantComponent('LandingHero')`, exemplos Ana/João, temas CSS)
 - [ ] Listagem de posts/obras
 - [ ] Página de detalhe
-- [ ] About/contato a partir de `TenantSettings`
+- [ ] About/contato a partir de `TenantSettings` (stub `/contact` + `PublicContactSection` existe)
 - [ ] SSG ou ISR com cache key incluindo slug do tenant
 - [ ] Layout responsivo (mobile-first)
 - [ ] **Sem** rotas de admin/login neste host
@@ -566,7 +573,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 - [ ] `SendGrid__FromEmail` = `noreply@onlineportfolio.com.br`
 - [ ] Reply-To = email do visitante (artista responde direto)
 - [ ] Rate limiting on contact endpoint (basic)
-- [ ] Contact form UI on public site
+- [ ] Contact form UI on public site (`pages/contact.vue` + `useTenantComponent('ContactSection')` stub; override por tenant em `public/tenants/{slug}/`)
 - [ ] Dev: single sender OK; prod: domínio autenticado via [DEV-011](#dev-011--dns--https-production)
 - [ ] Honeypot or basic anti-spam field
 
@@ -600,11 +607,11 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Priority** | P2 |
 | **Depends on** | DEV-104 |
 
-**Description:** Landing page at `onlineportfolio.com.br` when host is apex (not tenant subdomain).
+**Description:** Landing page at `onlineportfolio.com.br` when host is apex (not tenant subdomain). Conteúdo em `components/platform/` — [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant).
 
 **Acceptance criteria:**
-- [ ] Apex host shows platform marketing content
-- [ ] Subdomain hosts show tenant gallery
+- [x] Apex host shows platform marketing content (stub: `PlatformLandingHero` via `index.vue` + surface `platform`)
+- [ ] Subdomain hosts show tenant gallery (depende DEV-105)
 - [ ] Clear CTA for artists (contact / waitlist)
 
 ---
@@ -757,12 +764,12 @@ Tenant user (Owner/Editor)
 | **Priority** | P0 |
 | **Depends on** | DEV-005 |
 
-**Description:** Server routes proxy `/api/**` to Render API. Route `app.localhost` / `app.onlineportfolio.com.br` to admin app. **No Supabase client.**
+**Description:** Server routes proxy `/api/**` to Render API. Route `app.localhost` / `app.onlineportfolio.com.br` to admin app. **No Supabase client.** Host routing parcial já em DEV-104 (`resolve-host.global.ts`); este ticket foca **proxy BFF** e guards de auth.
 
 **Acceptance criteria:**
 - [ ] Catch-all server route forwards to `NUXT_API_INTERNAL_BASE` / Render URL
 - [ ] Forwards cookies and auth headers to API
-- [ ] Middleware: host `app.*` → admin layout; `{slug}.*` → public (stub OK)
+- [x] Middleware: host `app.*` → admin layout; `{slug}.*` → public (stub — DEV-104)
 - [ ] Browser never calls `api.onlineportfolio.com.br` directly (admin)
 
 ---
@@ -776,10 +783,11 @@ Tenant user (Owner/Editor)
 | **Priority** | P0 |
 | **Depends on** | DEV-155, DEV-154 |
 
-**Description:** Login UI at `/login` on **centralized** `app.{host}` — form posts via Nuxt proxy to `POST /auth/login`.
+**Description:** Login UI at `/login` on **centralized** `app.{host}` — form posts via Nuxt proxy to `POST /auth/login`. UI em `components/app/` (padronizada, sem variantes por tenant — ADR-016). **Dark mode fixo** (`surface-app`) — ver [FRONTEND_COMPONENTS.md § Área privada](./FRONTEND_COMPONENTS.md#área-privada--dark-mode-fixo).
 
 **Acceptance criteria:**
-- [ ] Page at `app.{host}/login` only (not on tenant subdomains)
+- [x] Page at `app.{host}/login` only (stub `pages/login.vue` + guard; not on tenant subdomains)
+- [x] Dark mode completo na superfície app (login + layout `app`)
 - [ ] Email + password → proxy → API login
 - [ ] Error messages for invalid credentials (no user enumeration)
 - [ ] Redirect: Owner/Editor → `/admin`; PlatformAdmin → `/platform/tenants`
@@ -815,10 +823,11 @@ Tenant user (Owner/Editor)
 | **Priority** | P0 |
 | **Depends on** | DEV-157 |
 
-**Description:** `/admin` for tenant users; PlatformAdmin also has link to `/platform/tenants` for add user.
+**Description:** `/admin` for tenant users; PlatformAdmin also has link to `/platform/tenants` for add user. Herda **dark mode** da superfície `app` (`layouts/app.vue`).
 
 **Acceptance criteria:**
 - [ ] Unauthenticated access → redirect `/login`
+- [x] Layout e tokens dark (`surface-app`) — mesmo padrão visual do login
 - [ ] Shows logged-in email, role, tenant name (from `/auth/me`)
 - [ ] Logout control visible
 - [ ] **PlatformAdmin:** nav link to `/platform/tenants` (add user flow)

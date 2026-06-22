@@ -4,7 +4,7 @@ Multi-tenant SaaS platform for artist portfolios. One shared application stack s
 
 **Status:** Approved for implementation  
 **Platform domain:** `onlineportfolio.com.br` (`onlineportfolio.com` unavailable — registered via Registro.br)  
-**Last updated:** 2025-06-21 (Identity completo + JWT, BFF, admin centralizado)
+**Last updated:** 2025-06-21 (Identity completo + JWT, BFF, admin centralizado, ADR-016 frontend surfaces)
 
 ---
 
@@ -16,6 +16,7 @@ Multi-tenant SaaS platform for artist portfolios. One shared application stack s
 3. [Stack summary](#3-stack-summary)
 4. [Multi-tenant model](#4-multi-tenant-model)
 5. [Frontend (Nuxt + Vercel)](#5-frontend-nuxt--vercel)
+    - [ADR-016: Três superfícies e UI por tenant](#adr-016-três-superfícies-e-ui-por-tenant)
 6. [Backend (ASP.NET Core + Render)](#6-backend-aspnet-core--render)
 7. [Database (Supabase PostgreSQL + EF Core)](#7-database-supabase-postgresql--ef-core)
 8. [Storage (Supabase Storage)](#8-storage-supabase-storage)
@@ -47,7 +48,7 @@ Multi-tenant SaaS platform for artist portfolios. One shared application stack s
 Sell portfolio sites to many artists. Each tenant gets:
 
 - A **public site** per domain/subdomain: landing + posts/galeria (ex.: `ana.onlineportfolio.com.br`)
-- Optional **visual identity per tenant** on the public site (themes/layouts distintos no futuro)
+- Optional **visual identity per tenant** on the public site (themes, layouts, componentes por slug) — ver [ADR-016](#adr-016-três-superfícies-e-ui-por-tenant)
 - An **admin area** shared and standardized on `app.onlineportfolio.com.br`
 - Optional custom domain for the public site (e.g. `ana-art.com` → same content as `ana.`)
 - Platform subdomain fallback (e.g. `ana.onlineportfolio.com.br`)
@@ -147,7 +148,7 @@ Referência do que discutimos — **uma app Nuxt**, roteamento pelo `Host`:
 
 | Superfície | Por tenant? | Domínio | Observação |
 |---|---|---|---|
-| Landing + posts/galeria | **Sim** | `{slug}.onlineportfolio.com.br` ou domínio custom | Layout/tema pode variar por tenant depois |
+| Landing + posts/galeria | **Sim** | `{slug}.onlineportfolio.com.br` ou domínio custom | Layout/tema/componentes por tenant — [ADR-016](#adr-016-três-superfícies-e-ui-por-tenant) |
 | Admin (login, CRUD, settings) | **Não** — UI única | `app.onlineportfolio.com.br` | Tenant vem da API após login, não do hostname |
 | Login | **Não** | `app.../login` only | Não existe `ana./login` no v1 |
 | API | **Não** | `api...` (via proxy) | Browser não chama Render direto |
@@ -373,7 +374,7 @@ Each tenant has **one or more** admin users (`Owner`, later `Editor`). Você (Pl
 - Resolução de tenant pelo `Host` **somente no site público**
 - **Todo** tráfego admin e **todos** os dados de app: rotas server do Nuxt → API (padrão BFF)
 - **Exceção:** exibição de imagens públicas via URL CDN do Storage em `<img>` (somente leitura)
-- **Futuro:** identidade visual distinta por tenant no site público (temas/layouts); admin continua igual
+- **Componentes:** três superfícies isoladas no monorepo (`app/`, `platform/`, `public/`) — admin/login padronizado; site público customizável por tenant — [ADR-016](#adr-016-três-superfícies-e-ui-por-tenant) · guia operacional [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md)
 
 ### Rendering strategy
 
@@ -419,6 +420,63 @@ Browser → {tenant-host}/api/...  (Nuxt server route)
 - Wildcard DNS for subdomains: `*.onlineportfolio.com.br`
 - Custom domains added per tenant (manual initially, Vercel Domains API later)
 - Check plan limits on number of domains per project
+
+### ADR-016: Três superfícies e UI por tenant
+
+| | |
+|---|---|
+| **Status** | ✅ Aceito |
+| **Data** | 2025-06-21 |
+| **Contexto** | Uma única app Nuxt serve marketing da plataforma, sites públicos de N tenants e admin/login centralizado em `app.*`. Clientes podem precisar de landings, páginas de contato e paletas **diferentes**, mas login e painel admin devem permanecer **idênticos** para todos. Risco a evitar: código duplicado entre tenants e mistura de UI pública com UI de admin no mesmo diretório. |
+| **Decisão** | Organizar o frontend em **três superfícies** (modos) resolvidas pelo `Host`, com **customização por tenant somente no site público**, via pastas de componentes + temas CSS. Login/admin **nunca** varia por tenant. |
+| **Alternativas rejeitadas** | (1) Deploy Nuxt separado por artista — custo operacional e perda de monorepo. (2) Um único diretório `components/` sem separação — dificulta manutenção e incentiva copy-paste. (3) Tema/login por subdomínio de tenant (`ana./login`) — já rejeitado no v1 ([§2.1](#21-mapa-de-domínios-e-superfícies-do-produto)). (4) Config de UI só no banco (JSON de layout) — adiar; código versionado no repo é fonte de verdade no v1. |
+
+**Superfícies (mesmo deploy Vercel):**
+
+| Superfície | `Host` | Layout Nuxt | Pasta de componentes | Custom por tenant? |
+|---|---|---|---|---|
+| **App** | `app.{platform}` | `layouts/app.vue` | `components/app/` | **Não** — UI padronizada |
+| **Platform** | apex / `www.` | `layouts/platform.vue` | `components/platform/` | N/A (produto) |
+| **Tenant público** | `{slug}.{platform}` ou domínio custom | `layouts/tenant.vue` | `components/public/shared/` + `components/public/tenants/{slug}/` | **Sim** |
+| **Dev** | `localhost` | `layouts/default.vue` | `components/dev/` | Simulável via env |
+
+**Resolução de host:** middleware global `resolve-host.global.ts` define `surface` + `tenantSlug` (composable `useRequestSurface`). Em localhost: `NUXT_PUBLIC_DEV_SURFACE` e `NUXT_PUBLIC_DEV_TENANT_SLUG`.
+
+**Customização por tenant (site público):**
+
+1. **Componentes** — pasta `components/public/tenants/{slug}/{Bloco}.vue` com fallback `shared/{Bloco}.vue`. Descoberta automática via `import.meta.glob` (`tenantComponentResolver.ts`); resolução via `useTenantComponent('LandingHero')`.
+2. **Temas** — tokens CSS `--op-*` em `assets/css/main.css`; override por tenant em `assets/css/themes/{slug}.css` + classe `theme-{slug}` no `<html>` (`useTenantTheme()`). CSS de temas carregado por plugin (sem editar `nuxt.config` por slug).
+3. **Rotas compartilhadas** — URLs iguais (`/`, `/contact`) em todos os tenants; conteúdo varia por slug, não por path duplicado.
+4. **Primitivos globais** — `components/ui/` (`UiButton`, `UiCard`) usam tokens `--op-*`; no app herdam dark via `surface-app`, no público herdam `theme-{slug}`.
+
+**Área privada — dark mode (fixo):**
+
+- Host `app.*` → classe `html.surface-app` + `assets/css/surfaces/app.css`.
+- Abrange login, `/admin`, `/platform/*` e futuras telas autenticadas.
+- **Não** customizável por tenant; artistas customizam só o site público.
+
+**Regras obrigatórias:**
+
+- Código em `components/app/` **não** importa de `components/public/tenants/`.
+- Novo cliente com UI própria → pasta `public/tenants/{slug}/` + `themes/{slug}.css` — **sem** registry manual
+- Tenant sem pasta custom usa apenas `public/shared/` + tema default.
+
+**Consequências:**
+
+| Positivo | Trade-off |
+|---|---|
+| Ana e João podem ter landings/contato/paletas totalmente distintas | Cada tenant “premium” exige pasta no repo (PR) — não é drag-and-drop no admin |
+| Login/admin único — menos superfície de bugs de auth | `@nuxt/ui` não adotado ainda; primitivos locais em `ui/` |
+| Páginas finas + composables — menos repetição | Registry de `TenantComponentKey` cresce conforme novos blocos |
+| Alinha com SSG/ISR por slug (cache key inclui tenant) | DEV-104 ainda deve validar slug desconhecido na API (404) |
+
+**Implementação (skeleton):** ver `frontend/` — layouts `app`, `platform`, `tenant`; exemplos `tenants/ana/`, `tenants/joao/`; onboard doc `maria` em [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md).
+
+**Quando reavaliar:**
+
+- Muitos tenants com UI 100% custom → CMS ou config de blocos no banco (Fase 2+).
+- Adoção de `@nuxt/ui` ou Tailwind — registrar ADR filho ou emendar este doc.
+- White-label total do admin — **fora de escopo** no v1; admin permanece dark mode único.
 
 ---
 
@@ -1358,14 +1416,24 @@ online-portfolio/
 ├── docker-compose.yml
 ├── docker-compose.override.yml      # local overrides (gitignored optional)
 ├── docs/
-│   ├── ARCHITECTURE.md              # system design and decisions
+│   ├── ARCHITECTURE.md              # system design and decisions (ADR-015, ADR-016, …)
+│   ├── FRONTEND_COMPONENTS.md       # Nuxt surfaces, tenant UI, composables
 │   ├── EXTERNAL_PROVIDERS.md        # third-party setup (Supabase, Vercel, etc.)
 │   ├── BACKLOG.md                   # development tasks (Linear-ready)
 │   └── DATABASE.md                  # PostgreSQL schema (multi-tenant)
 ├── frontend/                        # Nuxt 3 → Vercel
-│   ├── pages/
+│   ├── pages/                       # rotas compartilhadas; conteúdo varia por surface/tenant
 │   ├── components/
-│   ├── middleware/                  # tenant resolution
+│   │   ├── ui/                      # primitivos globais (Ui*)
+│   │   ├── app/                     # admin + login (padronizado)
+│   │   ├── platform/                # marketing apex
+│   │   └── public/
+│   │       ├── shared/              # defaults tenant (Public*)
+│   │       └── tenants/{slug}/      # overrides por cliente (Ana*, Joao*, …)
+│   ├── layouts/                     # app | platform | tenant | default
+│   ├── assets/css/themes/           # paletas por tenant (.theme-{slug})
+│   ├── composables/                 # useRequestSurface, useTenantComponent, …
+│   ├── middleware/                  # resolve-host.global.ts
 │   └── server/api/                  # proxy to backend API
 ├── backend/                         # ASP.NET Core → Render
 │   ├── OnlinePortfolio.Api.slnx
@@ -1392,7 +1460,11 @@ NUXT_API_INTERNAL_BASE=http://api:8080          # server-side proxy target (Comp
 NUXT_PUBLIC_API_BASE=/api                       # browser hits Nuxt proxy, not Render directly
 NUXT_PUBLIC_PLATFORM_HOST=onlineportfolio.com.br
 NUXT_PUBLIC_APP_HOST=app.onlineportfolio.com.br
+NUXT_PUBLIC_DEV_SURFACE=dev              # dev | app | platform | tenant (localhost only)
+NUXT_PUBLIC_DEV_TENANT_SLUG=ana          # when DEV_SURFACE=tenant
 ```
+
+Ver [ADR-016 § Dev local](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant) e [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md).
 
 No Supabase keys in the frontend in v1.
 
@@ -1445,6 +1517,7 @@ Use `.env.example` in frontend and backend; never commit secrets.
 | Multi-user per tenant | Owner invites Editors | v1: **PlatformAdmin** adds users; v2: Owner self-service |
 | Custom domain admin | `ana-art.com/admin` | Defer; use platform app host |
 | Primary keys (PK/FK) | `uuid` vs `serial` / hybrid | **Decidido** — `uuid`/`Guid` domain PKs; slug in public URLs — [DATABASE.md § PK](./DATABASE.md#primary-keys--identifiers) |
+| UI pública por tenant | Monolito vs deploy por artista vs só DB | **Decidido** — mesma app Nuxt; pastas `public/tenants/{slug}/` + temas CSS — [ADR-016 §5](#adr-016-três-superfícies-e-ui-por-tenant) |
 
 ---
 
@@ -1522,6 +1595,7 @@ Domain:         onlineportfolio.com.br (Registro.br)
 Isolation:      TenantId + EF filters + Storage paths + API
 IDs:            uuid PK/FK (Guid); slug for public tenant URLs — DATABASE.md § PK
 CI/CD:          GitHub Actions → dotnet test + migrations; deploy **prod only** (ADR-015)
+Frontend UI:    3 surfaces (app/platform/tenant); per-tenant public components + CSS themes (ADR-016)
 Backend tests:  xUnit · Moq · FluentAssertions · Coverlet · dotnet test
 Environments:   local + PR preview + production (no staging deploy v1)
 Local dev:      docker compose up

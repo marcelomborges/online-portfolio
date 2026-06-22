@@ -128,6 +128,31 @@ npm run dev
 
 → http://localhost:3000
 
+Build (valida preset Vercel):
+
+```cmd
+npm run build
+```
+
+Env: `NUXT_PUBLIC_API_BASE`, `NUXT_PUBLIC_PLATFORM_HOST`, `NUXT_PUBLIC_APP_HOST`, `NUXT_API_INTERNAL_BASE` — ver `frontend/.env.example`.
+
+**Simular hosts em localhost** — copie `frontend/.env.example` → `.env`. Comentários detalhados de cada `DEV_SURFACE` estão no `.env.example`.
+
+```cmd
+set NUXT_PUBLIC_DEV_SURFACE=tenant
+set NUXT_PUBLIC_DEV_TENANT_SLUG=ana
+npm run dev
+```
+
+| `NUXT_PUBLIC_DEV_SURFACE` | Simula | Preview |
+|---|---|---|
+| `dev` (default) | — | Skeleton DEV-005 |
+| `tenant` | `{slug}.onlineportfolio.com.br` | Site do slug (`ana`, `joao`, ou `maria` após onboard) |
+| `platform` | `onlineportfolio.com.br` | Landing da plataforma |
+| `app` | `app.onlineportfolio.com.br` | Admin/login em `/login` — **dark mode fixo** |
+
+Detalhes e exemplo tenant **maria**: [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md) · [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant).
+
 ---
 
 ## EF Core migrations

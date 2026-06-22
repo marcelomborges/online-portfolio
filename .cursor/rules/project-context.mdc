@@ -16,7 +16,8 @@ alwaysApply: true
 - **Auth:** ASP.NET Identity **completo** + JWT on API; roles via `AspNetRoles` / `AspNetUserRoles`
 - **No** Supabase Auth, **no** `@nuxtjs/supabase`, **no** anon key in frontend
 - **Admin login:** only `app.onlineportfolio.com.br` — not tenant subdomains
-- **Public sites:** `{slug}.onlineportfolio.com.br` per tenant
+- **Public sites:** `{slug}.onlineportfolio.com.br` per tenant — UI custom in `components/public/tenants/{slug}/` only ([ADR-016](docs/ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant))
+- **Admin UI:** standardized in `components/app/` — never per-tenant
 - **Email v1:** SendGrid `noreply@` send-only — no mailbox
 - **Secrets:** never commit `.env` or API keys; service role only on backend
 
@@ -45,4 +46,4 @@ Conventional Commits — see `.cursor/rules/conventional-commits.mdc`
 
 ## Docs map
 
-`docs/AGENT_GUIDE.md` · `docs/ARCHITECTURE.md` §18 · `docs/DATABASE.md` · `docs/BACKLOG.md` SEC-*
+`docs/AGENT_GUIDE.md` · `docs/ARCHITECTURE.md` §18 · `docs/FRONTEND_COMPONENTS.md` · [ADR-016](docs/ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant) · `docs/DATABASE.md` · `docs/BACKLOG.md` SEC-*

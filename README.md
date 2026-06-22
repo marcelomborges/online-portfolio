@@ -56,7 +56,11 @@ docker compose exec db psql -U portfolio -d portfolio_dev -c "SELECT slug, displ
 ```bash
 # Frontend
 cd frontend && cp .env.example .env && npm install && npm run dev
+```
 
+→ http://localhost:3000 · erro customizado em `/__nuxt_error` ou rota inexistente (404)
+
+```bash
 # Backend
 cd backend/OnlinePortfolio.Api && cp .env.example .env && dotnet run
 ```
@@ -81,7 +85,8 @@ Stack: **xUnit** · **Moq** · **FluentAssertions** · **Coverlet** · `dotnet t
 | Doc | Description |
 |---|---|
 | [DEV_COMMANDS.md](docs/DEV_COMMANDS.md) | **Comandos locais** (Docker, nativo, migrations) |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design and decisions |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design and decisions (ADR-015, ADR-016, …) |
+| [FRONTEND_COMPONENTS.md](docs/FRONTEND_COMPONENTS.md) | Nuxt surfaces, tenant UI, composables |
 | [DATABASE.md](docs/DATABASE.md) | PostgreSQL schema |
 | [BACKLOG.md](docs/BACKLOG.md) | Development tasks (Linear) |
 | [EXTERNAL_PROVIDERS.md](docs/EXTERNAL_PROVIDERS.md) | Third-party setup |

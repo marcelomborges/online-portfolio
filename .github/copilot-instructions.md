@@ -57,7 +57,7 @@ Path instructions: `.github/instructions/git-workflow.instructions.md`
 - Minimal scope; match BACKLOG acceptance criteria.
 - Backend: EF Core, snake_case Postgres columns, `/api/v1/` versioning.
 - Backend tests: xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` ([ARCHITECTURE §23](../docs/ARCHITECTURE.md#23-testing)).
-- Frontend: Nuxt 3, host-based routing (app vs slug vs apex).
+- Frontend: Nuxt 3, host-based routing; **3 surfaces** (app/platform/tenant), per-tenant public UI — [ADR-016](../docs/ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant) · [FRONTEND_COMPONENTS.md](../docs/FRONTEND_COMPONENTS.md).
 - Product/docs text: Brazilian Portuguese. Commits and code identifiers: English.
 
 ## Avoid

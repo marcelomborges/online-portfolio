@@ -4,6 +4,7 @@ applyTo: "frontend/**"
 
 # Frontend (Nuxt 3)
 
+- **Components first:** thin pages; separate **app** (`components/app/`), **platform**, **tenant public** (`public/shared` + `public/tenants/{slug}`); per-tenant themes via CSS `--op-*`. ADR: [ARCHITECTURE § ADR-016](../docs/ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant). Guia: `docs/FRONTEND_COMPONENTS.md`.
 - **BFF:** all API calls via Nuxt server routes (`/api/**` proxy); browser uses relative `/api`, not `api.onlineportfolio.com.br`.
 - Forward auth cookies/headers to backend on proxied requests; never log tokens.
 - **Security:** no secrets in `NUXT_PUBLIC_*`; no `v-html` on user content without sanitization.

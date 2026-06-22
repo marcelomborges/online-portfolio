@@ -179,6 +179,7 @@ Agents: on every PR, explicitly verify the pairing table even when only one side
 - **Commits, API names, code identifiers:** English.
 - Backend: EF Core, snake_case columns in Postgres, OpenAPI on API.
 - Backend tests: xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` ([ARCHITECTURE §23](./ARCHITECTURE.md#23-testing)).
+- **Frontend:** thin pages, three surfaces (app/platform/tenant), tenant UI in `public/tenants/{slug}/` — [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant) · [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md).
 - Do not over-engineer helpers or tests unless requested or in BACKLOG.
 
 ---
