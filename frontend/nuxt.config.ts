@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
 
-  css: ['~/assets/css/main.css', '~/assets/css/surfaces/app.css'],
+  css: ['~/assets/css/main.css', '~/assets/css/surfaces/dark.css'],
 
   components: [
     { path: '~/components/ui', pathPrefix: false },
@@ -10,11 +10,7 @@ export default defineNuxtConfig({
     { path: '~/components/dev', pathPrefix: false },
     { path: '~/components/app', pathPrefix: false },
     { path: '~/components/platform', pathPrefix: false },
-    {
-      path: '~/components/public/shared',
-      pathPrefix: false,
-      ignore: ['LandingHero.vue', 'ContactSection.vue'],
-    },
+    { path: '~/components/public/shared', pathPrefix: false },
   ],
 
   compatibilityDate: '2025-06-21',

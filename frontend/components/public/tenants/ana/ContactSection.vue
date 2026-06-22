@@ -1,26 +1,22 @@
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
   title?: string
-  subtitle?: string
 }>()
-
-const { slug } = useTenantContext()
-const displayTitle = computed(
-  () => props.title ?? slug.charAt(0).toUpperCase() + slug.slice(1),
-)
 </script>
 
 <template>
-  <section class="landing-hero">
-    <p class="landing-hero__eyebrow">Portfolio</p>
-    <h1>{{ displayTitle }}</h1>
-    <p v-if="subtitle" class="landing-hero__subtitle">{{ subtitle }}</p>
-    <slot />
+  <section class="ana-contact" aria-label="Contact section">
+    <p class="ana-contact__eyebrow">Contato</p>
+    <h2>{{ title ?? 'Fale comigo' }}</h2>
+    <p class="ana-contact__lead">
+      Envie uma mensagem sobre projetos, encomendas ou colaborações.
+    </p>
+    <p class="ana-contact__email">ola@ana-artista.exemplo</p>
   </section>
 </template>
 
 <style scoped>
-.landing-hero {
+.ana-contact {
   background: linear-gradient(
     135deg,
     var(--op-color-surface) 0%,
@@ -31,7 +27,7 @@ const displayTitle = computed(
   padding: 2rem 1.5rem;
 }
 
-.landing-hero__eyebrow {
+.ana-contact__eyebrow {
   color: var(--op-color-muted);
   font-size: 0.75rem;
   letter-spacing: 0.08em;
@@ -39,9 +35,20 @@ const displayTitle = computed(
   text-transform: uppercase;
 }
 
-.landing-hero__subtitle {
+.ana-contact h2 {
+  margin: 0;
+}
+
+.ana-contact__lead {
   color: var(--op-color-muted);
   line-height: 1.5;
   margin: 0.75rem 0 0;
+}
+
+.ana-contact__email {
+  color: var(--op-color-primary);
+  font-family: var(--op-font-mono);
+  font-size: 0.9375rem;
+  margin: 1.25rem 0 0;
 }
 </style>

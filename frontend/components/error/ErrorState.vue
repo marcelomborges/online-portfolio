@@ -40,7 +40,7 @@ const displayCode = computed(() => props.statusCode ?? 500)
 }
 
 .error-state__message {
-  color: #475569;
+  color: var(--op-color-muted);
   line-height: 1.5;
   margin: 0.75rem 0 1.5rem;
 }

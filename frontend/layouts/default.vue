@@ -10,6 +10,7 @@
 
 <style scoped>
 .layout-default {
+  background: var(--op-color-bg, var(--op-color-surface));
   min-height: 100vh;
 }
 </style>

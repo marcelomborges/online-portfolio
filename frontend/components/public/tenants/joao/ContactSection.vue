@@ -7,8 +7,7 @@ defineProps<{
 <template>
   <UiCard :title="title ?? 'Contato'" aria-label="Contact section">
     <p class="joao-contact__lead">
-      Formulário customizado do João — layout distinto do fallback em
-      <code>shared/ContactSection.vue</code>.
+      Formulário minimalista do João — paleta fria, borda lateral como na landing.
     </p>
   </UiCard>
 </template>

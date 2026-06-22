@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { NuxtError } from '#app'
 
+useSurfaceHtmlClass({ forceDark: true })
+
 const props = defineProps<{
   error: NuxtError
 }>()
@@ -22,7 +24,7 @@ function handleClearError() {
 </script>
 
 <template>
-  <NuxtLayout name="default">
+  <NuxtLayout name="structural">
     <ErrorState
       :status-code="error.statusCode"
       :title="title"

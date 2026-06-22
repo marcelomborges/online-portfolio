@@ -1,21 +1,25 @@
 /**
- * Sets `<html>` class from request surface:
- * - `app` → `surface-app` (dark mode fixo — área privada)
- * - `tenant` → `theme-{slug}` (paleta por artista)
- * - `platform` / `dev` → sem classe extra (light default)
+ * Sets `<html>` class from request context:
+ * - Site público do tenant (`surface=tenant`) → `theme-{slug}` (paleta do artista)
+ * - Todo o resto → `surface-dark` (admin, platform, dev, error, páginas estruturais)
+ *
+ * Erros (`useError()`) sempre usam dark, mesmo se o host for de tenant.
+ * `error.vue` deve passar `{ forceDark: true }` — ele substitui `app.vue` no Nuxt.
  */
-export function useSurfaceHtmlClass() {
+export function useSurfaceHtmlClass(options?: { forceDark?: boolean }) {
   const { surface, tenantSlug } = useRequestSurface()
+  const error = useError()
 
   const htmlClass = computed(() => {
-    switch (surface.value) {
-      case 'app':
-        return 'surface-app'
-      case 'tenant':
-        return tenantSlug.value ? `theme-${tenantSlug.value}` : ''
-      default:
-        return ''
+    if (options?.forceDark || error.value) {
+      return 'surface-dark'
     }
+
+    if (surface.value === 'tenant' && tenantSlug.value) {
+      return `theme-${tenantSlug.value}`
+    }
+
+    return 'surface-dark'
   })
 
   useHead({
