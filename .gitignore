@@ -4,3 +4,39 @@ docs/BACKLOG_LINEAR.csv
 # Python
 __pycache__/
 *.py[cod]
+
+# Node / Nuxt
+node_modules/
+.nuxt/
+.output/
+.vercel/
+dist/
+.nitro/
+*.log
+npm-debug.log*
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Docker local overrides
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.sw?

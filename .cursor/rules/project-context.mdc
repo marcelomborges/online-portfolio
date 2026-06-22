@@ -7,7 +7,7 @@ alwaysApply: true
 
 **PRIORITY #1: SECURITY** — see `.cursor/rules/security-first.mdc` and `docs/AGENT_GUIDE.md` § Security.
 
-**Status:** docs-only repo until Epic 0 scaffold. Read `docs/AGENT_GUIDE.md` and `docs/BACKLOG.md` before coding.
+**Status:** monorepo scaffold (DEV-001). Next: DEV-002 Docker Compose. Read `docs/AGENT_GUIDE.md` and `docs/BACKLOG.md` before coding.
 
 ## Hard rules
 

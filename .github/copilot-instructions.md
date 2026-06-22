@@ -19,7 +19,7 @@ Path instructions: `.github/instructions/security.instructions.md`
 
 ## Before coding
 
-- Repo is **docs-only** until Epic 0 scaffold (`frontend/`, `backend/` not created yet).
+- Monorepo scaffold ready (`frontend/` Nuxt 3, `backend/` ASP.NET Core). Next: DEV-002 Docker Compose.
 - Follow task order in [docs/BACKLOG.md](../docs/BACKLOG.md) (Epic 0 → 1.5 login MVP → Epic 1 public sites).
 - Architecture truth: [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md), schema: [docs/DATABASE.md](../docs/DATABASE.md).
 
@@ -56,6 +56,7 @@ Path instructions: `.github/instructions/git-workflow.instructions.md`
 
 - Minimal scope; match BACKLOG acceptance criteria.
 - Backend: EF Core, snake_case Postgres columns, `/api/v1/` versioning.
+- Backend tests: xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` ([ARCHITECTURE §23](../docs/ARCHITECTURE.md#23-testing)).
 - Frontend: Nuxt 3, host-based routing (app vs slug vs apex).
 - Product/docs text: Brazilian Portuguese. Commits and code identifiers: English.
 

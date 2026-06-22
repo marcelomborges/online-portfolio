@@ -8,7 +8,7 @@ applyTo: "**"
 
 | Workflow | Purpose |
 |---|---|
-| `ci-backend.yml` | PR/push — `dotnet test` (paths: `backend/**`, …) |
+| `ci-backend.yml` | PR/push — `dotnet test` (xUnit stack — [ARCHITECTURE §23](../docs/ARCHITECTURE.md#23-testing); paths: `backend/**`, …) |
 | `ci-frontend.yml` | PR/push — `npm lint`/test (paths: `frontend/**`) |
 | `deploy-backend.yml` | Push `main` — test → EF migrate → gate Render |
 | `deploy-frontend.yml` | Push `main` — lint/test → `vercel deploy --prod` |
@@ -29,7 +29,7 @@ Monorepo = **one Git repo**; separate workflows ≠ separate repositories.
 | Endpoint / DTO | Controller, service, validation, `[Authorize]` | `server/api/**` proxy, composables, types, UI |
 | EF schema | Migration | API consumers, forms |
 | Auth / JWT | Identity, policies, tenant checks | Proxy headers/cookies, `app.*` login |
-| Env var | Render, `backend/.env.example` | Vercel, `frontend/.env.example` |
+| Env var | Render, `backend/OnlinePortfolio.Api/.env.example` | Vercel, `frontend/.env.example` |
 | Multi-tenant | EF filters + membership | No trusted client `tenantId`; correct host routing |
 
 3. Update `docs/DATABASE.md` if schema changed; `.env.example` on both sides if new env vars.
