@@ -1,0 +1,23 @@
+{
+  "name": "online-portfolio-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "echo \"lint: configure in DEV-006\""
+  },
+  "dependencies": {
+    "nuxt": "3.21.8",
+    "vue": "3.5.38"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  },
+  "overrides": {
+    "vue": "3.5.38"
+  }
+}
