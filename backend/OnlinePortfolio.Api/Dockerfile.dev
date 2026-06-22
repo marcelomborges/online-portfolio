@@ -1,0 +1,15 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0
+
+WORKDIR /src
+
+COPY OnlinePortfolio.Api.csproj ./
+RUN dotnet restore
+
+COPY . ./
+
+EXPOSE 8080
+
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV ASPNETCORE_URLS=http://+:8080
+
+CMD ["dotnet", "watch", "run", "--no-launch-profile", "--urls", "http://+:8080"]
