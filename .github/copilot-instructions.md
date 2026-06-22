@@ -19,7 +19,7 @@ Path instructions: `.github/instructions/security.instructions.md`
 
 ## Before coding
 
-- Monorepo scaffold ready (`frontend/` Nuxt 3, `backend/` ASP.NET Core). Next: DEV-002 Docker Compose.
+- Monorepo scaffold ready (`frontend/` Nuxt 3, `backend/` ASP.NET Core). CI PR: `ci-backend.yml` + `ci-frontend.yml` (DEV-006). Next: deploy pipelines (DEV-007+).
 - Follow task order in [docs/BACKLOG.md](../docs/BACKLOG.md) (Epic 0 → 1.5 login MVP → Epic 1 public sites).
 - Architecture truth: [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md), schema: [docs/DATABASE.md](../docs/DATABASE.md).
 
@@ -46,9 +46,9 @@ Security fixes: `fix(backend): …` or mention security in body. Full guide: [do
 
 ## Git flow & CI
 
-- **CI + deploy separados:** `ci-backend.yml` + `ci-frontend.yml` + `deploy-backend.yml` + `deploy-frontend.yml` — not one combined `ci.yml`.
-- **Deploy:** production only (`main`); local dev + Vercel PR preview — no staging stack ([ADR-015](../docs/ARCHITECTURE.md#adr-015-deploy-somente-em-production)).
-- **Before merge:** besides green CI, verify **paired components** — API change → frontend proxy/types/UI; schema → migration + consumers; auth/env → both sides. See [AGENT_GUIDE § Git flow](../docs/AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review).
+- **CI + deploy separados:** `ci-backend.yml` + `ci-frontend.yml` (✅) + `deploy-backend.yml` + `deploy-frontend.yml` (planned) — not one combined `ci.yml`.
+- **PR coverage comments:** sticky **Backend coverage** / **Frontend coverage** — only when that stack's CI runs on the PR.
+- **Before merge:** green CI + **paired components** — API ↔ proxy/types/UI; schema ↔ migration; auth/env both sides. See [AGENT_GUIDE § Git flow](../docs/AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review).
 
 Path instructions: `.github/instructions/git-workflow.instructions.md`
 

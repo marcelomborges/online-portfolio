@@ -283,12 +283,13 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 **Description:** Dois workflows de CI no PR — **separados** por stack (não um `ci.yml` único): `ci-backend.yml` e `ci-frontend.yml`, com path filters.
 
 **Acceptance criteria:**
-- [ ] `ci-backend.yml` runs on `pull_request` to `main` (paths: `backend/**`, `docs/DATABASE.md`, …)
-- [ ] `ci-frontend.yml` runs on `pull_request` to `main` (paths: `frontend/**`, …)
-- [ ] Backend: `dotnet test` (+ build); uses xUnit stack ([ARCHITECTURE §23](./ARCHITECTURE.md#23-testing))
-- [ ] Frontend: `npm run lint` (and test if configured)
-- [ ] Status checks **Backend CI** and **Frontend CI** visible on PR
-- [ ] Documented cross-stack component review before merge ([AGENT_GUIDE § Git flow](./AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review))
+- [x] `ci-backend.yml` runs on `pull_request` to `main` (paths: `backend/**`, `docs/DATABASE.md`, …)
+- [x] `ci-frontend.yml` runs on `pull_request` to `main` (paths: `frontend/**`, …)
+- [x] Backend: `dotnet test` (+ build); uses xUnit stack ([ARCHITECTURE §23](./ARCHITECTURE.md#23-testing))
+- [x] Frontend: `npm run lint` + `npm run test:coverage` (Vitest; expand in UT-009+)
+- [x] Status checks **Backend CI** and **Frontend CI** visible on PR
+- [x] PR comments: **Backend coverage** / **Frontend coverage** (sticky; só quando o workflow respectivo roda)
+- [x] Documented cross-stack component review before merge ([AGENT_GUIDE § Git flow](./AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review))
 
 ---
 

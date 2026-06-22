@@ -1137,7 +1137,8 @@ Em todo PR (humano ou agente), **depois dos testes** e **antes do merge**, confe
 **Checklist rápido antes do merge:**
 
 1. CI relevante verde (`Backend CI` / `Frontend CI` conforme paths do PR).
-2. **Pareamento front↔back** — tabela acima; se API mudou, front **ou** docs do contrato atualizados.
+2. Comentários sticky **Backend coverage** / **Frontend coverage** no PR (se o CI da stack rodou).
+3. **Pareamento front↔back** — tabela acima; se API mudou, front **ou** docs do contrato atualizados.
 3. `.env.example` (ambos os lados) se novos env vars.
 4. `docs/DATABASE.md` se schema mudou de forma relevante.
 5. Commits [Conventional Commits](./CONVENTIONAL_COMMITS.md); escopo `frontend` / `backend` coerente com paths.
@@ -1567,8 +1568,9 @@ Saída do relatório: `TestResults/CoverageReport/index.html`. A pasta `TestResu
 
 | Workflow | Comando | Quando |
 |---|---|---|
-| `ci-backend.yml` | `dotnet test` (+ build) | Todo PR que toca `backend/**` |
-| `deploy-backend.yml` | `dotnet test` antes de migrate/deploy | Push em `main` |
+| `ci-backend.yml` | `dotnet test` (Release) + Coverlet | PR + push em `main`; comentário **Backend coverage** no PR |
+| `ci-frontend.yml` | `npm run lint` + `npm run test:coverage` | PR + push em `main`; comentário **Frontend coverage** no PR |
+| `deploy-backend.yml` | `dotnet test` antes de migrate/deploy | Push em `main` (DEV-007) |
 
 Cobertura no CI é **opcional no v1**; quando habilitada, usar o mesmo `--collect:"XPlat Code Coverage"` no workflow.
 

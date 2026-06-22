@@ -12,6 +12,9 @@ node_modules/
 .vercel/
 dist/
 .nitro/
+frontend/coverage/
+code-coverage-results.md
+*-coverage-comment.md
 *.log
 npm-debug.log*
 

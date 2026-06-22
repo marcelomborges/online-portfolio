@@ -28,7 +28,7 @@ Cursor: `.cursor/rules/security-first.mdc` · GitHub: `.github/instructions/secu
 
 ## Repository status
 
-Documentation phase complete. Monorepo scaffold in progress (`frontend/`, `backend/`). Frontend surfaces: [ADR-016](docs/ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant).
+Epic 0 in progress — monorepo, Docker, **CI PR** (`ci-backend`, `ci-frontend`, coverage comments). Deploy pipelines: DEV-007+.
 
 ## Non-negotiables
 
@@ -40,7 +40,7 @@ Documentation phase complete. Monorepo scaffold in progress (`frontend/`, `backe
 5. **Email** — SendGrid `noreply@` transactional only (no inbox v1).
 6. **Commits** — [Conventional Commits](docs/CONVENTIONAL_COMMITS.md); commit/push only when user asks.
 7. **Scope** — implement BACKLOG acceptance criteria; minimal diff; PT-BR in product docs.
-8. **Git/CI** — workflows separados; deploy **prod only** ([ADR-015](docs/ARCHITECTURE.md#adr-015-deploy-somente-em-production)) — [AGENT_GUIDE § Git flow](docs/AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review).
+8. **Git/CI** — workflows separados; CI PR + coverage comments on PR; deploy **prod only** ([ADR-015](docs/ARCHITECTURE.md#adr-015-deploy-somente-em-production)) — [AGENT_GUIDE § Git flow](docs/AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review).
 
 ## Implementation order
 

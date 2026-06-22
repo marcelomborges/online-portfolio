@@ -19,7 +19,7 @@ Instructions for **Cursor**, **GitHub Copilot**, **Copilot coding agent**, and o
 ## Repository status
 
 - **Layout:** **monorepo** — `frontend/` (Nuxt 3) + `backend/` (ASP.NET Core); see root [README.md](../README.md).
-- **Phase:** Epic 0 in progress — DEV-001 scaffold done; Docker/CI next (DEV-002+).
+- **Phase:** Epic 0 in progress — scaffold, Docker, CI PR (DEV-006) done; deploy pipelines next (DEV-007+).
 - Do **not** create separate Git repos for front/back unless the user explicitly changes this.
 - **Domain:** `onlineportfolio.com.br` (Registro.br).
 - Before coding, read BACKLOG **Suggested implementation order** — do not skip Epic 0 / 1.5 foundations.
@@ -146,29 +146,57 @@ One email = one account globally. PlatformAdmin has `tenant_id = NULL`.
 | **Não usar** | Um único `ci.yml` que sempre roda backend e frontend |
 | **Monorepo** | Um repo Git; workflows separados ≠ repos separados |
 
-Detalhes: [ARCHITECTURE §15](./ARCHITECTURE.md#15-deployment--cicd) · [ADR-015](./ARCHITECTURE.md#adr-015-deploy-somente-em-production) · [EXTERNAL_PROVIDERS §9](./EXTERNAL_PROVIDERS.md#93-workflow-files-planned)
+Detalhes: [ARCHITECTURE §15](./ARCHITECTURE.md#15-deployment--cicd) · [ADR-015](./ARCHITECTURE.md#adr-015-deploy-somente-em-production) · [EXTERNAL_PROVIDERS §4.3](./EXTERNAL_PROVIDERS.md#43-workflow-files)
 
 **Ambientes:** deploy na nuvem **somente production** (`main`). Dev = Docker local; PR = Vercel preview. Sem staging deployado no v1.
 
-### Antes de merge — além dos testes
+### CI em PR (implementado — DEV-006)
 
-1. **CI verde** — Backend CI e/ou Frontend CI conforme paths alterados no PR.
-2. **Componentes pareados** — se mudou contrato API, schema, auth ou env, atualizar **os dois lados** (ou documentar exceção):
+Dispara em `pull_request` e `push` → `main`, com **path filters** — só roda o workflow da stack que mudou.
+
+| Workflow | Status check | Comandos | Paths (exemplos) |
+|---|---|---|---|
+| `ci-backend.yml` | **Backend CI** | `dotnet test` (Release) + Coverlet | `backend/**`, `docs/DATABASE.md`, workflow deploy-backend |
+| `ci-frontend.yml` | **Frontend CI** | `npm run lint` (typecheck) + `npm run test:coverage` (Vitest) | `frontend/**`, workflow deploy-frontend, action coverage comment |
+
+**Path filters:** PR que muda só `docs/` ou só `scripts/` pode **não** disparar nenhum CI — ok. PR que muda `backend/` **e** `frontend/` dispara **os dois**. Checks **skipped** por path filter contam como OK no GitHub (branch protection).
+
+**Deploy** (`deploy-backend.yml`, `deploy-frontend.yml`) — ainda não implementados (DEV-007 / DEV-007b).
+
+### Comentários de coverage no PR
+
+Somente em **`pull_request`** (não em push direto para `main`). Só publica se o workflow **rodou** — sem CI, sem comentário.
+
+| Comentário sticky | Header | Stack |
+|---|---|---|
+| **Backend coverage** | `backend-coverage` | Coverlet + `irongut/CodeCoverageSummary` |
+| **Frontend coverage** | `frontend-coverage` | Vitest istanbul → script inline no `ci-frontend.yml` |
+
+Dois comentários independentes no mesmo PR quando ambos os CIs rodam. Artefatos (`TestResults/`, `frontend/coverage/`) ficam no `.gitignore`.
+
+### Antes de merge — checklist
+
+1. **CI verde** — `Backend CI` e/ou `Frontend CI` conforme paths alterados no PR.
+2. **Coverage** — revisar comentários sticky se existirem (informativo; sem gate de % no v1).
+3. **Componentes pareados** — se mudou contrato API, schema, auth, env ou superfície, atualizar **os dois lados** (ou documentar exceção na descrição do PR):
 
 | Mudança | Backend | Frontend |
 |---|---|---|
 | API / DTO | Controller, service, validation, OpenAPI | `server/api/**` proxy, composables, types, pages |
-| EF / schema | Migration | API consumers, forms |
+| EF / schema | Migration (+ seed se necessário) | API consumers, forms |
 | Auth / JWT | Identity, `[Authorize]`, tenant middleware | Proxy auth forwarding, `app.*` login |
 | Env var | Render, `backend/OnlinePortfolio.Api/.env.example` | Vercel, `frontend/.env.example`, `runtimeConfig` |
 | Tenant isolation | EF filters + membership checks | Never trust client `tenantId`; correct host routing |
-| Admin feature | Protected routes | UI under `app.{host}` |
-| Public site | Published-only public API | `{slug}.{host}` pages + middleware |
+| Admin feature | Protected routes | UI em `components/app/`, host `app.*`, dark mode (`surface-dark`) |
+| Site público tenant | API pública (só conteúdo publicado) | `{slug}.*`, `public/tenants/{slug}/`, `themes/{slug}.css` ([ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant)) |
+| Email / Storage (fases futuras) | SendGrid / multipart API | Proxy ou UI se aplicável |
 
-3. **Docs** — `DATABASE.md` if schema; provider env map if new secrets.
-4. **Scopes** — commits `feat(backend):` / `feat(frontend):` matching touched paths.
+4. **Docs** — `DATABASE.md` se schema; `.env.example` nos dois lados se novos env vars; `EXTERNAL_PROVIDERS.md` se novo secret de provider.
+5. **Commits** — [Conventional Commits](./CONVENTIONAL_COMMITS.md); escopo `backend` / `frontend` coerente com paths tocados.
 
-Agents: on every PR, explicitly verify the pairing table even when only one side changed in the diff (ask: “does the other side need a follow-up in this PR?”).
+**Agentes:** em todo PR, verificar a tabela de pareamento mesmo quando o diff toca só um lado — perguntar: “o outro lado precisa de follow-up **neste** PR?”.
+
+**Branch protection (recomendado em `main`):** exigir **Backend CI** + **Frontend CI** (checks skipped = OK).
 
 ---
 
@@ -179,6 +207,7 @@ Agents: on every PR, explicitly verify the pairing table even when only one side
 - **Commits, API names, code identifiers:** English.
 - Backend: EF Core, snake_case columns in Postgres, OpenAPI on API.
 - Backend tests: xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` ([ARCHITECTURE §23](./ARCHITECTURE.md#23-testing)).
+- Frontend tests: Vitest + istanbul coverage (expand in UT-009+); CI runs `npm run lint` + `npm run test:coverage`.
 - **Frontend:** thin pages, three surfaces (app/platform/tenant), tenant UI in `public/tenants/{slug}/` — [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant) · [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md).
 - Do not over-engineer helpers or tests unless requested or in BACKLOG.
 
@@ -197,6 +226,7 @@ online-portfolio/
 ├── docker-compose.yml
 ├── AGENTS.md
 └── .github/
+    └── workflows/       # ci-backend, ci-frontend (+ deploy-* planned)
 ```
 
 ---

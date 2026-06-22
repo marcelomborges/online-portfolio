@@ -106,10 +106,14 @@ dotnet build
 
 ## Backend — Visual Studio
 
-**Arquivo:** `backend/OnlinePortfolio.Api.slnx` (abrir na IDE)
+**Pasta:** `backend/`  
+**Abrir:** `OnlinePortfolio.Api.slnx`
 
-1. Perfil **`http`** — API nativa + Swagger
-2. Perfil **`Docker (Development)`** — API em container (`Dockerfile.dev`); exige Docker Desktop + workload Container Tools
+1. **Startup project:** `OnlinePortfolio.Api` (não use o projeto de testes como startup).
+2. Perfil **`http`** — API nativa + Swagger em http://localhost:8080/swagger
+3. Perfil **`Docker (Development)`** — API em container; exige Docker Desktop + workload *Container Tools*
+
+**Testes:** use CLI (`dotnet test` na pasta `backend/`) ou `scripts/coverage-backend.ps1` — ver [Testes (backend)](#testes-backend).
 
 ---
 

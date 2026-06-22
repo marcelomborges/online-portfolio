@@ -250,14 +250,14 @@ All providers accept `.com.br` and subdomains.
 | `VERCEL_PROJECT_ID` | Vercel project ID (root `frontend`) |
 | `RENDER_DEPLOY_HOOK_URL` | Optional — if Render auto-deploy disabled |
 
-### 4.3 Workflow files (planned)
+### 4.3 Workflow files
 
 ```text
 .github/workflows/
-  ci-backend.yml       # pull_request + push: dotnet test (xUnit/Moq/FluentAssertions/Coverlet) + build
-  ci-frontend.yml      # pull_request + push: npm lint/test
-  deploy-backend.yml   # push main: test → EF migrate → Render Wait for CI
-  deploy-frontend.yml  # push main: lint/test → vercel deploy --prod
+  ci-backend.yml       # ✅ pull_request + push main: dotnet test + build (paths backend/**)
+  ci-frontend.yml      # ✅ pull_request + push main: npm run lint (nuxi typecheck)
+  deploy-backend.yml   # push main: test → EF migrate → Render Wait for CI (DEV-007)
+  deploy-frontend.yml  # push main: lint/test → vercel deploy --prod (DEV-007b)
 ```
 
 **Decisão:** CI **e deploy separados**; **somente production** ([ADR-015](./ARCHITECTURE.md#adr-015-deploy-somente-em-production)).
@@ -269,7 +269,8 @@ Além dos testes, conferir pareamento front↔back antes do merge. Referência: 
 ### 4.5 GitHub checklist
 
 - [ ] Repo created and pushed
-- [ ] `ci-backend.yml`, `ci-frontend.yml`, `deploy-backend.yml`, `deploy-frontend.yml`
+- [x] `ci-backend.yml`, `ci-frontend.yml` (PR CI — DEV-006)
+- [ ] `deploy-backend.yml`, `deploy-frontend.yml` (DEV-007 / DEV-007b)
 - [ ] Secrets configured; Render **Wait for CI** enabled
 
 ---
