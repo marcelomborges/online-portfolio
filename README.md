@@ -63,6 +63,10 @@ cd backend/OnlinePortfolio.Api && cp .env.example .env && dotnet run
 
 Stack completa local = Docker Compose acima.
 
+### EF Core migrations (DEV-004+)
+
+Ver **[docs/DEV_COMMANDS.md](./docs/DEV_COMMANDS.md#ef-core-migrations)** — comandos Docker vs nativo, migrations, quando reaplicar `database update`.
+
 ### Testes (backend)
 
 ```bash
@@ -76,6 +80,7 @@ Stack: **xUnit** · **Moq** · **FluentAssertions** · **Coverlet** · `dotnet t
 
 | Doc | Description |
 |---|---|
+| [DEV_COMMANDS.md](docs/DEV_COMMANDS.md) | **Comandos locais** (Docker, nativo, migrations) |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design and decisions |
 | [DATABASE.md](docs/DATABASE.md) | PostgreSQL schema |
 | [BACKLOG.md](docs/BACKLOG.md) | Development tasks (Linear) |

@@ -157,11 +157,11 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 **Description:** DbContext, Npgsql provider, initial migration infrastructure. Local connection to Compose Postgres.
 
 **Acceptance criteria:**
-- [ ] `ApplicationDbContext` registered in DI
-- [ ] Connection string from config (`ConnectionStrings__Default`)
-- [ ] `dotnet ef migrations add Initial` works locally
-- [ ] `dotnet ef database update` applies against Compose Postgres
-- [ ] Separate migration connection string documented for CI (direct port 5432)
+- [x] `ApplicationDbContext` registered in DI
+- [x] Connection string from config (`ConnectionStrings__Default`)
+- [x] `ApplicationDbContextFactory` + `ConnectionStrings:Migration` for `dotnet ef` (direct `:5432`)
+- [ ] `dotnet ef migrations add Initial` works locally *(run manually — see README)*
+- [ ] `dotnet ef database update` applies against Compose Postgres *(run manually)*
 
 ---
 
