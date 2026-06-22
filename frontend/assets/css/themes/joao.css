@@ -1,0 +1,9 @@
+/* João — paleta fria / minimal */
+.theme-joao {
+  --op-color-text: #0f172a;
+  --op-color-muted: #64748b;
+  --op-color-border: #cbd5e1;
+  --op-color-surface: #f1f5f9;
+  --op-color-primary: #2563eb;
+  --op-color-primary-hover: #1d4ed8;
+}

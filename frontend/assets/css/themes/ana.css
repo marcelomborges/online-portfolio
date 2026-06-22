@@ -1,0 +1,9 @@
+/* Ana — paleta quente / editorial */
+.theme-ana {
+  --op-color-text: #3d2c29;
+  --op-color-muted: #8b7355;
+  --op-color-border: #e8ddd4;
+  --op-color-surface: #faf6f2;
+  --op-color-primary: #a0522d;
+  --op-color-primary-hover: #8b4513;
+}
