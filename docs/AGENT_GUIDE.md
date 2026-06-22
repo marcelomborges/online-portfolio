@@ -18,8 +18,8 @@ Instructions for **Cursor**, **GitHub Copilot**, **Copilot coding agent**, and o
 
 ## Repository status
 
-- **Layout:** **monorepo** — one Git repo, `frontend/` + `backend/`; Vercel and Render deploy from subfolders (not separate repos).
-- **Phase:** docs complete; code not scaffolded yet (Epic 0 — DEV-001).
+- **Layout:** **monorepo** — `frontend/` (Nuxt 3) + `backend/` (ASP.NET Core); see root [README.md](../README.md).
+- **Phase:** Epic 0 in progress — DEV-001 scaffold done; Docker/CI next (DEV-002+).
 - Do **not** create separate Git repos for front/back unless the user explicitly changes this.
 - **Domain:** `onlineportfolio.com.br` (Registro.br).
 - Before coding, read BACKLOG **Suggested implementation order** — do not skip Epic 0 / 1.5 foundations.
@@ -160,7 +160,7 @@ Detalhes: [ARCHITECTURE §15](./ARCHITECTURE.md#15-deployment--cicd) · [ADR-015
 | API / DTO | Controller, service, validation, OpenAPI | `server/api/**` proxy, composables, types, pages |
 | EF / schema | Migration | API consumers, forms |
 | Auth / JWT | Identity, `[Authorize]`, tenant middleware | Proxy auth forwarding, `app.*` login |
-| Env var | Render, `backend/.env.example` | Vercel, `frontend/.env.example`, `runtimeConfig` |
+| Env var | Render, `backend/OnlinePortfolio.Api/.env.example` | Vercel, `frontend/.env.example`, `runtimeConfig` |
 | Tenant isolation | EF filters + membership checks | Never trust client `tenantId`; correct host routing |
 | Admin feature | Protected routes | UI under `app.{host}` |
 | Public site | Published-only public API | `{slug}.{host}` pages + middleware |
@@ -178,6 +178,7 @@ Agents: on every PR, explicitly verify the pairing table even when only one side
 - **Docs (product/domain):** Brazilian Portuguese.
 - **Commits, API names, code identifiers:** English.
 - Backend: EF Core, snake_case columns in Postgres, OpenAPI on API.
+- Backend tests: xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` ([ARCHITECTURE §23](./ARCHITECTURE.md#23-testing)).
 - Do not over-engineer helpers or tests unless requested or in BACKLOG.
 
 ---
@@ -187,7 +188,10 @@ Agents: on every PR, explicitly verify the pairing table even when only one side
 ```text
 online-portfolio/
 ├── frontend/          # Nuxt 3 → Vercel
-├── backend/           # ASP.NET Core Web API → Render
+├── backend/
+│   ├── OnlinePortfolio.Api.slnx
+│   ├── OnlinePortfolio.Api/       # ASP.NET Core → Render
+│   └── OnlinePortfolio.Api.Tests/ # xUnit · Moq · FluentAssertions · Coverlet
 ├── docs/
 ├── docker-compose.yml
 ├── AGENTS.md

@@ -34,6 +34,7 @@ Multi-tenant SaaS platform for artist portfolios. One shared application stack s
 20. [Repository structure](#20-repository-structure)
 21. [Environment variables](#21-environment-variables)
 22. [Open decisions / future work](#22-open-decisions--future-work)
+23. [Testing](#23-testing)
 
 **Related docs:** [EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) · [BACKLOG.md](./BACKLOG.md) · [DATABASE.md](./DATABASE.md)
 
@@ -275,8 +276,8 @@ Provider acceptance of `.com.br` and subdomains: **yes** — TLD is not a blocke
 | Layer | Technology | Hosting | Notes |
 |---|---|---|---|
 | **Domain** | `onlineportfolio.com.br` | Registro.br | See [§2](#2-platform-domain--operator-email) |
-| Frontend | Nuxt 3 | Vercel (Hobby → Pro as needed) | Single app, multi-tenant routing |
-| Backend | ASP.NET Core Web API | Render (free tier, Docker) | One API for all tenants |
+| Frontend | Nuxt 3.21 · Vue 3.5 | Vercel (Hobby → Pro as needed) | Single app, multi-tenant routing |
+| Backend | ASP.NET Core Web API (.NET 10 LTS) | Render (free tier, Docker) | One API for all tenants |
 | Database | PostgreSQL | Supabase | Access only via EF Core |
 | File storage | Supabase Storage | Supabase | Image uploads; not on Render disk |
 | Auth | ASP.NET Identity **completo** + JWT | API (.NET) | Roles, stores e token providers padrão; Supabase = DB + Storage |
@@ -285,6 +286,8 @@ Provider acceptance of `.com.br` and subdomains: **yes** — TLD is not a blocke
 | PDF | QuestPDF | NuGet in API (no extra host) | Portfolio catalog export; API generates |
 | CI/CD | GitHub Actions + Vercel/Render deploy | GitHub (orchestrator) | See [§15](#15-deployment--cicd) |
 | Local dev | Docker Compose | Developer machine | Postgres + API + Nuxt |
+| **Backend tests** | xUnit · Moq · FluentAssertions · Coverlet | GitHub Actions (`ci-backend.yml`) | `dotnet test`; see [§23](#23-testing) |
+| **Frontend tests** | Vitest | GitHub Actions (`ci-frontend.yml`) | Component/composable unit tests |
 
 ### What we explicitly do not do
 
@@ -847,7 +850,7 @@ After Phase 3 (Storage), embed or link artwork images from Supabase public URLs 
 
 - NuGet: `QuestPDF` (+ `QuestPDF.Previewer` for local dev optional)
 - `IPdfService` abstraction with `QuestPdfPortfolioService` implementation
-- Document layout in dedicated classes under `backend/Pdf/` (e.g. `PortfolioDocument.cs`)
+- Document layout in dedicated classes under `backend/OnlinePortfolio.Api/Pdf/` (e.g. `PortfolioDocument.cs`)
 - Register Community license at startup: `QuestPDF.Settings.License = LicenseType.Community`
 - Stream response; avoid writing PDFs to Render disk (no persistence on free tier)
 - Consider response caching (short TTL per tenant) if generation becomes heavy
@@ -1061,7 +1064,7 @@ Em todo PR (humano ou agente), **depois dos testes** e **antes do merge**, confe
 | Endpoint / DTO / contrato API | Controller, service, validação, `[Authorize]`, OpenAPI | Rota proxy `server/api/**`, composable, tipos TS, página/componente |
 | Schema / entidade EF | Migration + seed se necessário | Tipos/consumo da API; formulários se expõe o campo |
 | Auth / JWT / roles | Identity, policies, middleware tenant | Proxy (cookies/headers), middleware host, fluxo login em `app.*` |
-| Variável de ambiente | `appsettings`, Render env, `backend/.env.example` | `runtimeConfig`, Vercel env, `frontend/.env.example` |
+| Variável de ambiente | `appsettings`, Render env, `backend/OnlinePortfolio.Api/.env.example` | `runtimeConfig`, Vercel env, `frontend/.env.example` |
 | Regra multi-tenant | Filtro EF + checagem membership | Nunca enviar `tenantId` confiável do client; UI admin vs público |
 | Feature admin | Rotas protegidas API | Páginas em host `app.*` |
 | Feature site público | API pública (só conteúdo publicado) | Páginas `{slug}.*`, middleware tenant |
@@ -1338,7 +1341,7 @@ Repos separados só valeria reconsiderar se no futuro frontend e backend tiverem
 ```text
 online-portfolio/          ← um repo Git
 ├── frontend/              → Vercel (Root Directory: frontend)
-├── backend/               → Render (Dockerfile: backend/Dockerfile)
+├── backend/               → Render (Dockerfile: backend/OnlinePortfolio.Api/Dockerfile)
 ├── docs/
 ├── docker-compose.yml
 └── .github/workflows/
@@ -1361,12 +1364,15 @@ online-portfolio/
 │   ├── middleware/                  # tenant resolution
 │   └── server/api/                  # proxy to backend API
 ├── backend/                         # ASP.NET Core → Render
-│   ├── Dockerfile
-│   ├── Controllers/
-│   ├── Services/
-│   ├── Pdf/                         # QuestPDF document layouts
-│   ├── Data/                        # EF DbContext, migrations
-│   └── Middleware/                  # tenant context, JWT
+│   ├── OnlinePortfolio.Api.slnx
+│   ├── OnlinePortfolio.Api/
+│   │   ├── Dockerfile
+│   │   ├── Controllers/
+│   │   ├── Services/
+│   │   ├── Pdf/                     # QuestPDF document layouts
+│   │   ├── Data/                    # EF DbContext, migrations
+│   │   └── Middleware/              # tenant context, JWT
+│   └── OnlinePortfolio.Api.Tests/   # xUnit (unit + integration)
 └── .github/workflows/               # ci-backend, ci-frontend, deploy-backend, deploy-frontend
 └── README.md
 ```
@@ -1437,6 +1443,63 @@ Use `.env.example` in frontend and backend; never commit secrets.
 
 ---
 
+## 23. Testing
+
+### Backend stack (padrão da indústria)
+
+Projeto **`OnlinePortfolio.Api.Tests`** na solution `OnlinePortfolio.Api.slnx`, com pastas `Unit/` e `Integration/`.
+
+| Ferramenta | Pacote NuGet | Uso |
+|---|---|---|
+| **xUnit** | `xunit` + `Microsoft.NET.Test.Sdk` + `xunit.runner.visualstudio` | Framework de testes |
+| **Moq** | `Moq` | Mocks de interfaces (`IEmailService`, `ITenantProvider`, etc.) |
+| **FluentAssertions** | `FluentAssertions` | Asserções legíveis (`result.Should().BeOk()`) |
+| **Coverlet** | `coverlet.collector` | Cobertura de código (local + CI) |
+| **CLI** | — | `dotnet test` — runner oficial |
+
+**Integração** (IT-001+, além da stack acima):
+
+| Ferramenta | Pacote | Uso |
+|---|---|---|
+| **WebApplicationFactory** | `Microsoft.AspNetCore.Mvc.Testing` | Testes HTTP end-to-end contra a API in-process |
+| **Testcontainers** | `Testcontainers.PostgreSql` (ou Postgres service container no GitHub Actions) | Postgres real isolado por fixture |
+
+### Comandos locais
+
+```bash
+cd backend
+
+# Todos os testes da solution
+dotnet test OnlinePortfolio.Api.slnx
+
+# Só o projeto de testes
+dotnet test OnlinePortfolio.Api.Tests/OnlinePortfolio.Api.Tests.csproj
+
+# Com cobertura (Coverlet → arquivo em TestResults/)
+dotnet test --collect:"XPlat Code Coverage"
+```
+
+### CI
+
+| Workflow | Comando | Quando |
+|---|---|---|
+| `ci-backend.yml` | `dotnet test` (+ build) | Todo PR que toca `backend/**` |
+| `deploy-backend.yml` | `dotnet test` antes de migrate/deploy | Push em `main` |
+
+Cobertura no CI é **opcional no v1**; quando habilitada, usar o mesmo `--collect:"XPlat Code Coverage"` no workflow.
+
+### Frontend (referência)
+
+Testes de componentes/composables: **Vitest** (UT-009+). Stack separada — ver [BACKLOG § Unit tests (frontend)](./BACKLOG.md#unit-tests).
+
+### Tarefas relacionadas
+
+- Scaffold do projeto: [DEV-005b](./BACKLOG.md#dev-005b--backend-test-project-scaffold)
+- Infra integração (WebApplicationFactory, DB, CI): [IT-001](./BACKLOG.md#it-001--test-infrastructure-setup)
+- Casos de teste: [BACKLOG § Unit tests](./BACKLOG.md#unit-tests) · [§ Integration tests](./BACKLOG.md#integration-tests)
+
+---
+
 ## Quick reference
 
 ```text
@@ -1452,7 +1515,8 @@ Email (ops):    Google Workspace (depois)                         →  caixa pos
 PDF:            QuestPDF                                          →  catálogo via API
 Domain:         onlineportfolio.com.br (Registro.br)
 Isolation:      TenantId + EF filters + Storage paths + API
-CI/CD:          GitHub Actions → tests + migrations; deploy **prod only** (ADR-015)
+CI/CD:          GitHub Actions → dotnet test + migrations; deploy **prod only** (ADR-015)
+Backend tests:  xUnit · Moq · FluentAssertions · Coverlet · dotnet test
 Environments:   local + PR preview + production (no staging deploy v1)
 Local dev:      docker compose up
 ```

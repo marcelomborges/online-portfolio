@@ -84,7 +84,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 
 ---
 
-### DEV-001 — Monorepo scaffold
+### DEV-001 — Monorepo scaffold ✅
 
 | Field | Value |
 |---|---|
@@ -92,18 +92,19 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Area** | infra |
 | **Priority** | P0 |
 | **Depends on** | — |
+| **Status** | ✅ Done |
 
 **Description:** Create repository structure per architecture doc.
 
 **Acceptance criteria:**
-- [ ] `frontend/` (Nuxt 3), `backend/` (ASP.NET Web API), `docs/`
-- [ ] Root `README.md` with local dev instructions (stub OK)
-- [ ] `.gitignore` for Node, .NET, env files
-- [ ] `.env.example` in `frontend/` and `backend/`
+- [x] `frontend/` (Nuxt 3), `backend/` (ASP.NET Web API), `docs/`
+- [x] Root `README.md` with local dev instructions (stub OK)
+- [x] `.gitignore` for Node, .NET, env files
+- [x] `.env.example` in `frontend/` and `backend/`
 
 ---
 
-### DEV-002 — Docker Compose (local dev)
+### DEV-002 — Docker Compose (local dev) ✅
 
 | Field | Value |
 |---|---|
@@ -111,18 +112,19 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Area** | infra |
 | **Priority** | P0 |
 | **Depends on** | DEV-001 |
+| **Status** | ✅ Done |
 
 **Description:** One-command local stack: Postgres + API + Nuxt with volume mounts for hot reload.
 
 **Acceptance criteria:**
-- [ ] `docker compose up` starts Postgres, backend, frontend
-- [ ] API reachable at documented local URL
-- [ ] Nuxt dev server with HMR
-- [ ] Seed script creates **2 tenants** for isolation testing
+- [x] `docker compose up` starts Postgres, backend, frontend
+- [x] API reachable at documented local URL
+- [x] Nuxt dev server with HMR
+- [x] Seed script creates **2 tenants** for isolation testing
 
 ---
 
-### DEV-003 — Backend API skeleton
+### DEV-003 — Backend API skeleton ✅
 
 | Field | Value |
 |---|---|
@@ -130,15 +132,16 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Area** | backend |
 | **Priority** | P0 |
 | **Depends on** | DEV-001 |
+| **Status** | ✅ Done |
 
 **Description:** ASP.NET Core Web API with health check, Swagger, Serilog, global exception handler.
 
 **Acceptance criteria:**
-- [ ] `GET /health` returns 200
-- [ ] OpenAPI at `/swagger` (dev only or configurable)
-- [ ] Structured JSON error responses
-- [ ] Dockerfile (multi-stage) in `backend/`
-- [ ] `Program.cs` reads config from environment variables
+- [x] `GET /health` returns 200
+- [x] OpenAPI at `/swagger` (dev only or configurable)
+- [x] Structured JSON error responses
+- [x] Dockerfile (multi-stage) in `backend/`
+- [x] `Program.cs` reads config from environment variables
 
 ---
 
@@ -178,6 +181,28 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 - [ ] `NUXT_PUBLIC_API_BASE` and platform host env vars defined
 - [ ] Default layout + error page
 - [ ] Nitro preset compatible with Vercel
+
+---
+
+### DEV-005b — Backend test project scaffold
+
+| Field | Value |
+|---|---|
+| **Phase** | 0 |
+| **Area** | backend, unit-test |
+| **Priority** | P0 |
+| **Depends on** | DEV-003 |
+
+**Description:** Create `OnlinePortfolio.Api.Tests` xUnit project with standard .NET test stack. Folders `Unit/` and `Integration/` already exist; wire project into solution.
+
+**Acceptance criteria:**
+- [ ] `OnlinePortfolio.Api.Tests.csproj` in `backend/OnlinePortfolio.Api.Tests/`
+- [ ] Packages: **xUnit**, **Moq**, **FluentAssertions**, **coverlet.collector**
+- [ ] Project reference → `OnlinePortfolio.Api`
+- [ ] Added to `OnlinePortfolio.Api.slnx`
+- [ ] At least one smoke test green
+- [ ] `dotnet test` from `backend/` succeeds
+- [ ] Stack documented in [ARCHITECTURE §23](./ARCHITECTURE.md#23-testing)
 
 ---
 
@@ -254,7 +279,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 **Acceptance criteria:**
 - [ ] `ci-backend.yml` runs on `pull_request` to `main` (paths: `backend/**`, `docs/DATABASE.md`, …)
 - [ ] `ci-frontend.yml` runs on `pull_request` to `main` (paths: `frontend/**`, …)
-- [ ] Backend: `dotnet test` (+ build)
+- [ ] Backend: `dotnet test` (+ build); uses xUnit stack ([ARCHITECTURE §23](./ARCHITECTURE.md#23-testing))
 - [ ] Frontend: `npm run lint` (and test if configured)
 - [ ] Status checks **Backend CI** and **Frontend CI** visible on PR
 - [ ] Documented cross-stack component review before merge ([AGENT_GUIDE § Git flow](./AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review))
@@ -331,7 +356,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 **Description:** Deploy backend Docker image to Render free tier; connect GitHub repo. Runbook: [EXTERNAL_PROVIDERS §7](./EXTERNAL_PROVIDERS.md#7-render-api).
 
 **Acceptance criteria:**
-- [ ] Conta Render criada; web service Docker (`backend/Dockerfile`) conectado ao repo
+- [ ] Conta Render criada; web service Docker (`backend/OnlinePortfolio.Api/Dockerfile`) conectado ao repo
 - [ ] Web service live on Render default URL
 - [ ] Health check `/health` configured
 - [ ] Production env vars set (DB pooler, `Jwt__Secret`, `SendGrid__ApiKey` de DEV-014)
@@ -647,7 +672,7 @@ Tenant user (Owner/Editor)
 **Description:** C# entities `Plan`, `Tenant`, `TenantSettings`, `User` with Fluent API / snake_case naming.
 
 **Acceptance criteria:**
-- [ ] Entities in `backend/Data/Entities/`
+- [ ] Entities in `backend/OnlinePortfolio.Api/Data/Entities/`
 - [ ] `ApplicationDbContext` DbSets registered
 - [ ] `ApplicationUser : IdentityUser<Guid>` com `TenantId`, `InvitedByUserId`, `IsActive` (sem coluna `Role` — ver AspNetRoles)
 - [ ] `ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>`
@@ -985,7 +1010,7 @@ Tenant user (Owner/Editor)
 **Acceptance criteria:**
 - [ ] `GET /api/v1/tenants/{slug}/portfolio.pdf` (published only)
 - [ ] `GET /api/v1/portfolio/export.pdf` (authenticated)
-- [ ] `IPdfService` + document layout in `backend/Pdf/`
+- [ ] `IPdfService` + document layout in `backend/OnlinePortfolio.Api/Pdf/`
 - [ ] `LicenseType.Community` registered at startup
 - [ ] Download button on public gallery / admin
 
@@ -1201,6 +1226,8 @@ Tenant user (Owner/Editor)
 
 Activities for isolated, fast tests (no external services). Run in CI on every PR.
 
+**Backend stack:** xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` — see [ARCHITECTURE §23](./ARCHITECTURE.md#23-testing). **Frontend stack:** Vitest (UT-009+).
+
 ### UT-001 — Backend: TenantContext unit tests
 
 | Field | Value |
@@ -1383,13 +1410,15 @@ Activities for cross-layer tests with real or containerized dependencies.
 |---|---|
 | **Area** | integration-test, devops |
 | **Priority** | P0 |
-| **Depends on** | DEV-004 |
+| **Depends on** | DEV-005b, DEV-004 |
 
-**Description:** Test project(s) with WebApplicationFactory, Testcontainers Postgres (or CI service container).
+**Description:** Integration test infrastructure on top of [DEV-005b](./BACKLOG.md#dev-005b--backend-test-project-scaffold): WebApplicationFactory, Testcontainers Postgres (or CI service container).
 
 **Acceptance criteria:**
-- [ ] `backend/tests/IntegrationTests` project
-- [ ] Runs in GitHub Actions CI
+- [ ] `OnlinePortfolio.Api.Tests` project scaffolded (DEV-005b): xUnit, Moq, FluentAssertions, coverlet.collector
+- [ ] `Microsoft.AspNetCore.Mvc.Testing` + `WebApplicationFactory` configured
+- [ ] Testcontainers Postgres (local) or GitHub Actions Postgres service (CI)
+- [ ] Runs in GitHub Actions CI via `dotnet test`
 - [ ] DB migrated/seeded per test collection or fixture
 - [ ] Isolated from production Supabase
 
@@ -1745,7 +1774,7 @@ Dedicated security activities (beyond tests). Cross-reference ARCHITECTURE §18.
 ## Suggested implementation order (first sprints)
 
 ### Sprint 0 — Bootstrap
-DEV-000 → DEV-001 → DEV-002 → DEV-003 → DEV-004 → DEV-005 → DEV-012 → DEV-013
+DEV-000 → DEV-001 → DEV-002 → DEV-003 → DEV-004 → DEV-005 → DEV-005b → DEV-012 → DEV-013
 
 ### Sprint 1 — Multi-tenant DB + login MVP
 DEV-150 → DEV-151 → DEV-152 → DEV-153 → DEV-154 → DEV-155 → DEV-156 → DEV-157 → DEV-158 → DEV-159 → DEV-161 → DEV-162 → UT-012 → IT-011 → IT-012 → IT-013
@@ -1770,4 +1799,4 @@ DEV-207, DEV-400+, DEV-403, DEV-404, IT-010, SEC-009, SEC-010
 
 ---
 
-*Last updated: 2025-06-21 — Linear import done; BACKLOG syncs with Linear + EXTERNAL_PROVIDERS*
+*Last updated: 2025-06-21 — backend test stack (§23); DEV-005b; Linear import done*

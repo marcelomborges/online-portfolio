@@ -254,7 +254,7 @@ All providers accept `.com.br` and subdomains.
 
 ```text
 .github/workflows/
-  ci-backend.yml       # pull_request + push: dotnet test/build
+  ci-backend.yml       # pull_request + push: dotnet test (xUnit/Moq/FluentAssertions/Coverlet) + build
   ci-frontend.yml      # pull_request + push: npm lint/test
   deploy-backend.yml   # push main: test → EF migrate → Render Wait for CI
   deploy-frontend.yml  # push main: lint/test → vercel deploy --prod
@@ -464,7 +464,7 @@ Path prefix: `tenants/{tenantId}/...`
 | **Source** | Connect GitHub repo |
 | **Root directory** | `backend` (or repo root if Dockerfile path set) |
 | **Runtime** | Docker |
-| **Dockerfile path** | `backend/Dockerfile` |
+| **Dockerfile path** | `backend/OnlinePortfolio.Api/Dockerfile` |
 | **Branch** | `main` |
 | **Region** | Same as Supabase when possible |
 | **Instance type** | Free |
