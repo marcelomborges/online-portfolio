@@ -1,3 +1,4 @@
+using OnlinePortfolio.Api.Data;
 using OnlinePortfolio.Api.Middleware;
 using Serilog;
 
@@ -7,6 +8,7 @@ builder.Host.UseSerilog((context, _, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddControllers();
+builder.Services.AddApplicationDatabase(builder.Configuration);
 builder.Services.AddHealthChecks();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
