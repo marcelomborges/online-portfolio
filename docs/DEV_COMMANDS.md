@@ -1,6 +1,8 @@
 # Comandos locais — online-portfolio
 
-Referência rápida para desenvolvimento. **Onde não indicado, rode na raiz do repo** (`c:\Projects\online-portfolio`).
+Referência rápida para desenvolvimento.
+
+**Convenção de paths:** todos os caminhos são **relativos à raiz do repositório** (pasta que contém `docker-compose.yml`, `backend/`, `frontend/`, `scripts/`). Em cada seção, **Pasta** indica de onde rodar os comandos daquele bloco.
 
 **Pré-requisitos:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Compose) · [.NET 10 SDK](https://dotnet.microsoft.com/download) · [Node.js LTS](https://nodejs.org/) (frontend nativo) · `dotnet-ef` (migrations)
 
@@ -19,9 +21,9 @@ Referência rápida para desenvolvimento. **Onde não indicado, rode na raiz do 
 
 ## Docker Compose (stack completa)
 
-```cmd
-cd c:\Projects\online-portfolio
+**Pasta:** raiz do repo
 
+```cmd
 docker compose up --build
 ```
 
@@ -76,7 +78,7 @@ docker compose ps
 
 ## Backend — nativo (sem Docker na API)
 
-**Pasta:** `backend\OnlinePortfolio.Api`
+**Pasta:** `backend/OnlinePortfolio.Api/`
 
 Primeira vez:
 
@@ -86,7 +88,7 @@ copy .env.example .env
 dotnet restore
 ```
 
-Postgres precisa estar acessível (`docker compose up -d db` ou stack Compose).
+Postgres precisa estar acessível (na raiz do repo: `docker compose up -d db`).
 
 ```cmd
 dotnet run --launch-profile http
@@ -104,15 +106,16 @@ dotnet build
 
 ## Backend — Visual Studio
 
-1. Abrir `backend\OnlinePortfolio.Api.slnx`
-2. Perfil **`http`** — API nativa + Swagger
-3. Perfil **`Docker (Development)`** — API em container (`Dockerfile.dev`); exige Docker Desktop + workload Container Tools
+**Arquivo:** `backend/OnlinePortfolio.Api.slnx` (abrir na IDE)
+
+1. Perfil **`http`** — API nativa + Swagger
+2. Perfil **`Docker (Development)`** — API em container (`Dockerfile.dev`); exige Docker Desktop + workload Container Tools
 
 ---
 
 ## Frontend — nativo
 
-**Pasta:** `frontend`
+**Pasta:** `frontend/`
 
 Primeira vez:
 
@@ -121,6 +124,8 @@ cd frontend
 copy .env.example .env
 npm install
 ```
+
+Dev server:
 
 ```cmd
 npm run dev
@@ -137,6 +142,8 @@ npm run build
 Env: `NUXT_PUBLIC_API_BASE`, `NUXT_PUBLIC_PLATFORM_HOST`, `NUXT_PUBLIC_APP_HOST`, `NUXT_API_INTERNAL_BASE` — ver `frontend/.env.example`.
 
 **Simular hosts em localhost** — copie `frontend/.env.example` → `.env`. Comentários detalhados de cada `DEV_SURFACE` estão no `.env.example`.
+
+**Pasta:** `frontend/`
 
 ```cmd
 set NUXT_PUBLIC_DEV_SURFACE=tenant
@@ -157,7 +164,8 @@ Detalhes: [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md) · [ADR-016](./ARCH
 
 ## EF Core migrations
 
-**Pasta:** `backend\OnlinePortfolio.Api`  
+**Pasta (migrations):** `backend/OnlinePortfolio.Api/`  
+**Pasta (Docker / psql):** raiz do repo  
 **Banco local:** Compose Postgres (`localhost:5432`).
 
 | Connection string | Uso |
@@ -169,6 +177,8 @@ Config em `appsettings.Development.json` e `.env.example`.
 
 ### Ferramenta (uma vez)
 
+Rode em qualquer pasta (instala global):
+
 ```cmd
 dotnet tool install --global dotnet-ef
 ```
@@ -177,12 +187,15 @@ Atualizar: `dotnet tool update --global dotnet-ef`
 
 ### Postgres no ar
 
+**Pasta:** raiz do repo
+
 ```cmd
-cd c:\Projects\online-portfolio
 docker compose up -d db
 ```
 
 ### Criar nova migration
+
+**Pasta:** `backend/OnlinePortfolio.Api/`
 
 ```cmd
 cd backend\OnlinePortfolio.Api
@@ -204,6 +217,8 @@ dotnet ef migrations add NomeDaMigration
 
 ### Aplicar migrations pendentes
 
+**Pasta:** `backend/OnlinePortfolio.Api/`
+
 ```cmd
 dotnet ef database update
 ```
@@ -217,8 +232,9 @@ dotnet ef database update --connection %ConnectionStrings__Migration%
 
 ### Verificar migrations aplicadas
 
+**Pasta:** raiz do repo
+
 ```cmd
-cd c:\Projects\online-portfolio
 docker compose exec db psql -U portfolio -d portfolio_dev -c "SELECT migration_id FROM \"__EFMigrationsHistory\";"
 ```
 
@@ -229,6 +245,8 @@ docker compose exec db psql -U portfolio -d portfolio_dev -c "\dt"
 ```
 
 ### Outros comandos úteis
+
+**Pasta:** `backend/OnlinePortfolio.Api/`
 
 ```cmd
 dotnet ef migrations list
@@ -258,7 +276,9 @@ A API **não** executa `Migrate()` na startup em produção.
 
 ## Postgres — consultas úteis
 
-Seed DEV-002 (tenants `ana` / `joao` — se `seed-dev.sql` rodou):
+**Pasta:** raiz do repo
+
+Seed DEV-002 (tenants `ana` / `joao` — se `scripts/seed-dev.sql` rodou):
 
 ```cmd
 docker compose exec db psql -U portfolio -d portfolio_dev -c "SELECT slug, display_name FROM tenants ORDER BY slug;"
@@ -274,16 +294,34 @@ docker compose exec db psql -U portfolio -d portfolio_dev
 
 ## Testes (backend)
 
+**Pasta:** `backend/`
+
 ```cmd
 cd backend
 dotnet test OnlinePortfolio.Api.slnx
 ```
 
-Com cobertura:
+Com cobertura (arquivo Cobertura em `backend/TestResults/` — **gitignored**):
 
 ```cmd
-dotnet test --collect:"XPlat Code Coverage"
+dotnet test --collect:"XPlat Code Coverage" --results-directory TestResults
 ```
+
+**Relatório HTML visual** (testes + Coverlet + ReportGenerator; abre o browser no Windows). Cada execução **apaga** `backend/TestResults/` e gera tudo de novo — não acumula runs antigos.
+
+**Pasta:** raiz do repo
+
+```cmd
+powershell -ExecutionPolicy Bypass -File scripts\coverage-backend.ps1
+```
+
+Linux/macOS:
+
+```cmd
+bash scripts/coverage-backend.sh
+```
+
+Saída: `backend/TestResults/CoverageReport/index.html` — pasta `TestResults/` está no `.gitignore`.
 
 Stack: xUnit · Moq · FluentAssertions · Coverlet — [ARCHITECTURE §23](./ARCHITECTURE.md#23-testing).
 
@@ -291,8 +329,9 @@ Stack: xUnit · Moq · FluentAssertions · Coverlet — [ARCHITECTURE §23](./AR
 
 ## Build imagem de produção (API)
 
+**Pasta:** raiz do repo
+
 ```cmd
-cd c:\Projects\online-portfolio
 docker build -t online-portfolio-api -f backend\OnlinePortfolio.Api\Dockerfile backend\OnlinePortfolio.Api
 ```
 

@@ -24,6 +24,16 @@ obj/
 *.sln.docstates
 .vs/
 
+# .NET tests & coverage (local/CI artifacts — never commit)
+TestResults/
+**/TestResults/
+**/CoverageReport/
+*.trx
+*.coverage
+*.coveragexml
+coverage.cobertura.xml
+**/coverage.cobertura.xml
+
 # Environment
 .env
 .env.local

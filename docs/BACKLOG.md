@@ -201,13 +201,14 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 **Description:** Create `OnlinePortfolio.Api.Tests` xUnit project with standard .NET test stack. Folders `Unit/` and `Integration/` already exist; wire project into solution.
 
 **Acceptance criteria:**
-- [ ] `OnlinePortfolio.Api.Tests.csproj` in `backend/OnlinePortfolio.Api.Tests/`
-- [ ] Packages: **xUnit**, **Moq**, **FluentAssertions**, **coverlet.collector**
-- [ ] Project reference → `OnlinePortfolio.Api`
-- [ ] Added to `OnlinePortfolio.Api.slnx`
-- [ ] At least one smoke test green
-- [ ] `dotnet test` from `backend/` succeeds
-- [ ] Stack documented in [ARCHITECTURE §23](./ARCHITECTURE.md#23-testing)
+- [x] `OnlinePortfolio.Api.Tests.csproj` in `backend/OnlinePortfolio.Api.Tests/`
+- [x] Packages: **xUnit**, **Moq**, **FluentAssertions**, **coverlet.collector**
+- [x] Project reference → `OnlinePortfolio.Api`
+- [x] Added to `OnlinePortfolio.Api.slnx`
+- [x] At least one smoke test green
+- [x] `dotnet test` from `backend/` succeeds
+- [x] Stack documented in [ARCHITECTURE §23](./ARCHITECTURE.md#23-testing)
+- [x] Script `scripts/coverage-backend.ps1` (HTML report); `TestResults/` gitignored
 
 ---
 

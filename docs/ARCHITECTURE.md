@@ -1554,9 +1554,14 @@ dotnet test OnlinePortfolio.Api.slnx
 # Só o projeto de testes
 dotnet test OnlinePortfolio.Api.Tests/OnlinePortfolio.Api.Tests.csproj
 
-# Com cobertura (Coverlet → arquivo em TestResults/)
-dotnet test --collect:"XPlat Code Coverage"
+# Com cobertura (Coverlet → arquivo em TestResults/ — gitignored)
+dotnet test --collect:"XPlat Code Coverage" --results-directory TestResults
+
+# Relatório HTML visual (Windows — pasta: raiz do repo)
+powershell -ExecutionPolicy Bypass -File scripts/coverage-backend.ps1
 ```
+
+Saída do relatório: `TestResults/CoverageReport/index.html`. A pasta `TestResults/` **nunca** entra no Git (`.gitignore`).
 
 ### CI
 
