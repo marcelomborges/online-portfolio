@@ -53,8 +53,8 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | Ordem | Provider | Issue | Quando |
 |---|---|---|---|
 | 1 | Registro.br | [DEV-000](#dev-000--register-domain-) | ✅ domínio comprado |
-| 2 | GitHub | [DEV-012](#dev-012--github-repository--platform-integrations) | Após DEV-001 (push) |
-| 3 | Linear | [DEV-013](#dev-013--linear-workspace) | Cedo — gestão de issues |
+| 2 | GitHub | [DEV-012](#dev-012--github-repository--platform-integrations) | ✅ Done |
+| 3 | Linear | [DEV-013](#dev-013--linear-workspace) | ✅ Done |
 | 4 | Supabase | [DEV-008](#dev-008--supabase-production-project) | Antes do deploy API |
 | 5 | Render | [DEV-009](#dev-009--render-api-deployment) | Após DEV-003 + DEV-008 |
 | 6 | SendGrid | [DEV-014](#dev-014--sendgrid-account--api-key) → [DEV-107](#dev-107--contact-form--sendgrid) | Conta antes do Render; código Epic 1 |
@@ -212,7 +212,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 
 ---
 
-### DEV-012 — GitHub repository & platform integrations
+### DEV-012 — GitHub repository & platform integrations ✅
 
 | Field | Value |
 |---|---|
@@ -220,19 +220,20 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Area** | infra, devops |
 | **Priority** | P0 |
 | **Depends on** | DEV-001 |
+| **Status** | ✅ **Done** |
 
 **Description:** Criar repo `online-portfolio` no GitHub, primeiro push do monorepo, conectar Render e Vercel via GitHub App, preparar secrets para Actions. Runbook: [EXTERNAL_PROVIDERS §4](./EXTERNAL_PROVIDERS.md#4-github-cicd--actions).
 
 **Acceptance criteria:**
-- [ ] Repo criado e código do monorepo em `main`
-- [ ] Render GitHub App instalado com acesso ao repo
-- [ ] Vercel GitHub App instalado — PR previews **on**; production auto-deploy **off**
-- [ ] GitHub Actions secrets preparados (placeholders OK até DEV-008/010): `SUPABASE_MIGRATION_CONNECTION_STRING`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
-- [ ] (Recomendado) Branch protection em `main` exigindo Backend CI + Frontend CI
+- [x] Repo criado e código do monorepo em `main`
+- [x] Render GitHub App instalado com acesso ao repo
+- [x] Vercel GitHub App instalado — PR previews **on**; production auto-deploy **off** (Only build pre-production)
+- [x] GitHub Actions secrets preparados (placeholders OK até DEV-008/010): `SUPABASE_MIGRATION_CONNECTION_STRING`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+- [x] (Recomendado) Branch protection em `main` exigindo Backend CI + Frontend CI
 
 ---
 
-### DEV-013 — Linear workspace
+### DEV-013 — Linear workspace ✅
 
 | Field | Value |
 |---|---|
@@ -240,13 +241,14 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Area** | docs, infra |
 | **Priority** | P2 |
 | **Depends on** | — |
+| **Status** | ✅ **Done** |
 
 **Description:** Workspace Linear para issues `DEV-xxx`. Runbook: [EXTERNAL_PROVIDERS §5](./EXTERNAL_PROVIDERS.md#5-linear-project-management).
 
 **Acceptance criteria:**
-- [ ] Conta + workspace criados ([linear.app/signup](https://linear.app/signup))
-- [ ] Labels de `Area` configuradas (`backend`, `frontend`, `infra`, …)
-- [ ] DEV-000 marcado **Done**; DEV-001 (ou próxima issue ativa) criada
+- [x] Conta + workspace criados ([linear.app/signup](https://linear.app/signup))
+- [x] Labels de `Area` configuradas (`backend`, `frontend`, `infra`, …)
+- [x] DEV-000 marcado **Done**; DEV-001 (ou próxima issue ativa) criada
 - [ ] (Opcional) Integração GitHub → repo `online-portfolio`
 
 ---
