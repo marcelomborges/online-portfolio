@@ -295,7 +295,7 @@ A API **não** executa `Migrate()` na startup em produção.
 
 **Workflow:** `.github/workflows/deploy-frontend.yml` — push `main` com mudança em `frontend/**`.
 
-Pipeline: lint/test → `vercel pull` + `vercel env pull` → `npm run build` (Nitro gera `.vercel/output`) → `vercel deploy --prebuilt --prod`. Não usa `vercel build` (evita `nuxt: not found` fora do `node_modules/.bin`).
+Pipeline: lint/test → `vercel pull` + `vercel env pull` → `npm run build` (Nitro gera `frontend/.vercel/output`) → `vercel deploy --prebuilt --prod`. Comandos `vercel *` rodam na **raiz do monorepo** (não em `frontend/`); Root Directory `frontend` no dashboard evita path duplicado `frontend/frontend`. Não usa `vercel build` (evita `nuxt: not found` fora do `node_modules/.bin`).
 
 **GitHub Secrets** (repo → Settings → Secrets and variables → Actions):
 

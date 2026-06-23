@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Conventional Commits
 
-When creating git commits (including when the user asks you to commit), **always** use [Conventional Commits](https://www.conventionalcommits.org/).
+Only create commits when the user **explicitly** asks in the current message — see `.cursor/rules/git-workflow.mdc`. When they do, **always** use [Conventional Commits](https://www.conventionalcommits.org/).
 
 ## Format
 

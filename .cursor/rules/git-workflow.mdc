@@ -1,0 +1,43 @@
+---
+description: Git — agent must not commit, push, checkout, or merge without explicit user request
+alwaysApply: true
+---
+
+# Git workflow — agent restrictions
+
+**The human owns git history and remotes.** The agent prepares changes in the working tree; git publication is manual unless the user explicitly asks otherwise in that message.
+
+## Never run without explicit user request in the current message
+
+- `git commit` (any variant, including `-m`, `--amend`)
+- `git push` / `git push --force` / `git push --force-with-lease`
+- `git checkout` / `git switch` (branch changes)
+- `git merge` / `git rebase` / `git cherry-pick`
+- `git reset` (any mode) / `git restore` on tracked files for rollback
+- `gh pr merge` / merging PRs via CLI
+
+If the user says "fix the code" or "implement the plan", that is **not** permission to commit or push.
+
+## Allowed for diagnosis only (read-only)
+
+- `git status`, `git diff`, `git log`, `git branch`, `git show`, `git fetch` (no push after fetch)
+- `git add` only when the user explicitly asked to **create a commit** in the same message
+
+## When the user explicitly asks to commit
+
+1. Run `git status` and `git diff` first.
+2. Stage only relevant files — never `.env`, credentials, or secrets.
+3. Follow `.cursor/rules/conventional-commits.mdc`.
+4. Create **one** commit; do **not** push unless the user also asked to push in the same message.
+
+## When the user explicitly asks to push or open a PR
+
+1. Confirm branch name and remote with the user if ambiguous.
+2. Prefer `development` → PR → `main`; **never** push directly to `main` unless the user explicitly requests it.
+3. Do not merge PRs without explicit approval.
+
+## Default delivery
+
+After code changes: summarize what changed and tell the user which commands to run locally (commit, push, PR). Do not run those commands yourself unless asked.
+
+Human git flow: [`.github/instructions/git-workflow.instructions.md`](../../.github/instructions/git-workflow.instructions.md).

@@ -4,6 +4,10 @@ applyTo: "**"
 
 # Git flow, CI, and cross-stack review
 
+## Agent / AI restrictions
+
+Do **not** run `git commit`, `git push`, `git checkout`, `git merge`, or `git rebase` unless the user explicitly requests it in the same message. See `.cursor/rules/git-workflow.mdc`.
+
 ## CI structure (decided)
 
 | Workflow | Status | Purpose |

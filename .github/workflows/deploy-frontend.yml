@@ -50,14 +50,19 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
+      # Vercel CLI must run from monorepo root when Root Directory = frontend in
+      # project settings; running inside frontend/ doubles the path (frontend/frontend).
       - name: Pull Vercel project settings
+        working-directory: .
         run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
 
       - name: Pull Vercel environment variables
-        run: vercel env pull .env.production.local --environment=production --yes --token="$VERCEL_TOKEN"
+        working-directory: .
+        run: vercel env pull frontend/.env.production.local --environment=production --yes --token="$VERCEL_TOKEN"
 
       - name: Build (Nuxt / Nitro)
         run: npm run build
 
       - name: Deploy to Vercel (production)
+        working-directory: .
         run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
