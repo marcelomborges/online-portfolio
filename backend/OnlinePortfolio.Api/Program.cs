@@ -3,7 +3,6 @@ using OnlinePortfolio.Api.Middleware;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-
 builder.Host.UseSerilog((context, _, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 

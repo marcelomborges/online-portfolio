@@ -6,7 +6,7 @@ Hub for AI coding agents (Cursor, GitHub Copilot, Copilot coding agent).
 
 ## PRIORITY #1 — Security
 
-Multi-tenant SaaS — **security overrides convenience**. Read [AGENT_GUIDE § Security](docs/AGENT_GUIDE.md#security--priority-1-mandatory).
+Multi-tenant SaaS — **security overrides convenience**. Read [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md).
 
 **Always:** tenant isolation · no IDOR · secrets server-only · validate inputs · invite-only auth · rate limits on public writes · safe prod errors.
 
@@ -19,11 +19,11 @@ Cursor: `.cursor/rules/security-first.mdc` · GitHub: `.github/instructions/secu
 | Topic | Document |
 |---|---|
 | Architecture & domains | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
-| Frontend surfaces & tenant UI | [ADR-016](docs/ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant) · [FRONTEND_COMPONENTS.md](docs/FRONTEND_COMPONENTS.md) |
+| Frontend surfaces & tenant UI | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [FRONTEND_COMPONENTS.md](docs/FRONTEND_COMPONENTS.md) |
 | Database & Identity | [docs/DATABASE.md](docs/DATABASE.md) |
 | Tasks (DEV-xxx) | [docs/BACKLOG.md](docs/BACKLOG.md) |
 | Commits | [docs/CONVENTIONAL_COMMITS.md](docs/CONVENTIONAL_COMMITS.md) |
-| Git flow & CI | [docs/AGENT_GUIDE.md § Git flow](docs/AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review) |
+| Git flow & CI | [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md) |
 | Supabase/Vercel/Render | [docs/EXTERNAL_PROVIDERS.md](docs/EXTERNAL_PROVIDERS.md) |
 
 ## Repository status
@@ -32,7 +32,7 @@ Epic 0 in progress — monorepo, Docker, **CI PR** (`ci-backend`, `ci-frontend`,
 
 ## Non-negotiables
 
-0. **SECURITY FIRST** — see [AGENT_GUIDE § Security](docs/AGENT_GUIDE.md#security--priority-1-mandatory); tenant isolation and secrets are never optional.
+0. **SECURITY FIRST** — see [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md); tenant isolation and secrets are never optional.
 1. **BFF** — Nuxt proxies all API calls; browser never hits Render directly.
 2. **Auth** — ASP.NET Identity completo + JWT; roles in `AspNetRoles`; admin at `app.{domain}` only.
 3. **No Supabase Auth** in frontend.
@@ -40,13 +40,13 @@ Epic 0 in progress — monorepo, Docker, **CI PR** (`ci-backend`, `ci-frontend`,
 5. **Email** — SendGrid `noreply@` transactional only (no inbox v1).
 6. **Commits** — [Conventional Commits](docs/CONVENTIONAL_COMMITS.md); commit/push only when user asks.
 7. **Scope** — implement BACKLOG acceptance criteria; minimal diff; PT-BR in product docs.
-8. **Git/CI** — workflows separados; CI PR + coverage comments on PR; deploy **prod only** ([ADR-015](docs/ARCHITECTURE.md#adr-015-deploy-somente-em-production)) — [AGENT_GUIDE § Git flow](docs/AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review).
+8. **Git/CI** — workflows separados; CI PR + coverage comments on PR; deploy **prod only** ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)) — [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md).
 
 ## Implementation order
 
 Epic 0 → Epic 1.5 (login + add user) → Epic 1 (public sites) → …
 
-See [BACKLOG — Suggested implementation order](docs/BACKLOG.md#suggested-implementation-order-first-sprints).
+See [docs/BACKLOG.md](docs/BACKLOG.md).
 
 ## Tool-specific config
 

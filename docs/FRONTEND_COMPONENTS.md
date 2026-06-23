@@ -2,7 +2,7 @@
 
 Prioridade do projeto: **evitar código repetitivo** usando componentes Vue reutilizáveis e recursos nativos do Nuxt 3.
 
-**Decisão arquitetural:** [ARCHITECTURE.md § ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant) — três superfícies (`app` / `platform` / `tenant`), UI pública customizável por slug, login/admin padronizado.
+**Decisão arquitetural:** [docs/ARCHITECTURE.md](./ARCHITECTURE.md) — três superfícies (`app` / `platform` / `tenant`), UI pública customizável por slug, login/admin padronizado.
 
 Referência operacional (humanos e agentes). Stack: Nuxt 3.21 + Vue 3 + TypeScript strict.
 
@@ -96,7 +96,7 @@ frontend/
 
 **Sem prefixo no filename** — o slug vem da **pasta** (`tenants/{slug}/`). Landing e contato são **exclusivos por tenant** (sem fallback genérico). Tenants no repo: **ana** e **joao** (seed DEV-002).
 
-**Admin/login (`components/app/`):** UI única em `app.onlineportfolio.com.br`. Tenant ativo vem do **usuário logado** (`/auth/me`), não do hostname. Ver § Dark mode estrutural.
+**Admin/login (`components/app/`):** UI única em `app.onlineportfolio.com.br`. Tenant ativo vem do **usuário logado** (`/auth/me`), não do hostname. Ver docs/FRONTEND_COMPONENTS.md
 
 ---
 
@@ -293,7 +293,7 @@ Componentes `ui/` referenciam `var(--op-*)` — evita repetir cores/fontes.
 
 | Artefato | Descrição |
 |---|---|
-| [ARCHITECTURE.md § ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant) | Decisão: três superfícies + UI por tenant |
+| [docs/ARCHITECTURE.md](./ARCHITECTURE.md) | Decisão: três superfícies + UI por tenant |
 | `frontend/middleware/resolve-host.global.ts` | Host → surface + slug |
 | `frontend/composables/useTenantComponent.ts` | Resolução Ana* → Public* |
 | `frontend/components/` | Árvore app / platform / public / ui |
@@ -301,4 +301,4 @@ Componentes `ui/` referenciam `var(--op-*)` — evita repetir cores/fontes.
 | `.cursor/rules/frontend-components.mdc` | Regra para agentes Cursor |
 | `.github/instructions/frontend.instructions.md` | Instruções Copilot/CI para `frontend/**` |
 
-Ver também [ARCHITECTURE.md §5](./ARCHITECTURE.md#5-frontend-nuxt--vercel) (frontend / BFF).
+Ver também [docs/ARCHITECTURE.md](./ARCHITECTURE.md) (frontend / BFF).

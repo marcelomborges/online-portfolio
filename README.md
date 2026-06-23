@@ -61,15 +61,15 @@ cd frontend && cp .env.example .env && npm install && npm run dev
 → http://localhost:3000 · erro customizado em `/__nuxt_error` ou rota inexistente (404)
 
 ```bash
-# Backend
-cd backend/OnlinePortfolio.Api && cp .env.example .env && dotnet run
+# Backend (Postgres via Docker Compose na raiz: docker compose up -d db)
+cd backend/OnlinePortfolio.Api && dotnet run
 ```
 
 Stack completa local = Docker Compose acima.
 
 ### EF Core migrations (DEV-004+)
 
-Ver **[docs/DEV_COMMANDS.md](./docs/DEV_COMMANDS.md#ef-core-migrations)** — comandos Docker vs nativo, migrations, quando reaplicar `database update`.
+Ver **[docs/DEV_COMMANDS.md](./docs/DEV_COMMANDS.md)** — comandos Docker vs nativo, migrations, quando reaplicar `database update`.
 
 ### Testes (backend)
 
@@ -78,7 +78,7 @@ cd backend
 dotnet test OnlinePortfolio.Api.slnx
 ```
 
-Stack: **xUnit** · **Moq** · **FluentAssertions** · **Coverlet** · `dotnet test` — detalhes em [ARCHITECTURE §23](docs/ARCHITECTURE.md#23-testing).
+Stack: **xUnit** · **Moq** · **FluentAssertions** · **Coverlet** · `dotnet test` — detalhes em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Documentation
 

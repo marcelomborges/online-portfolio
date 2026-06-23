@@ -10,9 +10,9 @@ Instructions for **Cursor**, **GitHub Copilot**, **Copilot coding agent**, and o
 | Architecture | [ARCHITECTURE.md](./ARCHITECTURE.md) |
 | Schema | [DATABASE.md](./DATABASE.md) |
 | Tasks | [BACKLOG.md](./BACKLOG.md) |
-| Git flow & CI | [§ Git flow](#git-flow-ci-and-cross-stack-review) |
+| Git flow & CI | [docs/AGENT_GUIDE.md](./AGENT_GUIDE.md) (seção Git flow) |
 | Providers | [EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) |
-| Security tasks | [BACKLOG.md § Security](./BACKLOG.md#security) (SEC-001…) |
+| Security tasks | [docs/BACKLOG.md](./BACKLOG.md) (SEC-001…) |
 
 ---
 
@@ -30,7 +30,7 @@ Instructions for **Cursor**, **GitHub Copilot**, **Copilot coding agent**, and o
 
 Agents must treat security as **the highest priority** — above delivery speed, DX shortcuts, or “temporary” relaxations.
 
-Cross-reference: [ARCHITECTURE.md §18](./ARCHITECTURE.md#18-security-requirements) · BACKLOG [SEC-001…SEC-011](./BACKLOG.md#security)
+Cross-reference: [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · BACKLOG [docs/BACKLOG.md](./BACKLOG.md)
 
 ### Threat model (short)
 
@@ -146,7 +146,7 @@ One email = one account globally. PlatformAdmin has `tenant_id = NULL`.
 | **Não usar** | Um único `ci.yml` que sempre roda backend e frontend |
 | **Monorepo** | Um repo Git; workflows separados ≠ repos separados |
 
-Detalhes: [ARCHITECTURE §15](./ARCHITECTURE.md#15-deployment--cicd) · [ADR-015](./ARCHITECTURE.md#adr-015-deploy-somente-em-production) · [EXTERNAL_PROVIDERS §4.3](./EXTERNAL_PROVIDERS.md#43-workflow-files)
+Detalhes: [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md)
 
 **Ambientes:** deploy na nuvem **somente production** (`main`). Dev = Docker local; PR = Vercel preview. Sem staging deployado no v1.
 
@@ -157,11 +157,12 @@ Dispara em `pull_request` e `push` → `main`, com **path filters** — só roda
 | Workflow | Status check | Comandos | Paths (exemplos) |
 |---|---|---|---|
 | `ci-backend.yml` | **Backend CI** | `dotnet test` (Release) + Coverlet | `backend/**`, `docs/DATABASE.md`, workflow deploy-backend |
+| `deploy-backend.yml` | **Backend Deploy** | `dotnet test` → `dotnet ef database update` (prod) | `push` → `main`; paths `backend/**`, `docs/DATABASE.md` |
 | `ci-frontend.yml` | **Frontend CI** | `npm run lint` (typecheck) + `npm run test:coverage` (Vitest) | `frontend/**`, workflow deploy-frontend, action coverage comment |
 
 **Path filters:** PR que muda só `docs/` ou só `scripts/` pode **não** disparar nenhum CI — ok. PR que muda `backend/` **e** `frontend/` dispara **os dois**. Checks **skipped** por path filter contam como OK no GitHub (branch protection).
 
-**Deploy** (`deploy-backend.yml`, `deploy-frontend.yml`) — ainda não implementados (DEV-007 / DEV-007b).
+**Deploy** (`deploy-backend.yml` ✅, `deploy-frontend.yml` — DEV-007b).
 
 ### Comentários de coverage no PR
 
@@ -188,7 +189,7 @@ Dois comentários independentes no mesmo PR quando ambos os CIs rodam. Artefatos
 | Env var | Render, `backend/OnlinePortfolio.Api/.env.example` | Vercel, `frontend/.env.example`, `runtimeConfig` |
 | Tenant isolation | EF filters + membership checks | Never trust client `tenantId`; correct host routing |
 | Admin feature | Protected routes | UI em `components/app/`, host `app.*`, dark mode (`surface-dark`) |
-| Site público tenant | API pública (só conteúdo publicado) | `{slug}.*`, `public/tenants/{slug}/`, `themes/{slug}.css` ([ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant)) |
+| Site público tenant | API pública (só conteúdo publicado) | `{slug}.*`, `public/tenants/{slug}/`, `themes/{slug}.css` ([docs/ARCHITECTURE.md](./ARCHITECTURE.md)) |
 | Email / Storage (fases futuras) | SendGrid / multipart API | Proxy ou UI se aplicável |
 
 4. **Docs** — `DATABASE.md` se schema; `.env.example` nos dois lados se novos env vars; `EXTERNAL_PROVIDERS.md` se novo secret de provider.
@@ -206,9 +207,9 @@ Dois comentários independentes no mesmo PR quando ambos os CIs rodam. Artefatos
 - **Docs (product/domain):** Brazilian Portuguese.
 - **Commits, API names, code identifiers:** English.
 - Backend: EF Core, snake_case columns in Postgres, OpenAPI on API.
-- Backend tests: xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` ([ARCHITECTURE §23](./ARCHITECTURE.md#23-testing)).
+- Backend tests: xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` ([docs/ARCHITECTURE.md](./ARCHITECTURE.md)).
 - Frontend tests: Vitest + istanbul coverage (expand in UT-009+); CI runs `npm run lint` + `npm run test:coverage`.
-- **Frontend:** thin pages, three surfaces (app/platform/tenant), tenant UI in `public/tenants/{slug}/` — [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant) · [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md).
+- **Frontend:** thin pages, three surfaces (app/platform/tenant), tenant UI in `public/tenants/{slug}/` — [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md).
 - Do not over-engineer helpers or tests unless requested or in BACKLOG.
 
 ---
@@ -238,7 +239,7 @@ online-portfolio/
 3. **Epic 1** — public tenant sites (DEV-101…105)
 4. **Epic 3** — uploads via API
 
-Full order: [BACKLOG.md § Suggested implementation order](./BACKLOG.md#suggested-implementation-order-first-sprints).
+Full order: [docs/BACKLOG.md](./BACKLOG.md).
 
 When implementing a task, open the matching `DEV-xxx` entry and its acceptance criteria.
 
@@ -264,6 +265,6 @@ When implementing a task, open the matching `DEV-xxx` entry and its acceptance c
 
 ## When unsure
 
-1. Check [ARCHITECTURE.md](./ARCHITECTURE.md) §2.1 (domains) and §9 (auth).
+1. Check [ARCHITECTURE.md](./ARCHITECTURE.md) seção 2.1 (domains) and seção 9 (auth).
 2. Check [DATABASE.md](./DATABASE.md) for schema truth.
 3. Check [BACKLOG.md](./BACKLOG.md) for task scope — do not expand beyond acceptance criteria without asking.

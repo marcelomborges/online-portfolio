@@ -13,7 +13,7 @@ Multi-tenant artist portfolio SaaS. **Full agent guide:** [docs/AGENT_GUIDE.md](
 - **Public API:** published content only; rate-limit contact/login.
 - **Prod:** no stack traces; lock down Swagger.
 
-Details: [AGENT_GUIDE § Security](../docs/AGENT_GUIDE.md#security--priority-1-mandatory) · [ARCHITECTURE §18](../docs/ARCHITECTURE.md#18-security-requirements)
+Details: [docs/AGENT_GUIDE.md](./AGENT_GUIDE.md) · [docs/ARCHITECTURE.md](./ARCHITECTURE.md)
 
 Path instructions: `.github/instructions/security.instructions.md`
 
@@ -48,7 +48,7 @@ Security fixes: `fix(backend): …` or mention security in body. Full guide: [do
 
 - **CI + deploy separados:** `ci-backend.yml` + `ci-frontend.yml` (✅) + `deploy-backend.yml` + `deploy-frontend.yml` (planned) — not one combined `ci.yml`.
 - **PR coverage comments:** sticky **Backend coverage** / **Frontend coverage** — only when that stack's CI runs on the PR.
-- **Before merge:** green CI + **paired components** — API ↔ proxy/types/UI; schema ↔ migration; auth/env both sides. See [AGENT_GUIDE § Git flow](../docs/AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review).
+- **Before merge:** green CI + **paired components** — API ↔ proxy/types/UI; schema ↔ migration; auth/env both sides. See [docs/AGENT_GUIDE.md](./AGENT_GUIDE.md).
 
 Path instructions: `.github/instructions/git-workflow.instructions.md`
 
@@ -56,8 +56,8 @@ Path instructions: `.github/instructions/git-workflow.instructions.md`
 
 - Minimal scope; match BACKLOG acceptance criteria.
 - Backend: EF Core, snake_case Postgres columns, `/api/v1/` versioning.
-- Backend tests: xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` ([ARCHITECTURE §23](../docs/ARCHITECTURE.md#23-testing)).
-- Frontend: Nuxt 3, host-based routing; **3 surfaces** (app/platform/tenant), per-tenant public UI — [ADR-016](../docs/ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant) · [FRONTEND_COMPONENTS.md](../docs/FRONTEND_COMPONENTS.md).
+- Backend tests: xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` ([docs/ARCHITECTURE.md](./ARCHITECTURE.md)).
+- Frontend: Nuxt 3, host-based routing; **3 surfaces** (app/platform/tenant), per-tenant public UI — [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · [FRONTEND_COMPONENTS.md](../docs/FRONTEND_COMPONENTS.md).
 - Product/docs text: Brazilian Portuguese. Commits and code identifiers: English.
 
 ## Avoid

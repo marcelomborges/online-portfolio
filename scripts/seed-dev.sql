@@ -1,6 +1,6 @@
 -- Dev bootstrap until EF migrations (DEV-004) own the schema.
 -- Auto-runs on first `docker compose up` (empty Postgres volume).
--- Re-seed after wipe: see README § Docker Compose.
+-- Re-seed after wipe: see README Docker Compose section.
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
