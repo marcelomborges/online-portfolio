@@ -63,6 +63,14 @@ jobs:
       - name: Build (Nuxt / Nitro)
         run: npm run build
 
+      # npm run build runs in frontend/ (Nitro preset vercel → frontend/.vercel/output);
+      # vercel deploy --prebuilt from monorepo root expects .vercel/output at repo root.
+      - name: Stage prebuilt output for Vercel CLI
+        working-directory: .
+        run: |
+          test -d frontend/.vercel/output
+          cp -r frontend/.vercel/output .vercel/output
+
       - name: Deploy to Vercel (production)
         working-directory: .
         run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
