@@ -95,7 +95,7 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 | 4 | Supabase | [DEV-008](#dev-008--supabase-production-project) · [DEV-008b](#dev-008b--supabase-dev-project) | ✅ prod (`online-portfolio-db-prod`); dev opcional |
 | 5 | Render | [DEV-009](#dev-009--render-api-deployment) | ✅ Done — API prod `*.onrender.com` |
 | 6 | Resend | [DEV-014](#dev-014--resend-account--api-key) → [DEV-107](#dev-107--contact-form--resend) | ✅ conta + Render env; código Epic 1 |
-| 7 | Vercel | [DEV-010](#dev-010--vercel-frontend-deployment) | Após DEV-005 |
+| 7 | Vercel | [DEV-010](#dev-010--vercel-frontend-deployment) | ✅ Done — `online-portfolio-web` |
 | 8 | DNS + email DNS | [DEV-011](#dev-011--dns--https-production) | Após Render + Vercel |
 | 9 | GitHub Actions | [DEV-006](#dev-006--github-actions-ci-pr--workflows-separados) · [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) ✅ · [DEV-007b](#dev-007b--github-actions-deploy-pipeline-frontend) | ✅ CI + backend deploy; frontend deploy pendente |
 | — | Google Workspace | [DEV-404](#dev-404--google-workspace-operator-inbox) | Opcional, pós-lançamento |
@@ -450,23 +450,24 @@ Deploy backend Docker image to Render free tier; connect GitHub repo. Runbook: [
 
 ---
 
-### DEV-010 — Vercel frontend deployment
+### DEV-010 — Vercel frontend deployment ✅
 
 **Descrição:**
 Connect repo to Vercel; root directory `frontend`; PR previews enabled; **production deploy via `deploy-frontend.yml`** (DEV-007b). Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Critérios de aceitação:**
-- [ ] Conta Vercel criada; projeto importado do GitHub (`frontend/` root)
-- [ ] PR preview deploys enabled
-- [ ] Production auto-deploy **disabled** in Vercel (prod = Actions)
-- [ ] Env vars configured in Vercel dashboard (`NUXT_PUBLIC_*`, `NUXT_API_INTERNAL_BASE`)
-- [ ] Custom domains deferred until [DEV-011](#dev-011--dns--https-production)
+- [x] Conta Vercel criada; projeto `online-portfolio-web` importado do GitHub (`frontend/` root)
+- [x] PR preview deploys enabled (testado — comentário da Vercel no PR)
+- [x] Production auto-deploy **disabled** in Vercel (`Only build pre-production`; prod = Actions DEV-007b)
+- [x] Env vars configured in Vercel dashboard (`NUXT_PUBLIC_*`, `NUXT_API_INTERNAL_BASE` → Render `*.onrender.com`)
+- [x] Custom domains deferred until [DEV-011](#dev-011--dns--https-production)
 
 **Observações:**
 - **Phase:** 0
 - **Area:** devops
 - **Priority:** P1
 - **Depends on:** DEV-005, DEV-012
+- **Status:** ✅ **Done** — deploy Ready; `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` no password manager (GitHub Secrets → DEV-007b)
 
 ---
 
@@ -2015,13 +2016,13 @@ Dedicated security activities (beyond tests). Cross-reference [docs/ARCHITECTURE
 | DEV-008 | Supabase prod `online-portfolio-db-prod` |
 | DEV-014 | Resend — conta + API key + Render env |
 | DEV-009 | API Render prod — env vars, `/health`, After CI Checks Pass |
+| DEV-010 | Vercel `online-portfolio-web` — previews, env vars, prod auto-deploy off |
 
 #### ⬜ Restante Sprint 1 (semana 2 — até 27/06)
 
 | Issue | Prioridade |
 |-------|------------|
-| DEV-010 | Vercel projeto + env vars |
-| DEV-007b | `deploy-frontend.yml` |
+| DEV-007b | `deploy-frontend.yml` + GitHub Secrets `VERCEL_*` |
 | DEV-011 | *(stretch)* DNS apex + `api.` + DKIM Resend |
 
 **Fora do sprint 1:** DEV-008b (Supabase dev opcional) · Epic 1+
@@ -2032,7 +2033,7 @@ Dedicated security activities (beyond tests). Cross-reference [docs/ARCHITECTURE
 
 **Objetivo:** produção fechada (front + API + domínios), pronto para features.
 
-DEV-011 → DEV-010 → DEV-007b → SEC-001 → UT-003 → IT-006
+DEV-011 → DEV-007b → SEC-001 → UT-003 → IT-006
 
 **Critério de saída:** `onlineportfolio.com.br` + `app.` no Vercel, `api.` no Render, e-mail DKIM OK, deploys só via Actions.
 
