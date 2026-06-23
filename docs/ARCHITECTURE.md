@@ -1196,7 +1196,7 @@ Pull request:
 Push to main:
   deploy-backend.yml  → dotnet test → EF migrate (session pooler :5432) → status check
   Render              → deploy API (Wait for CI — após deploy-backend green)
-  deploy-frontend.yml → npm lint/test → vercel deploy --prod
+  deploy-frontend.yml → npm lint/test → vercel pull → npm run build → vercel deploy --prebuilt --prod
 ```
 
 **Prod simétrico:** backend e frontend têm workflow de deploy próprio. **Preview de PR** continua no Vercel (integração nativa).
@@ -1228,7 +1228,7 @@ In Render service settings → enable **Wait for CI** (or equivalent). Render wa
   ci-backend.yml       # pull_request + push: dotnet test, build (paths backend/**)
   ci-frontend.yml      # pull_request + push: npm lint, test (paths frontend/**)
   deploy-backend.yml   # push main → production: test → EF migrate → gate Render
-  deploy-frontend.yml  # push main → production: lint/test → vercel deploy --prod
+  deploy-frontend.yml  # push main → production: lint/test → vercel pull → npm run build → vercel deploy --prebuilt --prod
 ```
 
 **Path filters (exemplo):**
@@ -1243,6 +1243,30 @@ In Render service settings → enable **Wait for CI** (or equivalent). Render wa
 PRs **só em `docs/`** podem incluir ambos workflows (paths ampliados) ou um `ci-docs.yml` leve — ver [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Branch protection em `main`:** exigir status checks **Backend CI** e **Frontend CI** (checks skipped por path filter contam como OK no GitHub).
+
+### CI vs Deploy — responsabilidades
+
+Cada workflow de **deploy** roda **só os testes da própria stack** (embutidos no job). **Não** invoca o workflow de CI separado nem a stack oposta:
+
+| Workflow | O que roda antes do deploy |
+|---|---|
+| `deploy-backend.yml` | `dotnet test` + `ef database update` |
+| `deploy-frontend.yml` | `npm run lint` + `npm run test:coverage` + Vercel CLI |
+| `ci-backend.yml` | `dotnet test` + coverage (PR comment) — **não deploya** |
+| `ci-frontend.yml` | lint + test + coverage (PR comment) — **não deploya** |
+
+**Push `main` (path filters):**
+
+| Mudança | Dispara |
+|---|---|
+| Só `backend/**` | Backend CI + Backend Deploy (Frontend CI **não**) |
+| Só `frontend/**` | Frontend CI + Frontend Deploy (Backend CI **não**) |
+| Só `docs/**` | Nada (salvo path do workflow incluir o doc) |
+| Ambos | Os 4 workflows (2 CI + 2 deploy) |
+
+**Duplicação intencional:** no mesmo push, CI e deploy da mesma stack rodam testes separados — CI fornece status check nomeado para branch protection; deploy é gate autossuficiente antes de migrate/Vercel (não depende de outro workflow ter terminado).
+
+**Melhorias opcionais (futuro):** reusable workflows `test-backend.yml` / `test-frontend.yml`; `workflow_run` para deploy após CI green; `ci-docs.yml` leve para PRs só em `docs/`. Nenhuma é necessária para o desenho atual.
 
 **GitHub Secrets (Actions):**
 

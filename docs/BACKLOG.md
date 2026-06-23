@@ -366,7 +366,7 @@ Dois workflows de CI no PR — **separados** por stack (não um `ci.yml` único)
 
 **Critérios de aceitação:**
 - [x] `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` in GitHub Secrets
-- [x] `deploy-frontend.yml` — lint/test → `vercel pull` → `vercel build --prod` → `vercel deploy --prebuilt --prod`
+- [x] `deploy-frontend.yml` — lint/test → `vercel pull` + `vercel env pull` → `npm run build` → `vercel deploy --prebuilt --prod`
 - [x] Workflow runs on push to `main` (paths: `frontend/**`, workflow file)
 - [x] Production auto-deploy **disabled** on Vercel (`Only build pre-production`; DEV-010)
 - [ ] 1º **Frontend Deploy** green na `main` (após merge do workflow)
