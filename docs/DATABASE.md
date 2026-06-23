@@ -434,11 +434,11 @@ users:
 
 **Platform admin (você):** seed de `users` (`PlatformAdmin`, `tenant_id` NULL) + senha.
 
-**Usuários do tenant (por artista):** API de convite do PlatformAdmin → SendGrid → accept-invite → login.
+**Usuários do tenant (por artista):** API de convite do PlatformAdmin → Resend → accept-invite → login.
 
 ```text
 1. PlatformAdmin → POST .../tenants/{tenantId}/users/invite { email, role }
-2. API → INSERT user (pending) + `AddToRoleAsync(role)` + SendGrid com link de convite
+2. API → INSERT user (pending) + `AddToRoleAsync(role)` + Resend com link de convite
 3. Artist opens app.onlineportfolio.com.br/accept-invite?token=...
 4. POST /auth/accept-invite { token, password } → email_confirmed=true
 5. POST /auth/login → JWT + redirect to /admin
@@ -473,7 +473,7 @@ Admin MVP tem **duas funções**: autenticar usuários e permitir que o Platform
 1. PlatformAdmin logged in → /platform/tenants/{tenantId}/users
 2. Form: email + role (Owner | Editor) → "Add user"
 3. Nuxt proxy → POST /api/v1/platform/tenants/{tenantId}/users/invite
-4. API → INSERT pending user + SendGrid invite email (accept-invite link)
+4. API → INSERT pending user + Resend invite email (accept-invite link)
 5. Invitee sets password via POST /auth/accept-invite
 6. Invitee logs in at app.onlineportfolio.com.br/login (seção 9.1)
 ```

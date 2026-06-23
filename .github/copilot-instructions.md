@@ -8,7 +8,7 @@ Multi-tenant artist portfolio SaaS. **Full agent guide:** [docs/AGENT_GUIDE.md](
 
 - **Tenant isolation:** `TenantId` + EF filters + API checks on every protected operation; no IDOR.
 - **Never trust client tenant:** authorize from JWT user row, not body/query `tenantId`.
-- **Secrets:** service role, JWT secret, SendGrid — **Render only**; never in git or Nuxt public env.
+- **Secrets:** service role, JWT secret, Resend — **Render only**; never in git or Nuxt public env.
 - **Auth:** invite-only; lockout; generic login errors; short-lived JWT.
 - **Public API:** published content only; rate-limit contact/login.
 - **Prod:** no stack traces; lock down Swagger.
@@ -28,7 +28,7 @@ Path instructions: `.github/instructions/security.instructions.md`
 - **BFF:** Nuxt server proxy → ASP.NET API; browser never calls Render directly.
 - **Auth:** ASP.NET Identity **completo** + JWT; `AspNetRoles` / `AspNetUserRoles`; no Supabase Auth in frontend.
 - **Hosts:** admin + login = `app.onlineportfolio.com.br`; public = `{slug}.onlineportfolio.com.br`.
-- **Email v1:** SendGrid `noreply@` send-only; no Google Workspace mailbox yet.
+- **Email v1:** Resend `noreply@` send-only; no Google Workspace mailbox yet.
 - **Tenants:** PlatformAdmin invites users in v1 only.
 - **Supabase:** Postgres + Storage only; EF migrations; no direct browser → DB.
 

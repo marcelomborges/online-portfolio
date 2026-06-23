@@ -85,10 +85,11 @@ Stack: **xUnit** · **Moq** · **FluentAssertions** · **Coverlet** · `dotnet t
 | Doc | Description |
 |---|---|
 | [DEV_COMMANDS.md](docs/DEV_COMMANDS.md) | **Comandos locais** (Docker, nativo, migrations) |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design and decisions (ADR-015, ADR-016, …) |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design and decisions (ADR-015–ADR-017, …) |
 | [FRONTEND_COMPONENTS.md](docs/FRONTEND_COMPONENTS.md) | Nuxt surfaces, tenant UI, composables |
 | [DATABASE.md](docs/DATABASE.md) | PostgreSQL schema |
 | [BACKLOG.md](docs/BACKLOG.md) | Development tasks (Linear) |
+| [ADR-017-resend-transactional-email.md](docs/ADR-017-resend-transactional-email.md) | Email provider decision (Resend) |
 | [EXTERNAL_PROVIDERS.md](docs/EXTERNAL_PROVIDERS.md) | Third-party setup |
 | [AGENT_GUIDE.md](docs/AGENT_GUIDE.md) | AI agent rules |
 

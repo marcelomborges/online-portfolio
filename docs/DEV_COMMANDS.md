@@ -84,9 +84,10 @@ Primeira vez:
 
 ```cmd
 cd backend\OnlinePortfolio.Api
-copy .env.example .env
 dotnet restore
 ```
+
+Config local: `appsettings.Development.json` (connection strings, Resend, etc.).
 
 Postgres precisa estar acessível (na raiz do repo: `docker compose up -d db`).
 
@@ -287,6 +288,38 @@ dotnet ef database update NomeDaMigrationAnterior
 | Deploy prod | CI (`deploy-backend.yml`) no Supabase — não na startup da API |
 
 A API **não** executa `Migrate()` na startup em produção.
+
+---
+
+## Resend — smoke test (DEV-014)
+
+Valida conta + API key antes de DEV-107 / DEV-011. Runbook completo: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 8.5.
+
+**Pasta:** qualquer (console temporário) ou futuro `backend/OnlinePortfolio.Api/`
+
+```bash
+dotnet add package Resend
+```
+
+Substituir `re_xxxxxxxxx` pela key real (password manager — **nunca** commitar):
+
+```csharp
+using Resend;
+
+IResend resend = ResendClient.Create("re_xxxxxxxxx");
+
+var resp = await resend.EmailSendAsync(new EmailMessage()
+{
+    From = "onboarding@resend.dev",
+    To = "seu-email@exemplo.com",
+    Subject = "Hello World",
+    HtmlBody = "<p>Congrats on sending your <strong>first email</strong>!</p>",
+});
+```
+
+Até DEV-011, usar `From = "onboarding@resend.dev"`. Depois: `noreply@onlineportfolio.com.br`.
+
+**Render (prod):** `Resend__ApiKey`, `Resend__FromEmail`, `Resend__FromName` — ver [EXTERNAL_PROVIDERS](./EXTERNAL_PROVIDERS.md) seção 8.2.
 
 ---
 

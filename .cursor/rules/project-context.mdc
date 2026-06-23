@@ -18,7 +18,7 @@ alwaysApply: true
 - **Admin login:** only `app.onlineportfolio.com.br` — not tenant subdomains
 - **Public sites:** `{slug}.onlineportfolio.com.br` per tenant — UI custom in `components/public/tenants/{slug}/` only ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md))
 - **Admin UI:** standardized in `components/app/` — never per-tenant
-- **Email v1:** SendGrid `noreply@` send-only — no mailbox
+- **Email v1:** Resend `noreply@` send-only — no mailbox ([ADR-017](docs/ADR-017-resend-transactional-email.md))
 - **Secrets:** never commit `.env` or API keys; service role only on backend
 
 ## Roles (v1)

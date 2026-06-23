@@ -11,7 +11,7 @@ Reference: `docs/AGENT_GUIDE.md` (Security section), `docs/ARCHITECTURE.md`, BAC
 ## Always
 
 - Treat **tenant isolation** as mandatory: `TenantId` filters, membership checks, no IDOR.
-- Keep **secrets off** frontend and git; service role and SendGrid keys server-only.
+- Keep **secrets off** frontend and git; service role and Resend keys server-only.
 - **Validate** all inputs on write endpoints; limit string lengths.
 - Use **invite-only** auth; generic login failure messages.
 - **Rate-limit** public write endpoints (contact, auth attempts).
