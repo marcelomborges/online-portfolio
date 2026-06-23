@@ -60,7 +60,7 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 | 6 | SendGrid | [DEV-014](#dev-014--sendgrid-account--api-key) → [DEV-107](#dev-107--contact-form--sendgrid) | Conta antes do Render; código Epic 1 |
 | 7 | Vercel | [DEV-010](#dev-010--vercel-frontend-deployment) | Após DEV-005 |
 | 8 | DNS + email DNS | [DEV-011](#dev-011--dns--https-production) | Após Render + Vercel |
-| 9 | GitHub Actions | [DEV-006](#dev-006--github-actions-ci-pr--workflows-separados) · [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) · [DEV-007b](#dev-007b--github-actions-deploy-pipeline-frontend) | ✅ CI + backend deploy; frontend deploy pendente |
+| 9 | GitHub Actions | [DEV-006](#dev-006--github-actions-ci-pr--workflows-separados) · [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) ✅ · [DEV-007b](#dev-007b--github-actions-deploy-pipeline-frontend) | ✅ CI + backend deploy; frontend deploy pendente |
 | — | Google Workspace | [DEV-404](#dev-404--google-workspace-operator-inbox) | Opcional, pós-lançamento |
 | — | Stripe / billing | [DEV-403](#dev-403--billing--subscriptions-optional--skip-until-charging) | **Opcional** — skip no v1 |
 
@@ -303,15 +303,23 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 | **Area** | devops |
 | **Priority** | P1 |
 | **Depends on** | DEV-006, DEV-004 |
-| **Status** | ✅ **Done** — workflow `deploy-backend.yml`; Render **Wait for CI** manual |
+| **Status** | ✅ **Done** |
 
 **Description:** `deploy-backend.yml` on push to `main` — backend test → EF migrate (Supabase session pooler `:5432`) → pass status for Render After CI Checks Pass.
 
 **Acceptance criteria:**
-- [x] `SUPABASE_MIGRATION_CONNECTION_STRING` in GitHub Secrets
+- [x] `SUPABASE_MIGRATION_CONNECTION_STRING` in GitHub Secrets (Session pooler `:5432`, IPv4)
 - [x] Migrations run before deploy status succeeds
-- [ ] Render **Wait for CI** documented and enabled (waits on check **Backend Deploy**)
+- [x] Render **After CI Checks Pass** documented and enabled (gate em check **Backend Deploy**)
 - [x] Branch protection on `main` requires Backend CI + Frontend CI (recommended)
+
+**Done notes (2025-06-21):**
+- Workflow `.github/workflows/deploy-backend.yml` — trigger `push` → `main` (paths `backend/**`, `docs/DATABASE.md`)
+- Job **Backend Deploy**: `dotnet test` → `dotnet ef database update` (secret `SUPABASE_MIGRATION_CONNECTION_STRING`)
+- `dotnet-ef` 10.0.4 em `backend/.config/dotnet-tools.json`
+- Render: Auto-Deploy On + **After CI Checks Pass**; Root Directory `backend`; primeiro deploy prod verde
+- Fix CI: `ci-backend.yml` / `ci-frontend.yml` reportam status em todo PR (`dorny/paths-filter` + skip interno)
+- Docs: connection strings (Transaction `:6543` runtime, Session `:5432` migrate, sem direct no pipeline) — [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 6.2 · [docs/ARCHITECTURE.md](./ARCHITECTURE.md) seção 7
 
 ---
 
@@ -358,7 +366,7 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 - Project ref: `mfxuthlwrfjscxnnjeud` · região US East · pooler Transaction `aws-1-us-east-1.pooler.supabase.com:6543`
 - Templates sem senha em `backend/OnlinePortfolio.Api/appsettings.json` (`Default` = Transaction pooler `:6543`, `Migration` = Session pooler `:5432`)
 - `__EFMigrationsHistory` em prod: `20260622012938_Initial` (EF Core 10.0.4)
-- GitHub secret `SUPABASE_MIGRATION_CONNECTION_STRING` configurado (usado quando [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) existir)
+- GitHub secret `SUPABASE_MIGRATION_CONNECTION_STRING` configurado — usado por [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) ✅
 - `Supabase__Url` / `Supabase__ServiceRoleKey` no Render **deferidos** até Storage (Fase 3)
 
 ---
@@ -401,7 +409,7 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 - [ ] Web service live on Render default URL
 - [ ] Health check `/health` configured
 - [ ] Production env vars set (DB pooler, `Jwt__Secret`, `SendGrid__ApiKey` de DEV-014)
-- [ ] **Wait for CI** habilitado (gate em `deploy-backend.yml`)
+- [x] **After CI Checks Pass** habilitado (gate em `deploy-backend.yml` — DEV-007)
 - [ ] Custom domain `api.onlineportfolio.com.br` (pode aguardar DEV-011 — OK com URL `*.onrender.com` primeiro)
 
 ---
@@ -1816,32 +1824,108 @@ Dedicated security activities (beyond tests). Cross-reference [docs/ARCHITECTURE
 
 ---
 
-## Suggested implementation order (first sprints)
+## Sprint plan (ciclos fixos de 2 semanas)
 
-### Sprint 0 — Bootstrap
-DEV-000 → DEV-001 → DEV-002 → DEV-003 → DEV-004 → DEV-005 → DEV-005b → DEV-012 → DEV-013
+**Cadência:** sprints de **14 dias**, início todo **domingo**.  
+**Sprint 1 começou:** 2026-06-14 (domingo passado).
 
-### Sprint 1 — Multi-tenant DB + login MVP
-DEV-150 → DEV-151 → DEV-152 → DEV-153 → DEV-154 → DEV-155 → DEV-156 → DEV-157 → DEV-158 → DEV-159 → DEV-161 → DEV-162 → UT-012 → IT-011 → IT-012 → IT-013
-
-### Sprint 2 — Public gallery (local)
-DEV-101 → DEV-102 → DEV-103 → DEV-104 → DEV-105 → UT-002 → IT-001 → IT-002
-
-### Sprint 3 — Contact + cloud providers + deploy
-DEV-014 → DEV-008 → DEV-008b → DEV-107 → DEV-009 → DEV-010 → DEV-006 → DEV-007 → DEV-007b → SEC-001 → UT-003 → IT-006
-
-### Sprint 4 — DNS + hardening
-DEV-011 → SEC-007 → SEC-003 → UT-005 → SEC-011 (partial)
-
-### Sprint 5 — Admin CRUD (post-login)
-DEV-203 → DEV-204 → DEV-205 → IT-004 → IT-005
-
-### Sprint 6 — Uploads
-DEV-300 → DEV-301 → DEV-302 → DEV-303 → SEC-006 → IT-008
-
-### Later
-DEV-207, DEV-400+, DEV-403, DEV-404, IT-010, SEC-009, SEC-010
+| Sprint | Período | Foco |
+|--------|---------|------|
+| **1** | 2026-06-14 → 2026-06-27 | Foundation + bootstrap cloud (Epic 0) |
+| **2** | 2026-06-28 → 2026-07-11 | Fechar Epic 0 (deploy front, DNS, SendGrid) |
+| **3** | 2026-07-12 → 2026-07-25 | Login MVP (Epic 1.5) |
+| **4** | 2026-07-26 → 2026-08-08 | Site público por tenant (Epic 1) |
+| **5** | 2026-08-09 → 2026-08-22 | Contato + hardening |
+| **6** | 2026-08-23 → 2026-09-05 | Admin CRUD pós-login |
+| **7** | 2026-09-06 → 2026-09-19 | Uploads (Fase 3) |
 
 ---
 
-*Last updated: 2025-06-21 — DEV-008 Supabase prod done (`online-portfolio-db-prod`)*
+### Sprint 1 — 2026-06-14 → 2026-06-27 — Foundation & prod bootstrap
+
+**Objetivo:** monorepo, dev local, CI/CD backend, Supabase prod, API no Render.
+
+#### ✅ Concluído (semana 1)
+
+| Issue | Notas |
+|-------|--------|
+| DEV-000 | Domínio `onlineportfolio.com.br` |
+| DEV-001 | Monorepo scaffold |
+| DEV-002 | Docker Compose |
+| DEV-003 | API skeleton + health + Dockerfile |
+| DEV-004 | EF Core + DbContext + factory migrate *(migration `Initial` aplicada)* |
+| DEV-005 | Nuxt 3 + hosts + dark mode estrutural |
+| DEV-005b | Projeto de testes xUnit + coverage script |
+| DEV-012 | Repo GitHub + apps Render/Vercel + branch protection |
+| DEV-013 | Workspace Linear |
+| DEV-006 | `ci-backend.yml` + `ci-frontend.yml` (PR + path-filter fix) |
+| DEV-007 | `deploy-backend.yml` + migrate prod + Render After CI Checks Pass |
+| DEV-008 | Supabase prod `online-portfolio-db-prod` |
+
+#### 🔄 Parcial
+
+| Issue | Feito | Falta |
+|-------|-------|-------|
+| DEV-009 | Serviço Render live, `/health`, pooler DB, After CI Checks Pass | `Jwt__*`, SendGrid (DEV-014), domínio `api.` (DEV-011) |
+
+#### ⬜ Restante Sprint 1 (semana 2 — até 27/06)
+
+| Issue | Prioridade |
+|-------|------------|
+| DEV-014 | SendGrid conta + API key |
+| DEV-009 | Fechar env vars prod no Render |
+| DEV-010 | Vercel projeto + env vars |
+| DEV-007b | `deploy-frontend.yml` |
+| DEV-011 | *(stretch)* DNS apex + `api.` + DKIM SendGrid |
+
+**Fora do sprint 1:** DEV-008b (Supabase dev opcional) · Epic 1+
+
+---
+
+### Sprint 2 — 2026-06-28 → 2026-07-11 — Epic 0 done + DNS
+
+**Objetivo:** produção fechada (front + API + domínios), pronto para features.
+
+DEV-011 → DEV-014 *(se não fechou em S1)* → DEV-010 → DEV-007b → DEV-009 *(restante)* → SEC-001 → UT-003 → IT-006
+
+**Critério de saída:** `onlineportfolio.com.br` + `app.` no Vercel, `api.` no Render, e-mail DKIM OK, deploys só via Actions.
+
+---
+
+### Sprint 3 — 2026-07-12 → 2026-07-25 — Login MVP (Epic 1.5)
+
+DEV-150 → DEV-151 → DEV-152 → DEV-153 → DEV-154 → DEV-155 → DEV-156 → DEV-157 → DEV-158 → DEV-159 → DEV-161 → DEV-162 → DEV-160 → UT-012 → IT-011 → IT-012 → IT-013
+
+---
+
+### Sprint 4 — 2026-07-26 → 2026-08-08 — Site público por tenant (Epic 1)
+
+DEV-100 → DEV-101 → DEV-102 → DEV-103 → DEV-104 → DEV-105 → DEV-106 → UT-002 → IT-001 → IT-002
+
+---
+
+### Sprint 5 — 2026-08-09 → 2026-08-22 — Contato + hardening
+
+DEV-107 → DEV-109 → SEC-007 → SEC-003 → UT-005 → SEC-011 *(parcial)*
+
+---
+
+### Sprint 6 — 2026-08-23 → 2026-09-05 — Admin CRUD
+
+DEV-203 → DEV-204 → DEV-205 → IT-004 → IT-005
+
+---
+
+### Sprint 7 — 2026-09-06 → 2026-09-19 — Uploads
+
+DEV-300 → DEV-301 → DEV-302 → DEV-303 → SEC-006 → IT-008
+
+---
+
+### Later (backlog)
+
+DEV-008b · DEV-207 · DEV-400+ · DEV-403 · DEV-404 · IT-010 · SEC-009 · SEC-010 · DEV-108 · DEV-206 · DEV-304 · DEV-305
+
+---
+
+*Last updated: 2026-06-21 — Sprint 1 em andamento; DEV-007 done; sprint plan com ciclos de 2 semanas desde 2026-06-14*

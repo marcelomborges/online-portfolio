@@ -238,7 +238,7 @@ All providers accept `.com.br` and subdomains.
 - [ ] Code hosted on GitHub
 - [ ] Branch protection on `main` (recommended)
 - [ ] Vercel connected — PR previews on; **production auto-deploy off**
-- [ ] Render connected — **After CI Checks Pass** + root `backend` (seção 4.6)
+- [ ] Render connected — **After CI Checks Pass** + root `backend` (seção 4.6) — DEV-007 ✅ After CI; confirmar root `backend`
 
 ### 4.2 GitHub Actions secrets
 
@@ -270,9 +270,9 @@ Além dos testes, conferir pareamento front↔back antes do merge. Referência: 
 
 - [ ] Repo created and pushed
 - [x] `ci-backend.yml`, `ci-frontend.yml` (PR CI — DEV-006)
-- [x] `deploy-backend.yml` (DEV-007)
+- [x] `deploy-backend.yml` (DEV-007) — migrate prod + gate Render
 - [ ] `deploy-frontend.yml` (DEV-007b)
-- [ ] Secrets configured; Render **Wait for CI** enabled
+- [x] `SUPABASE_MIGRATION_CONNECTION_STRING` configured; Render **After CI Checks Pass** enabled
 
 ### 4.6 Monorepo — deploy isolado por stack
 
@@ -570,7 +570,7 @@ Set in **Environment → Environment Variables** (or `render.yaml`):
 
 - [ ] Web service created (Docker)
 - [ ] **Root directory** = `backend` (monorepo — seção 4.6)
-- [ ] **After CI Checks Pass** enabled
+- [x] **After CI Checks Pass** enabled
 - [ ] Health check returns 200 at `/health`
 - [ ] All env vars set
 - [ ] Custom domain `api.onlineportfolio.com.br` verified + HTTPS
