@@ -512,7 +512,7 @@ Browser → {tenant-host}/api/...  (Nuxt server route)
 ### Migrations at deploy
 
 - **Do not** auto-run `Migrate()` on API startup in production
-- Run migrations via CI (GitHub Actions) against Supabase **direct** connection
+- Run migrations via CI (GitHub Actions) against Supabase **session pooler** (`:5432`, IPv4)
 - Document local command: `dotnet ef database update`
 
 ---
@@ -527,23 +527,36 @@ Browser → {tenant-host}/api/...  (Nuxt server route)
 
 ### Connection strings
 
-Supabase provides two connection modes:
+Três destinos no projeto — **direct (`db.*.supabase.co`) não entra no pipeline** (só ferramentas manuais opcionais: pg_dump, GUI, com IPv6 ou [add-on IPv4](https://supabase.com/docs/guides/platform/ipv4-address) Supabase).
 
-| Mode | Port | Use |
+| Onde | `ConnectionStrings:Default` | `ConnectionStrings:Migration` |
 |---|---|---|
-| **Direct** | `5432` | EF migrations, local `dotnet ef database update` |
-| **Pooler** (PgBouncer) | `6543` | API runtime in production |
+| **Dev local** | `localhost:5432` (Compose) | `localhost:5432` (`appsettings.Development.json`) |
+| **API prod (Render)** | Transaction pooler **`:6543`** | *(não configurar no Render)* |
+| **Migrate prod (CI)** | — | Session pooler **`:5432`** → secret `SUPABASE_MIGRATION_CONNECTION_STRING` |
+
+Modos Supabase (mesmo host pooler `aws-*-*.pooler.supabase.com`, user `postgres.[project-ref]`):
+
+| Modo | Porta | Uso neste projeto |
+|---|---|---|
+| **Transaction** | `6543` | Runtime da API no Render |
+| **Session** | `5432` | `dotnet ef database update` no CI (IPv4 — GitHub Actions, Render, Vercel) |
+| **Direct** | `5432` em `db.[ref].supabase.co` | **Não usado** no repo; IPv6 por defeito |
 
 ```text
-ConnectionStrings__Default      → pooler URL (runtime)
-ConnectionStrings__Migration    → direct URL (migrations / CI only)
+ConnectionStrings__Default      → Transaction pooler :6543 (Render)
+ConnectionStrings__Migration    → Session pooler :5432 (GitHub Actions)
 ```
+
+**Local:** sempre `localhost` para desenvolvimento normal. Session pooler contra Supabase prod **só** em debug pontual (evitar rotina).
+
+**Dev DB Supabase (DEV-008b):** fora do v1 — dev usa Compose. Quando existir projeto dev remoto, reavaliar strings (provavelmente mesmo padrão: session `:5432` migrate, transaction `:6543` runtime).
 
 ### Migrations
 
 - EF Core migrations live in the backend project
-- Applied by CI on merge/deploy to main
-- Local dev: Postgres in Docker Compose or Supabase dev project
+- Applied by CI on merge/deploy to `main` (session pooler)
+- Local dev: `dotnet ef database update` contra **localhost** (Compose)
 
 ### EF Core tenant isolation
 
@@ -1092,7 +1105,7 @@ Neither Vercel nor Render **requires** you to rely solely on their dashboard dep
 |---|---|---|
 | Tests — **backend** | GitHub Actions | `ci-backend.yml` |
 | Tests — **frontend** | GitHub Actions | `ci-frontend.yml` |
-| EF migrations (Supabase direct) | GitHub Actions | `deploy-backend.yml` |
+| EF migrations (Supabase session pooler) | GitHub Actions | `deploy-backend.yml` |
 | Deploy **frontend** (prod) | GitHub Actions | `deploy-frontend.yml` → Vercel CLI |
 | Deploy **API** (prod) | Render | Wait for CI em `deploy-backend.yml` |
 | Preview deploys (PRs) | Vercel | Native GitHub integration (PR comments) |
@@ -1164,7 +1177,7 @@ Pull request:
   Vercel           → preview deployment (native PR integration)
 
 Push to main:
-  deploy-backend.yml  → dotnet test → EF migrate (direct :5432) → status check
+  deploy-backend.yml  → dotnet test → EF migrate (session pooler :5432) → status check
   Render              → deploy API (Wait for CI — após deploy-backend green)
   deploy-frontend.yml → npm lint/test → vercel deploy --prod
 ```
@@ -1218,7 +1231,7 @@ PRs **só em `docs/`** podem incluir ambos workflows (paths ampliados) ou um `ci
 
 | Secret | Purpose |
 |---|---|
-| `SUPABASE_MIGRATION_CONNECTION_STRING` | Direct Postgres URI (port 5432) |
+| `SUPABASE_MIGRATION_CONNECTION_STRING` | Session pooler URI (port 5432, IPv4) |
 | `VERCEL_TOKEN` | Deploy prod via `deploy-frontend.yml` |
 | `VERCEL_ORG_ID` | Vercel CLI — org/team ID |
 | `VERCEL_PROJECT_ID` | Vercel CLI — project ID (`frontend`) |
@@ -1474,7 +1487,7 @@ No Supabase keys in the frontend in v1.
 
 ```text
 ConnectionStrings__Default=postgresql://...:6543/...   # pooler
-ConnectionStrings__Migration=postgresql://...:5432/... # direct (CI / manual only)
+ConnectionStrings__Migration=postgresql://postgres.[ref]:...@aws-*-*.pooler.supabase.com:5432/postgres  # session (CI)
 Jwt__Secret=...                                        # API-issued JWT signing key
 Jwt__Issuer=OnlinePortfolio.Api
 Jwt__Audience=OnlinePortfolio.Admin

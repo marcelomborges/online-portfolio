@@ -170,14 +170,26 @@ Detalhes: [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md) · [docs/ARCHITECTU
 
 **Pasta (migrations):** `backend/OnlinePortfolio.Api/`  
 **Pasta (Docker / psql):** raiz do repo  
-**Banco local:** Compose Postgres (`localhost:5432`).
+**Banco local:** Compose Postgres (`localhost:5432`) — ver `appsettings.Development.json`.
 
-| Connection string | Uso |
-|---|---|
-| `ConnectionStrings__Default` | API em runtime |
-| `ConnectionStrings__Migration` | `dotnet ef` + CI — **direct `:5432`** (local ou Supabase direct; **não** pooler `:6543`) |
+### Connection strings
 
-Config em `appsettings.Development.json` e `.env.example`.
+| Ambiente | `Default` (runtime) | `Migration` (`dotnet ef`) |
+|---|---|---|
+| **Local (normal)** | `localhost:5432` | `localhost:5432` |
+| **Prod API (Render)** | Transaction pooler `:6543` | *(não configurar)* |
+| **Prod migrate (CI)** | — | Session pooler `:5432` → secret GitHub |
+
+- **Local:** desenvolvimento e `dotnet ef` usam **sempre localhost** (Docker Compose).
+- **CI:** `SUPABASE_MIGRATION_CONNECTION_STRING` = **Session pooler** (`aws-*-*.pooler.supabase.com:5432`, user `postgres.[ref]`).
+- **Direct** (`db.*.supabase.co`): **não** usar no projeto. Opcional só para ferramentas manuais (pg_dump, GUI).
+- **Nunca** usar Transaction pooler (`:6543`) para `dotnet ef database update`.
+
+Templates em `appsettings.json` (prod, sem senha); override local em `appsettings.Development.json`.
+
+**DEV-008b (futuro):** Supabase dev remoto — fluxo de strings será rediscutido; até lá, local = Compose.
+
+Config detalhada: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 6.2 · [docs/ARCHITECTURE.md](./ARCHITECTURE.md) seção 7.
 
 ### Ferramenta (uma vez)
 

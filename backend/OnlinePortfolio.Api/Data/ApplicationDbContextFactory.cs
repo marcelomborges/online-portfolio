@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 namespace OnlinePortfolio.Api.Data;
 
 /// <summary>
-/// Used by <c>dotnet ef</c> at design time. Prefers ConnectionStrings:Migration (direct :5432).
+/// Used by <c>dotnet ef</c> at design time. Prefers ConnectionStrings:Migration (Supabase session pooler :5432; IPv4-safe for CI).
 /// </summary>
 public sealed class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
 {

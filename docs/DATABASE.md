@@ -546,7 +546,7 @@ Not created in the **initial login migration**. Documented for alignment with [d
 | 3 | `AddArtworks` | Phase 1 gallery (later) |
 | 4 | `AddArtworkImages` | Phase 3 (later) |
 
-**Production migrations:** applied by GitHub Actions (`dotnet ef database update`) using Supabase **direct** connection (port 5432). See [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
+**Production migrations:** applied by GitHub Actions (`dotnet ef database update`) via Supabase **session pooler** (port 5432). Local dev uses **localhost** (Compose). Direct `db.*.supabase.co` is not used in this project. See [docs/ARCHITECTURE.md](./ARCHITECTURE.md) seção 7.
 
 ---
 

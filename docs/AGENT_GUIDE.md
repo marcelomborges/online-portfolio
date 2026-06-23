@@ -106,6 +106,7 @@ chore(security): add rate limit to contact endpoint
 | **Auth** | ASP.NET Identity **completo** + JWT on API. Roles in `AspNetRoles` / `AspNetUserRoles`. |
 | **No Supabase Auth** | No `@nuxtjs/supabase`, no anon key in frontend for login. |
 | **Supabase scope** | Postgres + Storage only. Migrations via EF Core only. |
+| **Supabase connections** | Local = `localhost`. Prod runtime = Transaction pooler `:6543`. Prod migrate (CI) = Session pooler `:5432`. **No** direct `db.*.supabase.co` in repo/secrets. |
 | **Admin host** | Login only at `app.onlineportfolio.com.br` — not on `{slug}.` subdomains. |
 | **Public hosts** | `{slug}.onlineportfolio.com.br` = tenant landing + posts/gallery. |
 | **Email v1** | SendGrid `noreply@` — send only, no mailbox. No Google Workspace in v1. |
