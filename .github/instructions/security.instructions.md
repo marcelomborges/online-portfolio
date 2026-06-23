@@ -6,7 +6,7 @@ applyTo: "**/*"
 
 This project is **multi-tenant SaaS**. Security overrides speed and convenience.
 
-Reference: `docs/AGENT_GUIDE.md` (Security section), `docs/ARCHITECTURE.md` §18, BACKLOG `SEC-001`…`SEC-011`.
+Reference: `docs/AGENT_GUIDE.md` (Security section), `docs/ARCHITECTURE.md`, BACKLOG `SEC-001`…`SEC-011`.
 
 ## Always
 

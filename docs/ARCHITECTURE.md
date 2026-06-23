@@ -109,7 +109,7 @@ Sell portfolio sites to many artists. Each tenant gets:
 | **`.com` status** | `onlineportfolio.com` — **unavailable** (already registered) |
 | **Registrar** | [Registro.br](https://registro.br) — official `.br` registry |
 | **Cost** | R$ 40/year (fixed; Pix, boleto, or card) |
-| **Status** | ✅ **Registrado** — titular ativo no Registro.br; DNS no deploy ([EXTERNAL_PROVIDERS §3](./EXTERNAL_PROVIDERS.md#3-domain--dns)) |
+| **Status** | ✅ **Registrado** — titular ativo no Registro.br; DNS no deploy ([docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md)) |
 
 ### Production hostnames
 
@@ -163,7 +163,7 @@ Operador    →  app.../platform/tenants        →  cria tenants, convida usuá
 
 **Frontend → backend (BFF):** todo dado e toda ação admin passam por Nuxt → API .NET. **Exceção:** imagens públicas renderizadas com URL CDN do Storage em `<img>`.
 
-**Auth:** ASP.NET Identity **completo** + JWT na API — sem Supabase Auth no browser. Ver [§9](#9-authentication--authorization).
+**Auth:** ASP.NET Identity **completo** + JWT na API — sem Supabase Auth no browser. Ver seção 9.
 
 ### Email v1 — SendGrid `noreply@` (só envio, sem caixa postal)
 
@@ -188,7 +188,7 @@ Operador    →  app.../platform/tenants        →  cria tenants, convida usuá
 **Importante:**
 
 - `noreply@` é **identidade de envio**, não inbox. Respostas do visitante no contato usam **Reply-To** (email do visitante ou do tenant), não uma caixa `@onlineportfolio.com.br`.
-- Autenticação do domínio (SPF/DKIM) na **Vercel DNS** melhora entrega — ver [EXTERNAL_PROVIDERS.md §7](./EXTERNAL_PROVIDERS.md#7-sendgrid-email).
+- Autenticação do domínio (SPF/DKIM) na **Vercel DNS** melhora entrega — ver [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 - Quando precisar **ler** email no domínio (`hello@`, `marcelo@`), aí sim Google Workspace ou similar — ver abaixo.
 
 ### Caixa postal operador (Google Workspace — depois)
@@ -221,7 +221,7 @@ Buy at [registro.br](https://registro.br) first; **DNS can wait** until deploy.
 | 3 | Confirm status **Ativo** in Registro.br panel |
 | 4 | Keep default DNS for now — configure when Vercel/Render are ready |
 
-Detailed steps: [EXTERNAL_PROVIDERS.md §3.1](./EXTERNAL_PROVIDERS.md#31-register-onlineportfoliocombr-registrobr)
+Detailed steps: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md)
 
 ### Registro.br + Vercel nameservers (does not transfer ownership)
 
@@ -276,7 +276,7 @@ Provider acceptance of `.com.br` and subdomains: **yes** — TLD is not a blocke
 
 | Layer | Technology | Hosting | Notes |
 |---|---|---|---|
-| **Domain** | `onlineportfolio.com.br` | Registro.br | See [§2](#2-platform-domain--operator-email) |
+| **Domain** | `onlineportfolio.com.br` | Registro.br | See seção 2 |
 | Frontend | Nuxt 3.21 · Vue 3.5 | Vercel (Hobby → Pro as needed) | Single app, multi-tenant routing |
 | Backend | ASP.NET Core Web API (.NET 10 LTS) | Render (free tier, Docker) | One API for all tenants |
 | Database | PostgreSQL | Supabase | Access only via EF Core |
@@ -285,9 +285,9 @@ Provider acceptance of `.com.br` and subdomains: **yes** — TLD is not a blocke
 | Email (app) | SendGrid | SendGrid (free) | `noreply@` — só envio transacional; sem caixa postal |
 | Email (operador) | Google Workspace | Google (depois) | Inbox humano — **não v1** |
 | PDF | QuestPDF | NuGet in API (no extra host) | Portfolio catalog export; API generates |
-| CI/CD | GitHub Actions + Vercel/Render deploy | GitHub (orchestrator) | See [§15](#15-deployment--cicd) |
+| CI/CD | GitHub Actions + Vercel/Render deploy | GitHub (orchestrator) | See seção 15 |
 | Local dev | Docker Compose | Developer machine | Postgres + API + Nuxt |
-| **Backend tests** | xUnit · Moq · FluentAssertions · Coverlet | GitHub Actions (`ci-backend.yml`) | `dotnet test`; see [§23](#23-testing) |
+| **Backend tests** | xUnit · Moq · FluentAssertions · Coverlet | GitHub Actions (`ci-backend.yml`) | `dotnet test`; see seção 23 |
 | **Frontend tests** | Vitest | GitHub Actions (`ci-frontend.yml`) | Component/composable unit tests |
 
 ### What we explicitly do not do
@@ -429,7 +429,7 @@ Browser → {tenant-host}/api/...  (Nuxt server route)
 | **Data** | 2025-06-21 |
 | **Contexto** | Uma única app Nuxt serve marketing da plataforma, sites públicos de N tenants e admin/login centralizado em `app.*`. Clientes podem precisar de landings, páginas de contato e paletas **diferentes**, mas login e painel admin devem permanecer **idênticos** para todos. Risco a evitar: código duplicado entre tenants e mistura de UI pública com UI de admin no mesmo diretório. |
 | **Decisão** | Organizar o frontend em **três superfícies** (modos) resolvidas pelo `Host`, com **customização por tenant somente no site público**, via pastas de componentes + temas CSS. Login/admin **nunca** varia por tenant. |
-| **Alternativas rejeitadas** | (1) Deploy Nuxt separado por artista — custo operacional e perda de monorepo. (2) Um único diretório `components/` sem separação — dificulta manutenção e incentiva copy-paste. (3) Tema/login por subdomínio de tenant (`ana./login`) — já rejeitado no v1 ([§2.1](#21-mapa-de-domínios-e-superfícies-do-produto)). (4) Config de UI só no banco (JSON de layout) — adiar; código versionado no repo é fonte de verdade no v1. |
+| **Alternativas rejeitadas** | (1) Deploy Nuxt separado por artista — custo operacional e perda de monorepo. (2) Um único diretório `components/` sem separação — dificulta manutenção e incentiva copy-paste. (3) Tema/login por subdomínio de tenant (`ana./login`) — já rejeitado no v1 (seção 21). (4) Config de UI só no banco (JSON de layout) — adiar; código versionado no repo é fonte de verdade no v1. |
 
 **Superfícies (mesmo deploy Vercel):**
 
@@ -553,7 +553,7 @@ ConnectionStrings__Migration    → direct URL (migrations / CI only)
 
 ### Primary keys
 
-**Decided:** `uuid` / `Guid` PKs and FKs on domain entities; slugs for human-facing tenant URLs. Rationale, performance notes, and anti-patterns: [DATABASE.md § Primary keys & identifiers](./DATABASE.md#primary-keys--identifiers).
+**Decided:** `uuid` / `Guid` PKs and FKs on domain entities; slugs for human-facing tenant URLs. Rationale, performance notes, and anti-patterns: [docs/DATABASE.md](./DATABASE.md).
 
 ---
 
@@ -771,9 +771,9 @@ GET /api/v1/tenants/{slug}/portfolio.pdf
 
 Only published content. Tenant resolved by slug (Nuxt passes slug from Host resolution).
 
-Contact form submissions are handled by the API and delivered via SendGrid (see [§11](#11-email-sendgrid)).
+Contact form submissions are handled by the API and delivered via SendGrid (see seção 11).
 
-Portfolio PDF is generated by the API using QuestPDF (see [§12](#12-pdf-generation-questpdf)).
+Portfolio PDF is generated by the API using QuestPDF (see seção 12).
 
 **Admin (authenticated, tenant from JWT user):**
 
@@ -819,7 +819,7 @@ A API envia todo email transacional; o frontend nunca guarda a API key do SendGr
 | `SendGrid__FromName` | Online Portfolio |
 | `SendGrid__ApiKey` | server only |
 
-Inbox operador (`hello@`, etc.) → [§2 — Google Workspace depois](#caixa-postal-operador-google-workspace--depois).
+Inbox operador (`hello@`, etc.) → [seção 2 — Google Workspace depois](#caixa-postal-operador-google-workspace--depois).
 
 ### Use cases
 
@@ -1080,7 +1080,7 @@ Production (main)          → único deploy persistente: Vercel + Render + Supa
 - Stripe/webhooks/domínios exigindo ambiente não-prod persistente.
 - Tráfego ou dados reais onde “testar só local” deixou de bastar.
 
-Até lá: **local + preview + prod** — ver [EXTERNAL_PROVIDERS §9](./EXTERNAL_PROVIDERS.md#9-github-cicd).
+Até lá: **local + preview + prod** — ver [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 ### Decision: GitHub Actions as pipeline orchestrator
 
@@ -1107,7 +1107,7 @@ Neither Vercel nor Render **requires** you to rely solely on their dashboard dep
 | **Um `ci.yml` com jobs backend + frontend** | Repo pequeno, todo PR toca os dois lados | ❌ Não — PRs só-frontend esperam `dotnet restore` à toa |
 | **Dois workflows CI** (`ci-backend.yml`, `ci-frontend.yml`) | Monorepo com stacks distintas | ✅ **Escolhido** |
 | **Dois workflows deploy** (`deploy-backend.yml`, `deploy-frontend.yml`) | Prod simétrico; Actions orquestra os dois | ✅ **Escolhido** |
-| **Dois repositórios Git** | Times/release cycles totalmente independentes | ❌ Não — ver [§20](#20-repository-structure) |
+| **Dois repositórios Git** | Times/release cycles totalmente independentes | ❌ Não — ver seção 20 |
 
 **Por que separado (no monorepo):**
 
@@ -1143,7 +1143,7 @@ Em todo PR (humano ou agente), **depois dos testes** e **antes do merge**, confe
 4. `docs/DATABASE.md` se schema mudou de forma relevante.
 5. Commits [Conventional Commits](./CONVENTIONAL_COMMITS.md); escopo `frontend` / `backend` coerente com paths.
 
-Detalhes para agentes: [AGENT_GUIDE § Git flow](./AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review).
+Detalhes para agentes: [docs/AGENT_GUIDE.md](./AGENT_GUIDE.md).
 
 ### Do Vercel and Render require repo connection?
 
@@ -1210,7 +1210,7 @@ In Render service settings → enable **Wait for CI** (or equivalent). Render wa
 | `deploy-backend.yml` | `push` → `main`; paths `backend/**`, migrations |
 | `deploy-frontend.yml` | `push` → `main`; paths `frontend/**` |
 
-PRs **só em `docs/`** podem incluir ambos workflows (paths ampliados) ou um `ci-docs.yml` leve — ver [EXTERNAL_PROVIDERS §9](./EXTERNAL_PROVIDERS.md#93-workflow-files-planned).
+PRs **só em `docs/`** podem incluir ambos workflows (paths ampliados) ou um `ci-docs.yml` leve — ver [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Branch protection em `main`:** exigir status checks **Backend CI** e **Frontend CI** (checks skipped por path filter contam como OK no GitHub).
 
@@ -1378,7 +1378,7 @@ Category (optional v1)
 
 - Custom domain onboarding per tenant
 - Vercel Domains API automation
-- **Billing / subscriptions (opcional — skip no v1):** Stripe preferível se expandir **fora do Brasil**; Asaas/Iugu se só BR — ver [EXTERNAL_PROVIDERS §13](./EXTERNAL_PROVIDERS.md#13-stripe--cobrança-saas-fase-4-opcional)
+- **Billing / subscriptions (opcional — skip no v1):** Stripe preferível se expandir **fora do Brasil**; Asaas/Iugu se só BR — ver [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md)
 - Plan limits (DEV-402) — opcional; pode ser manual
 - Self-serve signup (optional)
 - Google Workspace for operator inbox (optional)
@@ -1466,7 +1466,7 @@ NUXT_PUBLIC_DEV_SURFACE=dev              # dev | app | platform | tenant (localh
 NUXT_PUBLIC_DEV_TENANT_SLUG=ana          # when DEV_SURFACE=tenant
 ```
 
-Ver [ADR-016 § Dev local](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant) e [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md).
+Ver [docs/ARCHITECTURE.md](./ARCHITECTURE.md) e [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md).
 
 No Supabase keys in the frontend in v1.
 
@@ -1510,7 +1510,7 @@ Use `.env.example` in frontend and backend; never commit secrets.
 | Contact message history | Email only vs store in DB | Email only for v1 (SendGrid) |
 | Operator inbox | Google Workspace | **Decidido** — fora do v1; v1 = só SendGrid `noreply@` |
 | Global `.com` domain | `onlineportfolio.com` taken | Revisit alternative `.com` later if expanding internationally |
-| CI/CD approach | GitHub Actions orchestrator | **Decidido** — see [§15](#15-deployment--cicd) |
+| CI/CD approach | GitHub Actions orchestrator | **Decidido** — see seção 15 |
 | Ambientes deployados | Prod only vs prod + staging | **Decidido** — [ADR-015](#adr-015-deploy-somente-em-production); staging deployado **fora do v1** |
 | Image processing | On upload in API vs external worker | Phase 3 |
 | Thumbnail generation | API (ImageSharp) vs Supabase transform | TBD |
@@ -1518,8 +1518,8 @@ Use `.env.example` in frontend and backend; never commit secrets.
 | Render cold starts | Accept vs upgrade to paid / Fly.io | Revisit after launch |
 | Multi-user per tenant | Owner invites Editors | v1: **PlatformAdmin** adds users; v2: Owner self-service |
 | Custom domain admin | `ana-art.com/admin` | Defer; use platform app host |
-| Primary keys (PK/FK) | `uuid` vs `serial` / hybrid | **Decidido** — `uuid`/`Guid` domain PKs; slug in public URLs — [DATABASE.md § PK](./DATABASE.md#primary-keys--identifiers) |
-| UI pública por tenant | Monolito vs deploy por artista vs só DB | **Decidido** — mesma app Nuxt; pastas `public/tenants/{slug}/` + temas CSS — [ADR-016 §5](#adr-016-três-superfícies-e-ui-por-tenant) |
+| Primary keys (PK/FK) | `uuid` vs `serial` / hybrid | **Decidido** — `uuid`/`Guid` domain PKs; slug in public URLs — [docs/DATABASE.md](./DATABASE.md) |
+| UI pública por tenant | Monolito vs deploy por artista vs só DB | **Decidido** — mesma app Nuxt; pastas `public/tenants/{slug}/` + temas CSS — [ADR-016 seção 5](#adr-016-três-superfícies-e-ui-por-tenant) |
 
 ---
 
@@ -1576,13 +1576,13 @@ Cobertura no CI é **opcional no v1**; quando habilitada, usar o mesmo `--collec
 
 ### Frontend (referência)
 
-Testes de componentes/composables: **Vitest** (UT-009+). Stack separada — ver [BACKLOG § Unit tests (frontend)](./BACKLOG.md#unit-tests).
+Testes de componentes/composables: **Vitest** (UT-009+). Stack separada — ver [docs/BACKLOG.md](./BACKLOG.md).
 
 ### Tarefas relacionadas
 
-- Scaffold do projeto: [DEV-005b](./BACKLOG.md#dev-005b--backend-test-project-scaffold)
-- Infra integração (WebApplicationFactory, DB, CI): [IT-001](./BACKLOG.md#it-001--test-infrastructure-setup)
-- Casos de teste: [BACKLOG § Unit tests](./BACKLOG.md#unit-tests) · [§ Integration tests](./BACKLOG.md#integration-tests)
+- Scaffold do projeto: DEV-005b ([docs/BACKLOG.md](./BACKLOG.md))
+- Infra integração (WebApplicationFactory, DB, CI): [docs/BACKLOG.md](./BACKLOG.md)
+- Casos de teste: [docs/BACKLOG.md](./BACKLOG.md) · [docs/BACKLOG.md](./BACKLOG.md)
 
 ---
 
@@ -1601,7 +1601,7 @@ Email (ops):    Google Workspace (depois)                         →  caixa pos
 PDF:            QuestPDF                                          →  catálogo via API
 Domain:         onlineportfolio.com.br (Registro.br)
 Isolation:      TenantId + EF filters + Storage paths + API
-IDs:            uuid PK/FK (Guid); slug for public tenant URLs — DATABASE.md § PK
+IDs:            uuid PK/FK (Guid); slug for public tenant URLs — ver `docs/DATABASE.md` (seção Primary keys)
 CI/CD:          GitHub Actions → dotnet test + migrations; deploy **prod only** (ADR-015)
 Frontend UI:    3 surfaces (app/platform/tenant); per-tenant public components + CSS themes (ADR-016)
 Backend tests:  xUnit · Moq · FluentAssertions · Coverlet · dotnet test

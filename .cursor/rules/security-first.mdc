@@ -7,7 +7,7 @@ alwaysApply: true
 
 **Security overrides convenience.** When in doubt, choose the safer option and flag trade-offs to the user.
 
-Full guide: `docs/AGENT_GUIDE.md` § Security · `docs/ARCHITECTURE.md` §18 · BACKLOG SEC-001…011
+Full guide: `docs/AGENT_GUIDE.md` · `docs/ARCHITECTURE.md` · BACKLOG SEC-001…011
 
 ## Non-negotiable
 

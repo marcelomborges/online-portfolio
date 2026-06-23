@@ -2,7 +2,7 @@
 
 PostgreSQL schema for the Online Portfolio platform. Managed via **EF Core migrations** in the .NET API against **Supabase Postgres** (prod) or Compose Postgres (local).
 
-**Related:** [ARCHITECTURE.md §2.1](./ARCHITECTURE.md#21-mapa-de-domínios-e-superfícies-do-produto) · [BACKLOG.md](./BACKLOG.md)
+**Related:** [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · [BACKLOG.md](./BACKLOG.md)
 
 **Escopo deste documento:**
 
@@ -13,9 +13,9 @@ PostgreSQL schema for the Online Portfolio platform. Managed via **EF Core migra
 | **Login + add user (convite PlatformAdmin)** | Convites self-service do Owner (v2) |
 | Stub mínimo `tenant_settings` | CMS completo, exposições, billing |
 
-Credenciais via **ASP.NET Identity completo** (mesmo Postgres, migrations EF). `ApplicationUser` + roles em `AspNetRoles` / `AspNetUserRoles` — ver [ARCHITECTURE.md §9](./ARCHITECTURE.md#decisão-aspnet-identity-completo).
+Credenciais via **ASP.NET Identity completo** (mesmo Postgres, migrations EF). `ApplicationUser` + roles em `AspNetRoles` / `AspNetUserRoles` — ver [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
-**Domínios (referência):** site público por tenant em `{slug}.onlineportfolio.com.br`; admin centralizado em `app.onlineportfolio.com.br` — ver [ARCHITECTURE.md §2.1](./ARCHITECTURE.md#21-mapa-de-domínios-e-superfícies-do-produto).
+**Domínios (referência):** site público por tenant em `{slug}.onlineportfolio.com.br`; admin centralizado em `app.onlineportfolio.com.br` — ver [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ---
 
@@ -84,7 +84,7 @@ Repeating `tenant_id` (or other FKs) across tenant-owned rows is **normal relati
 - Use one “global uuid” as PK for unrelated entity types — each table has **its own** PK; FKs point to the correct parent.
 - Store uuid as untyped string in Postgres when `uuid` type exists.
 
-**Cross-ref:** [ARCHITECTURE.md §7](./ARCHITECTURE.md#7-database-supabase-postgresql--ef-core) · Identity `Guid` in [ARCHITECTURE §9](./ARCHITECTURE.md#9-authentication--authorization)
+**Cross-ref:** [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · Identity `Guid` in [docs/ARCHITECTURE.md](./ARCHITECTURE.md)
 
 ---
 
@@ -394,7 +394,7 @@ DbSet<ApplicationUser> Users   // AspNetUsers + perfil tenant
 
 | Topic | Approach |
 |---|---|
-| **PK** | `Guid` / `uuid` — see [§1 Primary keys & identifiers](./DATABASE.md#primary-keys--identifiers) |
+| **PK** | `Guid` / `uuid` — see [docs/DATABASE.md](./DATABASE.md) |
 | **Timestamps** | `DateTimeOffset` UTC |
 | **Soft delete** | Not used v1; use `is_active` |
 | **Global filters** | `User` filtered by `tenant_id` when in tenant context; **no filter** on `User` for platform admin queries |
@@ -475,7 +475,7 @@ Admin MVP tem **duas funções**: autenticar usuários e permitir que o Platform
 3. Nuxt proxy → POST /api/v1/platform/tenants/{tenantId}/users/invite
 4. API → INSERT pending user + SendGrid invite email (accept-invite link)
 5. Invitee sets password via POST /auth/accept-invite
-6. Invitee logs in at app.onlineportfolio.com.br/login (§9.1)
+6. Invitee logs in at app.onlineportfolio.com.br/login (seção 9.1)
 ```
 
 ### 9.3 API endpoints (login + add user MVP)
@@ -512,7 +512,7 @@ API still verifies tenant exists and is active before insert.
 
 ## 10. Future tables (reference)
 
-Not created in the **initial login migration**. Documented for alignment with [ARCHITECTURE.md §17](./ARCHITECTURE.md#17-data-model-v1).
+Not created in the **initial login migration**. Documented for alignment with [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ### `artworks` (Phase 1 — public gallery)
 
@@ -546,7 +546,7 @@ Not created in the **initial login migration**. Documented for alignment with [A
 | 3 | `AddArtworks` | Phase 1 gallery (later) |
 | 4 | `AddArtworkImages` | Phase 3 (later) |
 
-**Production migrations:** applied by GitHub Actions (`dotnet ef database update`) using Supabase **direct** connection (port 5432). See [ARCHITECTURE.md §15](./ARCHITECTURE.md#15-deployment--cicd).
+**Production migrations:** applied by GitHub Actions (`dotnet ef database update`) using Supabase **direct** connection (port 5432). See [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ---
 

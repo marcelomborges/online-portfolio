@@ -19,7 +19,7 @@ Monorepo = **one Git repo**; separate workflows ≠ separate repositories.
 
 **Path filters:** each CI runs only when its paths change. Skipped checks count as OK on branch protection. No workflow run → no coverage comment on the PR.
 
-**Environments:** cloud deploy **production only** on `main`. Local = Docker Compose; PR = Vercel preview. No deployed staging in v1 — [ADR-015](../docs/ARCHITECTURE.md#adr-015-deploy-somente-em-production).
+**Environments:** cloud **deploy** production only on `main`. Local = Docker Compose **or** Supabase `online-portfolio-db-dev` (`.env`); PR = Vercel preview. No deployed API/front staging in v1 — [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ## Before every merge (human or agent)
 
@@ -32,12 +32,12 @@ Monorepo = **one Git repo**; separate workflows ≠ separate repositories.
 | Endpoint / DTO | Controller, service, validation, `[Authorize]` | `server/api/**` proxy, composables, types, UI |
 | EF schema | Migration (+ seed if needed) | API consumers, forms |
 | Auth / JWT | Identity, policies, tenant checks | Proxy headers/cookies, `app.*` login |
-| Env var | Render, `backend/OnlinePortfolio.Api/.env.example` | Vercel, `frontend/.env.example`, `runtimeConfig` |
+| Env var | Render, `appsettings` | Vercel, `frontend/.env.example`, `runtimeConfig` |
 | Multi-tenant | EF filters + membership | No trusted client `tenantId`; correct host routing |
 | Admin UI | Protected API routes | `components/app/`, `app.*`, `surface-dark` |
 | Tenant public site | Published-only public API | `{slug}.*`, `public/tenants/{slug}/`, themes |
 
-4. Update `docs/DATABASE.md` if schema changed; `.env.example` on both sides if new env vars.
+4. Update `docs/DATABASE.md` if schema changed; `frontend/.env.example` if new Nuxt env vars.
 5. [Conventional Commits](../docs/CONVENTIONAL_COMMITS.md) with scope `backend` / `frontend`.
 
-Full guide: [docs/AGENT_GUIDE.md § Git flow](../docs/AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review)
+Full guide: [docs/AGENT_GUIDE.md](./AGENT_GUIDE.md)

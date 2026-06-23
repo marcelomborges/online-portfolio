@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Frontend — componentes e reutilização
 
-**Prioridade:** evitar código repetitivo. ADR: `docs/ARCHITECTURE.md` § [ADR-016](../docs/ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant). Guia: `docs/FRONTEND_COMPONENTS.md`.
+**Prioridade:** evitar código repetitivo. ADR: `docs/ARCHITECTURE.md` docs/ARCHITECTURE.md). Guia: `docs/FRONTEND_COMPONENTS.md`.
 
 ## Três superfícies (mesma app Nuxt)
 

@@ -4,13 +4,13 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS.
 
 **Execução:** issues no [Linear](https://linear.app) (import feito). **Documentação:** este arquivo permanece fonte de verdade para agentes e PRs — mantenha `DEV-xxx` nos commits e descrições.
 
-**Related:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md) · [EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) · [DATABASE.md](./DATABASE.md)
+**Related:** [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · [docs/FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md) · [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) · [docs/DATABASE.md](./DATABASE.md)
 
-**Frontend (superfícies + UI por tenant):** [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant) — não exige ticket novo; escopo distribuído em DEV-005, DEV-104, DEV-105, DEV-109 e Epic 1.5 (DEV-155–158).
+**Frontend (superfícies + UI por tenant):** [docs/ARCHITECTURE.md](./ARCHITECTURE.md) — não exige ticket novo; escopo distribuído em DEV-005, DEV-104, DEV-105, DEV-109 e Epic 1.5 (DEV-155–158).
 
 **Domínio da plataforma:** `onlineportfolio.com.br` — ✅ registrado (Registro.br)
 
-**Mapa de domínios:** [ARCHITECTURE.md §2.1](./ARCHITECTURE.md#21-mapa-de-domínios-e-superfícies-do-produto) — site público por tenant (`ana.`, `mark.`), admin padronizado em `app.`, BFF via Nuxt → API .NET.
+**Mapa de domínios:** [docs/ARCHITECTURE.md](./ARCHITECTURE.md) — site público por tenant (`ana.`, `mark.`), admin padronizado em `app.`, BFF via Nuxt → API .NET.
 
 ---
 
@@ -48,14 +48,14 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS.
 
 ### Provider setup index
 
-Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNAL_PROVIDERS §2](./EXTERNAL_PROVIDERS.md#2-ordem-de-setup). Código local (DEV-001–005) pode correr em paralelo às contas (DEV-012–014).
+Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md). Código local (DEV-001–005) pode correr em paralelo às contas (DEV-012–014).
 
 | Ordem | Provider | Issue | Quando |
 |---|---|---|---|
 | 1 | Registro.br | [DEV-000](#dev-000--register-domain-) | ✅ domínio comprado |
 | 2 | GitHub | [DEV-012](#dev-012--github-repository--platform-integrations) | ✅ Done |
 | 3 | Linear | [DEV-013](#dev-013--linear-workspace) | ✅ Done |
-| 4 | Supabase | [DEV-008](#dev-008--supabase-production-project) | Antes do deploy API |
+| 4 | Supabase | [DEV-008](#dev-008--supabase-production-project) · [DEV-008b](#dev-008b--supabase-dev-project) | ✅ prod (`online-portfolio-db-prod`); dev opcional |
 | 5 | Render | [DEV-009](#dev-009--render-api-deployment) | Após DEV-003 + DEV-008 |
 | 6 | SendGrid | [DEV-014](#dev-014--sendgrid-account--api-key) → [DEV-107](#dev-107--contact-form--sendgrid) | Conta antes do Render; código Epic 1 |
 | 7 | Vercel | [DEV-010](#dev-010--vercel-frontend-deployment) | Após DEV-005 |
@@ -76,7 +76,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Depends on** | — |
 | **Status** | ✅ **Done** — domínio comprado no Registro.br |
 
-**Description:** Register `onlineportfolio.com.br` at Registro.br. DNS configuration deferred until [DEV-011](#dev-011--dns--https-production). Runbook: [EXTERNAL_PROVIDERS §3](./EXTERNAL_PROVIDERS.md#3-registrobr--domínio).
+**Description:** Register `onlineportfolio.com.br` at Registro.br. DNS configuration deferred until [DEV-011](#dev-011--dns--https-production). Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Acceptance criteria:**
 - [x] Domain status **Ativo** in Registro.br panel
@@ -102,7 +102,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 - [x] `frontend/` (Nuxt 3), `backend/` (ASP.NET Web API), `docs/`
 - [x] Root `README.md` with local dev instructions (stub OK)
 - [x] `.gitignore` for Node, .NET, env files
-- [x] `.env.example` in `frontend/` and `backend/`
+- [x] `.env.example` in `frontend/`
 
 ---
 
@@ -177,14 +177,14 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Depends on** | DEV-001 |
 | **Status** | ✅ Done |
 
-**Description:** Nuxt 3 app with TypeScript, basic layout, env config for API base URL. Inclui fundação [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant): pastas `app/` / `platform/` / `public/`, layouts por superfície, middleware `resolve-host`, composables de tenant.
+**Description:** Nuxt 3 app with TypeScript, basic layout, env config for API base URL. Inclui fundação [docs/ARCHITECTURE.md](./ARCHITECTURE.md): pastas `app/` / `platform/` / `public/`, layouts por superfície, middleware `resolve-host`, composables de tenant.
 
 **Acceptance criteria:**
 - [x] Nuxt 3 + TypeScript runs locally and in Docker
 - [x] `NUXT_PUBLIC_API_BASE` and platform host env vars defined
 - [x] Default layout + error page
 - [x] Nitro preset compatible with Vercel
-- [x] Estrutura de componentes por superfície (ADR-016) — ver [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md)
+- [x] Estrutura de componentes por superfície (ADR-016) — ver [docs/FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md)
 - [x] Dark mode estrutural (`surface-dark`, `assets/css/surfaces/dark.css`) — tudo exceto site público tenant
 
 ---
@@ -207,7 +207,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 - [x] Added to `OnlinePortfolio.Api.slnx`
 - [x] At least one smoke test green
 - [x] `dotnet test` from `backend/` succeeds
-- [x] Stack documented in [ARCHITECTURE §23](./ARCHITECTURE.md#23-testing)
+- [x] Stack documented in [docs/ARCHITECTURE.md](./ARCHITECTURE.md)
 - [x] Script `scripts/coverage-backend.ps1` (HTML report); `TestResults/` gitignored
 
 ---
@@ -222,7 +222,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Depends on** | DEV-001 |
 | **Status** | ✅ **Done** |
 
-**Description:** Criar repo `online-portfolio` no GitHub, primeiro push do monorepo, conectar Render e Vercel via GitHub App, preparar secrets para Actions. Runbook: [EXTERNAL_PROVIDERS §4](./EXTERNAL_PROVIDERS.md#4-github-cicd--actions).
+**Description:** Criar repo `online-portfolio` no GitHub, primeiro push do monorepo, conectar Render e Vercel via GitHub App, preparar secrets para Actions. Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Acceptance criteria:**
 - [x] Repo criado e código do monorepo em `main`
@@ -243,7 +243,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Depends on** | — |
 | **Status** | ✅ **Done** |
 
-**Description:** Workspace Linear para issues `DEV-xxx`. Runbook: [EXTERNAL_PROVIDERS §5](./EXTERNAL_PROVIDERS.md#5-linear-project-management).
+**Description:** Workspace Linear para issues `DEV-xxx`. Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Acceptance criteria:**
 - [x] Conta + workspace criados ([linear.app/signup](https://linear.app/signup))
@@ -262,7 +262,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Priority** | P1 |
 | **Depends on** | — |
 
-**Description:** Conta SendGrid e API key para envio transacional (`noreply@onlineportfolio.com.br`). **Só configuração de conta** — integração na API em [DEV-107](#dev-107--contact-form--sendgrid); autenticação de domínio (DKIM) em [DEV-011](#dev-011--dns--https-production). Runbook: [EXTERNAL_PROVIDERS §8](./EXTERNAL_PROVIDERS.md#8-sendgrid-email).
+**Description:** Conta SendGrid e API key para envio transacional (`noreply@onlineportfolio.com.br`). **Só configuração de conta** — integração na API em [DEV-107](#dev-107--contact-form--sendgrid); autenticação de domínio (DKIM) em [DEV-011](#dev-011--dns--https-production). Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Acceptance criteria:**
 - [ ] Conta SendGrid criada e verificada
@@ -287,11 +287,11 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 **Acceptance criteria:**
 - [x] `ci-backend.yml` runs on `pull_request` to `main` (paths: `backend/**`, `docs/DATABASE.md`, …)
 - [x] `ci-frontend.yml` runs on `pull_request` to `main` (paths: `frontend/**`, …)
-- [x] Backend: `dotnet test` (+ build); uses xUnit stack ([ARCHITECTURE §23](./ARCHITECTURE.md#23-testing))
+- [x] Backend: `dotnet test` (+ build); uses xUnit stack ([docs/ARCHITECTURE.md](./ARCHITECTURE.md))
 - [x] Frontend: `npm run lint` + `npm run test:coverage` (Vitest; expand in UT-009+)
 - [x] Status checks **Backend CI** and **Frontend CI** visible on PR
 - [x] PR comments: **Backend coverage** / **Frontend coverage** (sticky; só quando o workflow respectivo roda)
-- [x] Documented cross-stack component review before merge ([AGENT_GUIDE § Git flow](./AGENT_GUIDE.md#git-flow-ci-and-cross-stack-review))
+- [x] Documented cross-stack component review before merge ([docs/AGENT_GUIDE.md](./AGENT_GUIDE.md))
 
 ---
 
@@ -333,7 +333,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 
 ---
 
-### DEV-008 — Supabase production project
+### DEV-008 — Supabase production project ✅
 
 | Field | Value |
 |---|---|
@@ -341,15 +341,46 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Area** | infra |
 | **Priority** | P1 |
 | **Depends on** | — |
+| **Status** | ✅ **Done** — projeto `online-portfolio-db-prod` (US East) |
 
-**Description:** Create Supabase **production** project only; store pooler + direct connection strings and API keys. No separate deployed dev/staging Supabase in v1 ([ADR-015](./ARCHITECTURE.md#adr-015-deploy-somente-em-production)). Runbook: [EXTERNAL_PROVIDERS §6](./EXTERNAL_PROVIDERS.md#6-supabase).
+**Description:** Create Supabase **production** project `online-portfolio-db-prod`; store pooler + direct connection strings and API keys for Render + CI. Deploy de API/front continua **somente prod** ([docs/ARCHITECTURE.md](./ARCHITECTURE.md)) — DB dev é [DEV-008b](#dev-008b--supabase-dev-project). Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Acceptance criteria:**
-- [ ] Single prod project `portfolio-prod` in chosen region
-- [ ] Pooler URI (6543) for API runtime
-- [ ] Direct URI (5432) for migrations/CI only
-- [ ] Anon key, service role key, JWT secret stored in password manager / secrets
-- [ ] Documented in `EXTERNAL_PROVIDERS.md` checklist
+- [x] Prod project `online-portfolio-db-prod` in **US East** (alinhado ao Render Virginia)
+- [x] Pooler URI (6543, Transaction) → Render `ConnectionStrings__Default`
+- [x] Direct URI (5432) → GitHub secret `SUPABASE_MIGRATION_CONNECTION_STRING` (CI migrate prod)
+- [x] Project URL + **service_role** / secret API key no password manager (Render env; Storage Fase 3+)
+- [x] Migration `Initial` aplicada em prod (`dotnet ef database update` local)
+- [x] Checklist [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) (prod)
+
+**Done notes (2025-06-21):**
+- Project ref: `mfxuthlwrfjscxnnjeud` · região US East · pooler Transaction `aws-1-us-east-1.pooler.supabase.com:6543`
+- Templates sem senha em `backend/OnlinePortfolio.Api/appsettings.json` (`Default` = pooler, `Migration` = direct)
+- `__EFMigrationsHistory` em prod: `20260622012938_Initial` (EF Core 10.0.4)
+- GitHub secret `SUPABASE_MIGRATION_CONNECTION_STRING` configurado (usado quando [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) existir)
+- `Supabase__Url` / `Supabase__ServiceRoleKey` no Render **deferidos** até Storage (Fase 3)
+
+---
+
+### DEV-008b — Supabase dev project
+
+| Field | Value |
+|---|---|
+| **Phase** | 0 |
+| **Area** | infra |
+| **Priority** | P2 |
+| **Depends on** | DEV-008 (recomendado — mesma org/região) |
+
+**Description:** Segundo projeto Supabase **`online-portfolio-db-dev`** — Postgres na nuvem para desenvolvimento local **opcional** (alternativa ao Postgres do Docker Compose). **Não** deploya API/front dev; só substitui o banco local quando você apontar `appsettings.Development.json` / `appsettings.json` para o dev. Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
+
+**Acceptance criteria:**
+- [ ] Dev project `online-portfolio-db-dev` criado (mesma região que prod, ex. US East)
+- [ ] Direct URI (5432) + pooler (6543) guardados no **password manager** — **não** em Render, **não** no secret de migrate prod
+- [ ] `appsettings.Development.json` / `appsettings.json` documentado: alternar `ConnectionStrings` entre **Docker local** e **Supabase dev**
+- [ ] Migrations aplicadas em dev (`dotnet ef database update` contra direct dev)
+- [ ] [docs/DEV_COMMANDS.md](./DEV_COMMANDS.md) descreve os dois modos (Compose vs Supabase dev)
+
+**Nota:** CI e Render usam **sempre** prod. Dev Supabase é só para máquina do desenvolvedor.
 
 ---
 
@@ -362,7 +393,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Priority** | P1 |
 | **Depends on** | DEV-003, DEV-008, DEV-007, DEV-014 |
 
-**Description:** Deploy backend Docker image to Render free tier; connect GitHub repo. Runbook: [EXTERNAL_PROVIDERS §7](./EXTERNAL_PROVIDERS.md#7-render-api).
+**Description:** Deploy backend Docker image to Render free tier; connect GitHub repo. Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Acceptance criteria:**
 - [ ] Conta Render criada; web service Docker (`backend/OnlinePortfolio.Api/Dockerfile`) conectado ao repo
@@ -383,7 +414,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Priority** | P1 |
 | **Depends on** | DEV-005, DEV-012 |
 
-**Description:** Connect repo to Vercel; root directory `frontend`; PR previews enabled; **production deploy via `deploy-frontend.yml`** (DEV-007b). Runbook: [EXTERNAL_PROVIDERS §9](./EXTERNAL_PROVIDERS.md#9-vercel-frontend).
+**Description:** Connect repo to Vercel; root directory `frontend`; PR previews enabled; **production deploy via `deploy-frontend.yml`** (DEV-007b). Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Acceptance criteria:**
 - [ ] Conta Vercel criada; projeto importado do GitHub (`frontend/` root)
@@ -403,7 +434,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Priority** | P1 |
 | **Depends on** | DEV-000, DEV-009, DEV-010 |
 
-**Description:** DNS de produção: Registro.br nameservers → Vercel; domínios apex/`app.`/wildcard; CNAME `api.` → Render; registros SendGrid (DKIM/SPF). Runbook: [EXTERNAL_PROVIDERS §10](./EXTERNAL_PROVIDERS.md#10-dns-no-deploy) · email [§10.4](./EXTERNAL_PROVIDERS.md#104-dns-de-email--sendgrid-v1-só-envio).
+**Description:** DNS de produção: Registro.br nameservers → Vercel; domínios apex/`app.`/wildcard; CNAME `api.` → Render; registros SendGrid (DKIM/SPF). Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) · email [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Acceptance criteria:**
 - [ ] Nameservers `ns1.vercel-dns.com` / `ns2.vercel-dns.com` at Registro.br
@@ -412,13 +443,13 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 - [ ] `api.onlineportfolio.com.br` verified on Render with HTTPS (auto)
 - [ ] SendGrid domain authentication: CNAMEs DKIM (+ SPF TXT se indicado) na Vercel DNS
 - [ ] SendGrid dashboard mostra domínio `onlineportfolio.com.br` autenticado
-- [ ] Checklist [EXTERNAL_PROVIDERS §10](./EXTERNAL_PROVIDERS.md#10-dns-no-deploy) marcado
+- [ ] Checklist [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) marcado
 
 ---
 
 ## Epic 1 — Site público por tenant (Phase 1)
 
-**Objetivo:** landing + posts/galeria em `{slug}.onlineportfolio.com.br` (ex.: `ana.`, `mark.`). Admin fica no Epic 1.5 (`app.`). Ver [ARCHITECTURE.md §2.1](./ARCHITECTURE.md#21-mapa-de-domínios-e-superfícies-do-produto).
+**Objetivo:** landing + posts/galeria em `{slug}.onlineportfolio.com.br` (ex.: `ana.`, `mark.`). Admin fica no Epic 1.5 (`app.`). Ver [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ### DEV-100 — Domain model: Tenant, Plan, TenantSettings
 
@@ -429,7 +460,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Priority** | P0 |
 | **Depends on** | DEV-004 |
 
-**Description:** EF entities for platform-scoped tenant tables. **Superseded by Epic 1.5** if login MVP is built first — see DEV-150/151 and [DATABASE.md](./DATABASE.md).
+**Description:** EF entities for platform-scoped tenant tables. **Superseded by Epic 1.5** if login MVP is built first — see DEV-150/151 and [docs/DATABASE.md](./DATABASE.md).
 
 **Acceptance criteria:**
 - [ ] `Tenant`, `Plan`, `TenantSettings` entities
@@ -485,7 +516,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Priority** | P0 |
 | **Depends on** | DEV-101, DEV-102 |
 
-**Description:** Read-only public endpoints per architecture §10.
+**Description:** Read-only public endpoints per [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
 **Acceptance criteria:**
 - [ ] `GET /api/v1/tenants/{slug}/profile`
@@ -506,7 +537,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Depends on** | DEV-005, DEV-103 |
 | **Status** | 🟡 Parcial — falta 404 para slug desconhecido (validação API) |
 
-**Description:** Resolve tenant pelo `Host` — subdomínio `{slug}.onlineportfolio.com.br` ou domínio custom. Host `app.*` e apex da plataforma **não** são tenants. Arquitetura de superfícies: [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant).
+**Description:** Resolve tenant pelo `Host` — subdomínio `{slug}.onlineportfolio.com.br` ou domínio custom. Host `app.*` e apex da plataforma **não** são tenants. Arquitetura de superfícies: [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
 **Acceptance criteria:**
 - [x] Middleware: `{slug}.onlineportfolio.com.br` → tenant slug (`resolve-host.global.ts`)
@@ -528,7 +559,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Depends on** | DEV-104, DEV-103 |
 | **Status** | 🟡 Parcial — landing skeleton + temas; dados reais e galeria pendentes (DEV-103) |
 
-**Description:** Site público por tenant em `{slug}.onlineportfolio.com.br` — home/landing, listagem de posts/obras, detalhe, about. Dados via proxy Nuxt → API. Layout base compartilhado; overrides por tenant em `components/public/tenants/{slug}/` — [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant).
+**Description:** Site público por tenant em `{slug}.onlineportfolio.com.br` — home/landing, listagem de posts/obras, detalhe, about. Dados via proxy Nuxt → API. Layout base compartilhado; overrides por tenant em `components/public/tenants/{slug}/` — [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
 **Acceptance criteria:**
 - [x] Landing/home por tenant (skeleton: `useTenantComponent('LandingHero')`, exemplos Ana/João, temas CSS)
@@ -569,7 +600,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Priority** | P1 |
 | **Depends on** | DEV-103, DEV-014 |
 
-**Description:** Formulário de contato POST → API → SendGrid (`noreply@`) → `ContactEmail` do tenant. Requer [DEV-014](#dev-014--sendgrid-account--api-key) (conta) e DKIM em [DEV-011](#dev-011--dns--https-production) para prod. Runbook: [EXTERNAL_PROVIDERS §8](./EXTERNAL_PROVIDERS.md#8-sendgrid-email).
+**Description:** Formulário de contato POST → API → SendGrid (`noreply@`) → `ContactEmail` do tenant. Requer [DEV-014](#dev-014--sendgrid-account--api-key) (conta) e DKIM em [DEV-011](#dev-011--dns--https-production) para prod. Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Acceptance criteria:**
 - [ ] `POST /api/v1/tenants/{slug}/contact` with validation
@@ -611,7 +642,7 @@ Atividades de **conta e configuração** alinhadas à [ordem de setup em EXTERNA
 | **Priority** | P2 |
 | **Depends on** | DEV-104 |
 
-**Description:** Landing page at `onlineportfolio.com.br` when host is apex (not tenant subdomain). Conteúdo em `components/platform/` — [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant).
+**Description:** Landing page at `onlineportfolio.com.br` when host is apex (not tenant subdomain). Conteúdo em `components/platform/` — [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
 **Acceptance criteria:**
 - [x] Apex host shows platform marketing content (stub: `PlatformLandingHero` via `index.vue` + surface `platform`)
@@ -633,7 +664,7 @@ Sem CRUD de obras, settings completos ou site público neste epic.
 
 **Domínios:** login e admin só em `app.onlineportfolio.com.br`; sites `{slug}.onlineportfolio.com.br` vêm no Epic 1 (público).
 
-**Schema reference:** [DATABASE.md](./DATABASE.md) — migration `InitialMultiTenantAndUsers`
+**Schema reference:** [docs/DATABASE.md](./DATABASE.md) — migration `InitialMultiTenantAndUsers`
 
 ### Admin MVP — escopo funcional
 
@@ -664,7 +695,7 @@ Tenant user (Owner/Editor)
 
 **Acceptance criteria:**
 - [ ] Migration `InitialMultiTenantAndUsers` created
-- [ ] Tables match DATABASE.md §4 (columns, FKs, checks)
+- [ ] Tables match [docs/DATABASE.md](./DATABASE.md) (columns, FKs, checks)
 - [ ] Indexes: `tenants.slug`, `users.email` UNIQUE, partial unique on `custom_domain`
 - [ ] `dotnet ef database update` works on Compose Postgres
 - [ ] Rollback (`dotnet ef migrations remove`) tested locally
@@ -731,7 +762,7 @@ Tenant user (Owner/Editor)
 - [ ] Auto-cadastro desabilitado (invite-only)
 - [ ] `[Authorize(Roles = "...")]` nos endpoints platform
 - [ ] Regra API: PlatformAdmin => `tenant_id` NULL; Owner/Editor => `tenant_id` obrigatório
-- [ ] Documentado em ARCHITECTURE §9
+- [ ] Documentado em [docs/ARCHITECTURE.md](./ARCHITECTURE.md)
 
 ---
 
@@ -787,7 +818,7 @@ Tenant user (Owner/Editor)
 | **Priority** | P0 |
 | **Depends on** | DEV-155, DEV-154 |
 
-**Description:** Login UI at `/login` on **centralized** `app.{host}` — form posts via Nuxt proxy to `POST /auth/login`. UI em `components/app/` (padronizada, sem variantes por tenant — ADR-016). **Dark mode** (`surface-dark`) — ver [FRONTEND_COMPONENTS.md § Dark mode estrutural](./FRONTEND_COMPONENTS.md#dark-mode-estrutural-tudo-exceto-site-público-do-tenant).
+**Description:** Login UI at `/login` on **centralized** `app.{host}` — form posts via Nuxt proxy to `POST /auth/login`. UI em `components/app/` (padronizada, sem variantes por tenant — ADR-016). **Dark mode** (`surface-dark`) — ver [docs/FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md).
 
 **Acceptance criteria:**
 - [x] Page at `app.{host}/login` only (stub `pages/login.vue` + guard; not on tenant subdomains)
@@ -1207,7 +1238,7 @@ Tenant user (Owner/Editor)
 | **Priority** | P3 |
 | **Depends on** | DEV-402 (if limits tied to paid plans) |
 
-**Description:** Checkout + webhook for tenant billing. **Fora do escopo inicial — não implementar enquanto não cobrar.** Provider TBD: **Stripe** se expandir fora do BR (multi-moeda, cartões globais); **Asaas/Iugu** se permanecer só Brasil (PIX, fiscal). Ver [EXTERNAL_PROVIDERS §13](./EXTERNAL_PROVIDERS.md#13-stripe--cobrança-saas-fase-4-opcional).
+**Description:** Checkout + webhook for tenant billing. **Fora do escopo inicial — não implementar enquanto não cobrar.** Provider TBD: **Stripe** se expandir fora do BR (multi-moeda, cartões globais); **Asaas/Iugu** se permanecer só Brasil (PIX, fiscal). Ver [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Acceptance criteria:**
 - [ ] PSP account + products/prices configured
@@ -1226,12 +1257,12 @@ Tenant user (Owner/Editor)
 | **Priority** | P3 |
 | **Depends on** | DEV-000, DEV-011 |
 
-**Description:** Configure Google Workspace for `hello@onlineportfolio.com.br` when needed. Runbook: [EXTERNAL_PROVIDERS §14](./EXTERNAL_PROVIDERS.md#14-google-workspace-caixa-postal-operador--futuro).
+**Description:** Configure Google Workspace for `hello@onlineportfolio.com.br` when needed. Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Acceptance criteria:**
 - [ ] MX + SPF merged with SendGrid
 - [ ] Test send/receive
-- [ ] Documented in EXTERNAL_PROVIDERS §8
+- [ ] Documented in [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md)
 
 ---
 
@@ -1239,7 +1270,7 @@ Tenant user (Owner/Editor)
 
 Activities for isolated, fast tests (no external services). Run in CI on every PR.
 
-**Backend stack:** xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` — see [ARCHITECTURE §23](./ARCHITECTURE.md#23-testing). **Frontend stack:** Vitest (UT-009+).
+**Backend stack:** xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` — see [docs/ARCHITECTURE.md](./ARCHITECTURE.md). **Frontend stack:** Vitest (UT-009+).
 
 ### UT-001 — Backend: TenantContext unit tests
 
@@ -1425,7 +1456,7 @@ Activities for cross-layer tests with real or containerized dependencies.
 | **Priority** | P0 |
 | **Depends on** | DEV-005b, DEV-004 |
 
-**Description:** Integration test infrastructure on top of [DEV-005b](./BACKLOG.md#dev-005b--backend-test-project-scaffold): WebApplicationFactory, Testcontainers Postgres (or CI service container).
+**Description:** Integration test infrastructure on top of DEV-005b ([docs/BACKLOG.md](./BACKLOG.md)): WebApplicationFactory, Testcontainers Postgres (or CI service container).
 
 **Acceptance criteria:**
 - [ ] `OnlinePortfolio.Api.Tests` project scaffolded (DEV-005b): xUnit, Moq, FluentAssertions, coverlet.collector
@@ -1614,7 +1645,7 @@ Activities for cross-layer tests with real or containerized dependencies.
 
 ## Security
 
-Dedicated security activities (beyond tests). Cross-reference ARCHITECTURE §18.
+Dedicated security activities (beyond tests). Cross-reference [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ### SEC-001 — Secrets management audit
 
@@ -1628,7 +1659,7 @@ Dedicated security activities (beyond tests). Cross-reference ARCHITECTURE §18.
 - [ ] No secrets in git history or `.env` committed
 - [ ] Service role key only on Render
 - [ ] Anon key only in Vercel public env
-- [ ] `.env.example` has placeholders only
+- [ ] `frontend/.env.example` has placeholders only
 - [ ] GitHub Secrets documented in EXTERNAL_PROVIDERS
 
 ---
@@ -1777,7 +1808,7 @@ Dedicated security activities (beyond tests). Cross-reference ARCHITECTURE §18.
 | **Depends on** | SEC-001 through SEC-008 |
 
 **Acceptance criteria:**
-- [ ] All ARCHITECTURE §18 mandatory items checked
+- [ ] All [docs/ARCHITECTURE.md](./ARCHITECTURE.md) mandatory items checked
 - [ ] IT-004 IDOR tests green
 - [ ] Manual smoke: two tenants cannot see each other's admin data
 - [ ] Sign-off recorded before first paying customer
@@ -1796,7 +1827,7 @@ DEV-150 → DEV-151 → DEV-152 → DEV-153 → DEV-154 → DEV-155 → DEV-156 
 DEV-101 → DEV-102 → DEV-103 → DEV-104 → DEV-105 → UT-002 → IT-001 → IT-002
 
 ### Sprint 3 — Contact + cloud providers + deploy
-DEV-014 → DEV-008 → DEV-107 → DEV-009 → DEV-010 → DEV-006 → DEV-007 → DEV-007b → SEC-001 → UT-003 → IT-006
+DEV-014 → DEV-008 → DEV-008b → DEV-107 → DEV-009 → DEV-010 → DEV-006 → DEV-007 → DEV-007b → SEC-001 → UT-003 → IT-006
 
 ### Sprint 4 — DNS + hardening
 DEV-011 → SEC-007 → SEC-003 → UT-005 → SEC-011 (partial)
@@ -1812,4 +1843,4 @@ DEV-207, DEV-400+, DEV-403, DEV-404, IT-010, SEC-009, SEC-010
 
 ---
 
-*Last updated: 2025-06-21 — backend test stack (§23); DEV-005b; Linear import done*
+*Last updated: 2025-06-21 — DEV-008 Supabase prod done (`online-portfolio-db-prod`)*

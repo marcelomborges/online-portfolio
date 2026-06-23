@@ -162,7 +162,7 @@ npm run dev
 | `platform` | `onlineportfolio.com.br` | Marketing (**dark**) |
 | `app` | `app.onlineportfolio.com.br` | Admin/login (**dark**) |
 
-Detalhes: [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md) · [ADR-016](./ARCHITECTURE.md#adr-016-três-superfícies-e-ui-por-tenant).
+Detalhes: [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md) · [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ---
 
@@ -327,7 +327,7 @@ bash scripts/coverage-backend.sh
 
 Saída: `backend/TestResults/CoverageReport/index.html` — pasta `TestResults/` está no `.gitignore`.
 
-Stack: xUnit · Moq · FluentAssertions · Coverlet — [ARCHITECTURE §23](./ARCHITECTURE.md#23-testing).
+Stack: xUnit · Moq · FluentAssertions · Coverlet — [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ---
 
