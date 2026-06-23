@@ -256,7 +256,7 @@ All providers accept `.com.br` and subdomains.
 .github/workflows/
   ci-backend.yml       # ✅ pull_request + push main: dotnet test + build (paths backend/**)
   ci-frontend.yml      # ✅ pull_request + push main: npm run lint (nuxi typecheck)
-  deploy-backend.yml   # push main: test → EF migrate → Render Wait for CI (DEV-007)
+  deploy-backend.yml   # ✅ push main: test → EF migrate → gate Render (DEV-007)
   deploy-frontend.yml  # push main: lint/test → vercel deploy --prod (DEV-007b)
 ```
 
@@ -270,7 +270,8 @@ Além dos testes, conferir pareamento front↔back antes do merge. Referência: 
 
 - [ ] Repo created and pushed
 - [x] `ci-backend.yml`, `ci-frontend.yml` (PR CI — DEV-006)
-- [ ] `deploy-backend.yml`, `deploy-frontend.yml` (DEV-007 / DEV-007b)
+- [x] `deploy-backend.yml` (DEV-007)
+- [ ] `deploy-frontend.yml` (DEV-007b)
 - [ ] Secrets configured; Render **Wait for CI** enabled
 
 ---
@@ -475,7 +476,8 @@ Path prefix: `tenants/{tenantId}/...`
 | Setting | Value |
 |---|---|
 | **Health check path** | `/health` |
-| **Auto-deploy** | Yes (on push to main) |
+| **Auto-deploy** | Yes (on push to `main`) |
+| **Wait for CI** | **Enable** — aguardar check **Backend Deploy** (`deploy-backend.yml`) antes do deploy |
 | **Build command** | (Docker handles build) |
 | **Start command** | (from Dockerfile `ENTRYPOINT`) |
 

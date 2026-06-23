@@ -157,11 +157,12 @@ Dispara em `pull_request` e `push` → `main`, com **path filters** — só roda
 | Workflow | Status check | Comandos | Paths (exemplos) |
 |---|---|---|---|
 | `ci-backend.yml` | **Backend CI** | `dotnet test` (Release) + Coverlet | `backend/**`, `docs/DATABASE.md`, workflow deploy-backend |
+| `deploy-backend.yml` | **Backend Deploy** | `dotnet test` → `dotnet ef database update` (prod) | `push` → `main`; paths `backend/**`, `docs/DATABASE.md` |
 | `ci-frontend.yml` | **Frontend CI** | `npm run lint` (typecheck) + `npm run test:coverage` (Vitest) | `frontend/**`, workflow deploy-frontend, action coverage comment |
 
 **Path filters:** PR que muda só `docs/` ou só `scripts/` pode **não** disparar nenhum CI — ok. PR que muda `backend/` **e** `frontend/` dispara **os dois**. Checks **skipped** por path filter contam como OK no GitHub (branch protection).
 
-**Deploy** (`deploy-backend.yml`, `deploy-frontend.yml`) — ainda não implementados (DEV-007 / DEV-007b).
+**Deploy** (`deploy-backend.yml` ✅, `deploy-frontend.yml` — DEV-007b).
 
 ### Comentários de coverage no PR
 

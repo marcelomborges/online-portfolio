@@ -60,7 +60,7 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 | 6 | SendGrid | [DEV-014](#dev-014--sendgrid-account--api-key) → [DEV-107](#dev-107--contact-form--sendgrid) | Conta antes do Render; código Epic 1 |
 | 7 | Vercel | [DEV-010](#dev-010--vercel-frontend-deployment) | Após DEV-005 |
 | 8 | DNS + email DNS | [DEV-011](#dev-011--dns--https-production) | Após Render + Vercel |
-| 9 | GitHub Actions | [DEV-006](#dev-006--github-actions-ci-pr--workflows-separados) · [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) · [DEV-007b](#dev-007b--github-actions-deploy-pipeline-frontend) | Secrets de DEV-008/010/012 |
+| 9 | GitHub Actions | [DEV-006](#dev-006--github-actions-ci-pr--workflows-separados) · [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) · [DEV-007b](#dev-007b--github-actions-deploy-pipeline-frontend) | ✅ CI + backend deploy; frontend deploy pendente |
 | — | Google Workspace | [DEV-404](#dev-404--google-workspace-operator-inbox) | Opcional, pós-lançamento |
 | — | Stripe / billing | [DEV-403](#dev-403--billing--subscriptions-optional--skip-until-charging) | **Opcional** — skip no v1 |
 
@@ -295,7 +295,7 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 
 ---
 
-### DEV-007 — GitHub Actions deploy pipeline (backend)
+### DEV-007 — GitHub Actions deploy pipeline (backend) ✅
 
 | Field | Value |
 |---|---|
@@ -303,14 +303,15 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 | **Area** | devops |
 | **Priority** | P1 |
 | **Depends on** | DEV-006, DEV-004 |
+| **Status** | ✅ **Done** — workflow `deploy-backend.yml`; Render **Wait for CI** manual |
 
 **Description:** `deploy-backend.yml` on push to `main` — backend test → EF migrate (Supabase direct) → pass status for Render Wait for CI.
 
 **Acceptance criteria:**
-- [ ] `SUPABASE_MIGRATION_CONNECTION_STRING` in GitHub Secrets
-- [ ] Migrations run before deploy status succeeds
-- [ ] Render **Wait for CI** documented and enabled (waits on `deploy-backend.yml`)
-- [ ] Branch protection on `main` requires Backend CI + Frontend CI (recommended)
+- [x] `SUPABASE_MIGRATION_CONNECTION_STRING` in GitHub Secrets
+- [x] Migrations run before deploy status succeeds
+- [ ] Render **Wait for CI** documented and enabled (waits on check **Backend Deploy**)
+- [x] Branch protection on `main` requires Backend CI + Frontend CI (recommended)
 
 ---
 
