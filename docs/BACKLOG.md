@@ -93,8 +93,8 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 | 2 | GitHub | [DEV-012](#dev-012--github-repository--platform-integrations) | ✅ Done |
 | 3 | Linear | [DEV-013](#dev-013--linear-workspace) | ✅ Done |
 | 4 | Supabase | [DEV-008](#dev-008--supabase-production-project) · [DEV-008b](#dev-008b--supabase-dev-project) | ✅ prod (`online-portfolio-db-prod`); dev opcional |
-| 5 | Render | [DEV-009](#dev-009--render-api-deployment) | Após DEV-003 + DEV-008 |
-| 6 | Resend | [DEV-014](#dev-014--resend-account--api-key) → [DEV-107](#dev-107--contact-form--resend) | Conta antes do Render; código Epic 1 |
+| 5 | Render | [DEV-009](#dev-009--render-api-deployment) | ✅ Done — API prod `*.onrender.com` |
+| 6 | Resend | [DEV-014](#dev-014--resend-account--api-key) → [DEV-107](#dev-107--contact-form--resend) | ✅ conta + Render env; código Epic 1 |
 | 7 | Vercel | [DEV-010](#dev-010--vercel-frontend-deployment) | Após DEV-005 |
 | 8 | DNS + email DNS | [DEV-011](#dev-011--dns--https-production) | Após Render + Vercel |
 | 9 | GitHub Actions | [DEV-006](#dev-006--github-actions-ci-pr--workflows-separados) · [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) ✅ · [DEV-007b](#dev-007b--github-actions-deploy-pipeline-frontend) | ✅ CI + backend deploy; frontend deploy pendente |
@@ -428,24 +428,25 @@ Segundo projeto Supabase **`online-portfolio-db-dev`** — Postgres na nuvem par
 
 ---
 
-### DEV-009 — Render API deployment
+### DEV-009 — Render API deployment ✅
 
 **Descrição:**
 Deploy backend Docker image to Render free tier; connect GitHub repo. Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Critérios de aceitação:**
-- [ ] Conta Render criada; web service Docker (`backend/OnlinePortfolio.Api/Dockerfile`) conectado ao repo
-- [ ] Web service live on Render default URL
-- [ ] Health check `/health` configured
-- [ ] Production env vars set (DB pooler, `Jwt__*`, `Resend__ApiKey` de DEV-014)
+- [x] Conta Render criada; web service Docker (`backend/OnlinePortfolio.Api/Dockerfile`) conectado ao repo
+- [x] Web service live on Render default URL
+- [x] Health check `/health` configured e retornando 200
+- [x] Production env vars set (`ConnectionStrings__Default`, `Jwt__*`, `Resend__*` de DEV-014, `ASPNETCORE_*`)
 - [x] **After CI Checks Pass** habilitado (gate em `deploy-backend.yml` — DEV-007)
-- [ ] Custom domain `api.onlineportfolio.com.br` (pode aguardar DEV-011 — OK com URL `*.onrender.com` primeiro)
+- [ ] Custom domain `api.onlineportfolio.com.br` (adiado — DEV-011; OK com `*.onrender.com`)
 
 **Observações:**
 - **Phase:** 0
 - **Area:** devops
 - **Priority:** P1
 - **Depends on:** DEV-003, DEV-008, DEV-007, DEV-014
+- **Status:** ✅ **Done** — deploy prod ok com env vars; domínio custom → DEV-011
 
 ---
 
@@ -2012,19 +2013,13 @@ Dedicated security activities (beyond tests). Cross-reference [docs/ARCHITECTURE
 | DEV-006 | `ci-backend.yml` + `ci-frontend.yml` (PR + path-filter fix) |
 | DEV-007 | `deploy-backend.yml` + migrate prod + Render After CI Checks Pass |
 | DEV-008 | Supabase prod `online-portfolio-db-prod` |
-
-#### 🔄 Parcial
-
-| Issue | Feito | Falta |
-|-------|-------|-------|
-| DEV-009 | Serviço Render live, `/health`, pooler DB, After CI Checks Pass | `Jwt__*`, Resend (DEV-014), domínio `api.` (DEV-011) |
+| DEV-014 | Resend — conta + API key + Render env |
+| DEV-009 | API Render prod — env vars, `/health`, After CI Checks Pass |
 
 #### ⬜ Restante Sprint 1 (semana 2 — até 27/06)
 
 | Issue | Prioridade |
 |-------|------------|
-| DEV-014 | Resend — ✅ conta + Render env |
-| DEV-009 | Fechar env vars prod no Render |
 | DEV-010 | Vercel projeto + env vars |
 | DEV-007b | `deploy-frontend.yml` |
 | DEV-011 | *(stretch)* DNS apex + `api.` + DKIM Resend |
@@ -2037,7 +2032,7 @@ Dedicated security activities (beyond tests). Cross-reference [docs/ARCHITECTURE
 
 **Objetivo:** produção fechada (front + API + domínios), pronto para features.
 
-DEV-011 → DEV-014 *(se não fechou em S1)* → DEV-010 → DEV-007b → DEV-009 *(restante)* → SEC-001 → UT-003 → IT-006
+DEV-011 → DEV-010 → DEV-007b → SEC-001 → UT-003 → IT-006
 
 **Critério de saída:** `onlineportfolio.com.br` + `app.` no Vercel, `api.` no Render, e-mail DKIM OK, deploys só via Actions.
 

@@ -63,8 +63,8 @@ Use esta tabela para abrir cada serviço na ordem. Marque conforme for concluind
 | 2 | **GitHub** | [github.com/signup](https://github.com/signup) | [github.com](https://github.com) | seção 4 | ⬜ Criar repo `online-portfolio` |
 | 3 | **Linear** | [linear.app/signup](https://linear.app/signup) | [linear.app](https://linear.app) | seção 5 | ✅ Backlog importado |
 | 4 | **Supabase** | [supabase.com/dashboard](https://supabase.com/dashboard) | [Dashboard](https://supabase.com/dashboard) | seção 6 | ✅ `online-portfolio-db-prod` + opcional `online-portfolio-db-dev` |
-| 5 | **Render** | [dashboard.render.com/register](https://dashboard.render.com/register) | [Render](https://dashboard.render.com) | seção 7 | ⬜ Web service API |
-| 6 | **Resend** | [resend.com/signup](https://resend.com/signup) | [Resend](https://resend.com/domains) | seção 8 | 🔄 conta + API key; falta Render env |
+| 5 | **Render** | [dashboard.render.com/register](https://dashboard.render.com/register) | [Render](https://dashboard.render.com) | seção 7 | ✅ API prod (`*.onrender.com`; domínio custom → DEV-011) |
+| 6 | **Resend** | [resend.com/signup](https://resend.com/signup) | [Resend](https://resend.com/domains) | seção 8 | ✅ conta + API key + Render env (DEV-014) |
 | 7 | **Vercel** | [vercel.com/signup](https://vercel.com/signup) | [Vercel](https://vercel.com/dashboard) | seção 9 | ⬜ Projeto Nuxt |
 | 8 | **Google Workspace** | [workspace.google.com](https://workspace.google.com/) | [Admin](https://admin.google.com) | seção 14 | ⏸️ Depois do lançamento |
 | 9 | **Stripe** | [dashboard.stripe.com/register](https://dashboard.stripe.com/register) | [Stripe](https://dashboard.stripe.com) | seção 13 | ⏸️ **Opcional** — só se/quando cobrar |
@@ -570,14 +570,14 @@ Set in **Environment → Environment Variables** (or `render.yaml`):
 
 ### 7.5 Render checklist
 
-- [ ] Web service created (Docker)
-- [ ] **Root directory** = `backend` (monorepo — seção 4.6)
+- [x] Web service created (Docker)
+- [x] **Root directory** = `backend` (monorepo — seção 4.6)
 - [x] **After CI Checks Pass** enabled
-- [ ] Health check returns 200 at `/health`
-- [ ] All env vars set
-- [ ] Custom domain `api.onlineportfolio.com.br` verified + HTTPS
-- [ ] Logs visible in Render dashboard
-- [ ] Test: `GET https://api.onlineportfolio.com.br/health`
+- [x] Health check returns 200 at `/health` (`*.onrender.com`)
+- [x] All env vars set (DB pooler, `Jwt__*`, `Resend__*`, `ASPNETCORE_*`)
+- [ ] Custom domain `api.onlineportfolio.com.br` verified + HTTPS (DEV-011)
+- [x] Logs visible in Render dashboard
+- [ ] Test: `GET https://api.onlineportfolio.com.br/health` (após DEV-011)
 - [ ] Test: public API endpoint returns data
 
 ---
@@ -675,8 +675,8 @@ builder.Services.AddTransient<IResend, ResendClient>();
 
 - [x] Conta Resend criada
 - [x] API key `portfolio-api-prod` criada
-- [ ] API key no password manager
-- [ ] `Resend__*` no Render (DEV-009)
+- [x] API key no password manager
+- [x] `Resend__*` no Render
 - [ ] Smoke test enviado (seção 8.5)
 - [ ] Domínio `onlineportfolio.com.br` verificado (DEV-011)
 - [ ] `IEmailService` + `ResendEmailService` (DEV-107)
