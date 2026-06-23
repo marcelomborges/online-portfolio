@@ -95,7 +95,7 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 | 4 | Supabase | [DEV-008](#dev-008--supabase-production-project) · [DEV-008b](#dev-008b--supabase-dev-project) | ✅ prod (`online-portfolio-db-prod`); dev opcional |
 | 5 | Render | [DEV-009](#dev-009--render-api-deployment) | ✅ Done — API prod `*.onrender.com` |
 | 6 | Resend | [DEV-014](#dev-014--resend-account--api-key) → [DEV-107](#dev-107--contact-form--resend) | ✅ conta + Render env; código Epic 1 |
-| 7 | Vercel | [DEV-010](#dev-010--vercel-frontend-deployment) | Após DEV-005 |
+| 7 | Vercel | [DEV-010](#dev-010--vercel-frontend-deployment) | ✅ Done — `online-portfolio-web` |
 | 8 | DNS + email DNS | [DEV-011](#dev-011--dns--https-production) | Após Render + Vercel |
 | 9 | GitHub Actions | [DEV-006](#dev-006--github-actions-ci-pr--workflows-separados) · [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) ✅ · [DEV-007b](#dev-007b--github-actions-deploy-pipeline-frontend) | ✅ CI + backend deploy; frontend deploy pendente |
 | — | Google Workspace | [DEV-404](#dev-404--google-workspace-operator-inbox) | Opcional, pós-lançamento |
@@ -365,16 +365,19 @@ Dois workflows de CI no PR — **separados** por stack (não um `ci.yml` único)
 `deploy-frontend.yml` on push to `main` — frontend lint/test → `vercel deploy --prod`. Disable Vercel production auto-deploy; PR previews stay on Vercel GitHub App.
 
 **Critérios de aceitação:**
-- [ ] `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` in GitHub Secrets
-- [ ] Workflow runs on push to `main` (paths: `frontend/**`)
-- [ ] Production deploy only via Actions (Vercel dashboard auto-deploy **off** for prod)
-- [ ] PR preview deploys still work via Vercel integration
+- [x] `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` in GitHub Secrets
+- [x] `deploy-frontend.yml` — lint/test → `vercel pull` → `vercel build --prod` → `vercel deploy --prebuilt --prod`
+- [x] Workflow runs on push to `main` (paths: `frontend/**`, workflow file)
+- [x] Production auto-deploy **disabled** on Vercel (`Only build pre-production`; DEV-010)
+- [ ] 1º **Frontend Deploy** green na `main` (após merge do workflow)
+- [ ] PR preview deploys still work via Vercel integration (regression check)
 
 **Observações:**
 - **Phase:** 0
 - **Area:** devops
 - **Priority:** P1
 - **Depends on:** DEV-006, DEV-005, DEV-010
+- **Status:** 🔄 **In progress** — secrets ✅; falta merge do workflow na `main` + 1º deploy green
 
 ---
 
@@ -450,23 +453,24 @@ Deploy backend Docker image to Render free tier; connect GitHub repo. Runbook: [
 
 ---
 
-### DEV-010 — Vercel frontend deployment
+### DEV-010 — Vercel frontend deployment ✅
 
 **Descrição:**
 Connect repo to Vercel; root directory `frontend`; PR previews enabled; **production deploy via `deploy-frontend.yml`** (DEV-007b). Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Critérios de aceitação:**
-- [ ] Conta Vercel criada; projeto importado do GitHub (`frontend/` root)
-- [ ] PR preview deploys enabled
-- [ ] Production auto-deploy **disabled** in Vercel (prod = Actions)
-- [ ] Env vars configured in Vercel dashboard (`NUXT_PUBLIC_*`, `NUXT_API_INTERNAL_BASE`)
-- [ ] Custom domains deferred until [DEV-011](#dev-011--dns--https-production)
+- [x] Conta Vercel criada; projeto `online-portfolio-web` importado do GitHub (`frontend/` root)
+- [x] PR preview deploys enabled (testado — comentário da Vercel no PR)
+- [x] Production auto-deploy **disabled** in Vercel (`Only build pre-production`; prod = Actions DEV-007b)
+- [x] Env vars configured in Vercel dashboard (`NUXT_PUBLIC_*`, `NUXT_API_INTERNAL_BASE` → Render `*.onrender.com`)
+- [x] Custom domains deferred until [DEV-011](#dev-011--dns--https-production)
 
 **Observações:**
 - **Phase:** 0
 - **Area:** devops
 - **Priority:** P1
 - **Depends on:** DEV-005, DEV-012
+- **Status:** ✅ **Done** — deploy Ready; `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` no password manager (GitHub Secrets → DEV-007b)
 
 ---
 
@@ -1979,25 +1983,25 @@ Dedicated security activities (beyond tests). Cross-reference [docs/ARCHITECTURE
 ## Sprint plan (ciclos fixos de 2 semanas)
 
 **Cadência:** sprints de **14 dias**, início todo **domingo**.  
-**Sprint 1 começou:** 2026-06-14 (domingo passado).
+**Sprint 1 começou:** 2026-06-21 (domingo).
 
 | Sprint | Período | Foco |
 |--------|---------|------|
-| **1** | 2026-06-14 → 2026-06-27 | Foundation + bootstrap cloud (Epic 0) |
-| **2** | 2026-06-28 → 2026-07-11 | Fechar Epic 0 (deploy front, DNS, Resend) |
-| **3** | 2026-07-12 → 2026-07-25 | Login MVP (Epic 1.5) |
-| **4** | 2026-07-26 → 2026-08-08 | Site público por tenant (Epic 1) |
-| **5** | 2026-08-09 → 2026-08-22 | Contato + hardening |
-| **6** | 2026-08-23 → 2026-09-05 | Admin CRUD pós-login |
-| **7** | 2026-09-06 → 2026-09-19 | Uploads (Fase 3) |
+| **1** | 2026-06-21 → 2026-07-04 | Foundation + bootstrap cloud (Epic 0) |
+| **2** | 2026-07-05 → 2026-07-18 | Fechar Epic 0 (deploy front, DNS, Resend) |
+| **3** | 2026-07-19 → 2026-08-01 | Login MVP (Epic 1.5) |
+| **4** | 2026-08-02 → 2026-08-15 | Site público por tenant (Epic 1) |
+| **5** | 2026-08-16 → 2026-08-29 | Contato + hardening |
+| **6** | 2026-08-30 → 2026-09-12 | Admin CRUD pós-login |
+| **7** | 2026-09-13 → 2026-09-26 | Uploads (Fase 3) |
 
 ---
 
-### Sprint 1 — 2026-06-14 → 2026-06-27 — Foundation & prod bootstrap
+### Sprint 1 — 2026-06-21 → 2026-07-04 — Foundation & prod bootstrap
 
-**Objetivo:** monorepo, dev local, CI/CD backend, Supabase prod, API no Render.
+**Objetivo:** monorepo, dev local, CI/CD backend, Supabase prod, API no Render, Vercel previews.
 
-#### ✅ Concluído (semana 1)
+#### ✅ Concluído (início sprint 1 — até 21/06)
 
 | Issue | Notas |
 |-------|--------|
@@ -2015,54 +2019,54 @@ Dedicated security activities (beyond tests). Cross-reference [docs/ARCHITECTURE
 | DEV-008 | Supabase prod `online-portfolio-db-prod` |
 | DEV-014 | Resend — conta + API key + Render env |
 | DEV-009 | API Render prod — env vars, `/health`, After CI Checks Pass |
+| DEV-010 | Vercel `online-portfolio-web` — previews, env vars, prod auto-deploy off |
 
-#### ⬜ Restante Sprint 1 (semana 2 — até 27/06)
+#### ⬜ Restante Sprint 1 (até 04/07)
 
 | Issue | Prioridade |
 |-------|------------|
-| DEV-010 | Vercel projeto + env vars |
-| DEV-007b | `deploy-frontend.yml` |
+| DEV-007b | `deploy-frontend.yml` + GitHub Secrets `VERCEL_*` |
 | DEV-011 | *(stretch)* DNS apex + `api.` + DKIM Resend |
 
 **Fora do sprint 1:** DEV-008b (Supabase dev opcional) · Epic 1+
 
 ---
 
-### Sprint 2 — 2026-06-28 → 2026-07-11 — Epic 0 done + DNS
+### Sprint 2 — 2026-07-05 → 2026-07-18 — Epic 0 done + DNS
 
 **Objetivo:** produção fechada (front + API + domínios), pronto para features.
 
-DEV-011 → DEV-010 → DEV-007b → SEC-001 → UT-003 → IT-006
+DEV-011 → DEV-007b → SEC-001 → UT-003 → IT-006
 
 **Critério de saída:** `onlineportfolio.com.br` + `app.` no Vercel, `api.` no Render, e-mail DKIM OK, deploys só via Actions.
 
 ---
 
-### Sprint 3 — 2026-07-12 → 2026-07-25 — Login MVP (Epic 1.5)
+### Sprint 3 — 2026-07-19 → 2026-08-01 — Login MVP (Epic 1.5)
 
 DEV-150 → DEV-151 → DEV-152 → DEV-153 → DEV-154 → DEV-155 → DEV-156 → DEV-157 → DEV-158 → DEV-159 → DEV-161 → DEV-162 → DEV-160 → UT-012 → IT-011 → IT-012 → IT-013
 
 ---
 
-### Sprint 4 — 2026-07-26 → 2026-08-08 — Site público por tenant (Epic 1)
+### Sprint 4 — 2026-08-02 → 2026-08-15 — Site público por tenant (Epic 1)
 
 DEV-100 → DEV-101 → DEV-102 → DEV-103 → DEV-104 → DEV-105 → DEV-106 → UT-002 → IT-001 → IT-002
 
 ---
 
-### Sprint 5 — 2026-08-09 → 2026-08-22 — Contato + hardening
+### Sprint 5 — 2026-08-16 → 2026-08-29 — Contato + hardening
 
 DEV-107 → DEV-109 → SEC-007 → SEC-003 → UT-005 → SEC-011 *(parcial)*
 
 ---
 
-### Sprint 6 — 2026-08-23 → 2026-09-05 — Admin CRUD
+### Sprint 6 — 2026-08-30 → 2026-09-12 — Admin CRUD
 
 DEV-203 → DEV-204 → DEV-205 → IT-004 → IT-005
 
 ---
 
-### Sprint 7 — 2026-09-06 → 2026-09-19 — Uploads
+### Sprint 7 — 2026-09-13 → 2026-09-26 — Uploads
 
 DEV-300 → DEV-301 → DEV-302 → DEV-303 → SEC-006 → IT-008
 
@@ -2074,7 +2078,7 @@ DEV-008b · DEV-207 · DEV-400+ · DEV-403 · DEV-404 · IT-010 · SEC-009 · SE
 
 ---
 
-*Last updated: 2026-06-21 — ADR-017 Resend (substitui SendGrid); DEV-007 done*
+*Last updated: 2026-06-21 — Sprint 1 desde 21/06; DEV-010 done*
 
 ---
 
