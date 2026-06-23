@@ -238,13 +238,13 @@ All providers accept `.com.br` and subdomains.
 - [ ] Code hosted on GitHub
 - [ ] Branch protection on `main` (recommended)
 - [ ] Vercel connected — PR previews on; **production auto-deploy off**
-- [ ] Render connected — **Wait for CI** on `deploy-backend.yml`
+- [ ] Render connected — **After CI Checks Pass** + root `backend` (seção 4.6)
 
 ### 4.2 GitHub Actions secrets
 
 | Secret | Purpose |
 |---|---|
-| `SUPABASE_MIGRATION_CONNECTION_STRING` | Direct Postgres URI (port 5432) for EF migrations |
+| `SUPABASE_MIGRATION_CONNECTION_STRING` | Supabase **Session pooler** URI (port **5432**, IPv4) for EF migrations in CI |
 | `VERCEL_TOKEN` | `deploy-frontend.yml` — `vercel deploy --prod` |
 | `VERCEL_ORG_ID` | Vercel CLI org/team ID |
 | `VERCEL_PROJECT_ID` | Vercel project ID (root `frontend`) |
@@ -273,6 +273,45 @@ Além dos testes, conferir pareamento front↔back antes do merge. Referência: 
 - [x] `deploy-backend.yml` (DEV-007)
 - [ ] `deploy-frontend.yml` (DEV-007b)
 - [ ] Secrets configured; Render **Wait for CI** enabled
+
+### 4.6 Monorepo — deploy isolado por stack
+
+Push em `main` no monorepo **não** deve redeployar a stack que não mudou. Três camadas trabalham juntas:
+
+| Camada | Só `frontend/**` | Só `backend/**` |
+|--------|------------------|-----------------|
+| **GitHub Actions** | `ci-frontend.yml` + `deploy-frontend.yml` (quando existir) | `ci-backend.yml` + `deploy-backend.yml` |
+| **Render (API)** | Sem autodeploy | Autodeploy após **Backend Deploy** green |
+| **Vercel (frontend)** | Prod via `deploy-frontend.yml` (quando existir) | Sem deploy de produção |
+
+**GitHub:** `paths` nos workflows de deploy (`deploy-backend.yml`, `deploy-frontend.yml`) e nos CIs em **push**; em **PR**, os workflows sempre reportam status (skip interno com `paths-filter` — ver `ci-backend.yml` / `ci-frontend.yml`).
+
+**Render** ([monorepo support](https://render.com/docs/monorepo-support)):
+
+| Setting | Valor |
+|---------|--------|
+| **Root directory** | **`backend`** (obrigatório) — mudanças fora de `backend/` **não** disparam autodeploy |
+| **Build Filters → Included paths** (opcional, reforço) | `backend/**`, `.github/workflows/deploy-backend.yml`, `docs/DATABASE.md` |
+| **After CI Checks Pass** | On — aguarda checks do commit (incl. **Backend Deploy**) |
+
+**Vercel** ([monorepo](https://vercel.com/docs/monorepos)):
+
+| Setting | Valor |
+|---------|--------|
+| **Root directory** | **`frontend`** — mudanças fora de `frontend/` **não** disparam build/deploy deste projeto |
+| **Production auto-deploy** | **Off** — produção só via `deploy-frontend.yml` (paths `frontend/**`, …) |
+| **PR previews** | On — previews só quando o PR altera arquivos sob `frontend/` |
+
+```
+push main só frontend/
+  → Frontend CI (push) · deploy-frontend (futuro)
+  → Render API: não
+  → Vercel prod: sim (via Actions)
+
+push main só backend/
+  → Backend CI · Backend Deploy · Render API (após checks)
+  → Vercel prod: não
+```
 
 ---
 
@@ -350,33 +389,44 @@ Wait for project provisioning (~2 minutes).
 
 ### 6.2 Database — connection strings for EF Core
 
-Go to **Project Settings → Database → Connection string**.
+Go to **Project Settings → Database → Connection string** (ou **Connect** no dashboard).
 
-You need **two** connection strings:
+O projeto usa **duas** strings Supabase em produção — **não** direct:
 
 | Use | Mode in Supabase UI | Port | Used by |
 |---|---|---|---|
-| **Runtime (API)** | Connection pooling → Transaction | `6543` | Render `ConnectionStrings__Default` |
-| **Migrations (CI/local)** | Direct connection | `5432` | GitHub Actions, `dotnet ef database update` |
+| **Runtime (API)** | Connection pooling → **Transaction** | `6543` | Render `ConnectionStrings__Default` |
+| **Migrations (CI)** | Connection pooling → **Session** | `5432` | GitHub secret `SUPABASE_MIGRATION_CONNECTION_STRING` |
 
-**Format (URI):**
+**Dev local:** Postgres no Docker Compose (`localhost:5432`) — ver [docs/DEV_COMMANDS.md](./DEV_COMMANDS.md). Não apontar o dia a dia para Supabase prod.
+
+**Direct (`db.[ref].supabase.co:5432`):** não configurar no repo nem nos secrets. Host IPv6; GitHub Actions / Render / Vercel são IPv4-only → `Network is unreachable`. Opcional só para ferramentas manuais (pg_dump, DBeaver) se a tua rede tiver IPv6 ou add-on IPv4 Supabase.
+
+**Por que Session pooler no CI?** Mesmo host pooler que o runtime, porta **5432** (Session), user `postgres.[project-ref]` — compatível com IPv4 e com `dotnet ef`.
+
+**Format (Npgsql / URI):**
 
 ```text
-postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres
-postgresql://postgres.[project-ref]:[password]@db.[project-ref].supabase.co:5432/postgres
+# Runtime — Render (Transaction)
+Host=aws-1-us-east-1.pooler.supabase.com;Port=6543;Database=postgres;Username=postgres.[project-ref];Password=...;SSL Mode=Require;Trust Server Certificate=true
+
+# Migrations — GitHub Actions (Session)
+Host=aws-1-us-east-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.[project-ref];Password=...;SSL Mode=Require;Trust Server Certificate=true
 ```
 
 **Settings to verify:**
 
-- [ ] Use **Transaction** pool mode for EF Core on port 6543 (not Session, unless you configure accordingly)
-- [ ] Enable **SSL** — Supabase requires SSL; Npgsql connection string should include `SSL Mode=Require`
+- [ ] Runtime API: **Transaction** na porta **6543** (nunca usar para `dotnet ef`)
+- [ ] CI migrate: **Session** na porta **5432** (copiar de **Connect → Session pooler**)
+- [ ] **Não** gravar `db.[ref].supabase.co` no secret de migrate
+- [ ] Enable **SSL** — `SSL Mode=Require` na connection string Npgsql
 - [ ] Do **not** expose these strings in frontend or git
 
 **Dev / staging Supabase — fora do v1:**
 
 Não criar segundo projeto Supabase deployado para homologação. Desenvolvimento usa **Postgres local** (Docker Compose). Decisão: [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
-Reavaliar projeto Supabase staging apenas quando ADR-015 indicar (ex.: segundo dev, webhooks em homolog).
+**DEV-008b (futuro):** projeto Supabase dev remoto — strings e fluxo serão rediscutidos; até lá, local = `localhost`.
 
 ### 6.3 API keys
 
@@ -430,7 +480,7 @@ Path prefix: `tenants/{tenantId}/...`
 **Phase 1 (database only):**
 
 - [ ] Project created
-- [ ] Direct + pooler connection strings saved
+- [ ] Transaction (6543) + Session (5432) pooler strings saved — **not** direct `db.*.supabase.co` for CI
 - [ ] Service role key saved (Storage, Phase 3+)
 - [ ] Migrations applied via CI or local EF
 
@@ -464,9 +514,9 @@ Path prefix: `tenants/{tenantId}/...`
 |---|---|
 | **Type** | Web Service |
 | **Source** | Connect GitHub repo |
-| **Root directory** | `backend` (or repo root if Dockerfile path set) |
+| **Root directory** | **`backend`** — obrigatório no monorepo; push só em `frontend/` não dispara API (seção 4.6) |
 | **Runtime** | Docker |
-| **Dockerfile path** | `backend/OnlinePortfolio.Api/Dockerfile` |
+| **Dockerfile path** | `OnlinePortfolio.Api/Dockerfile` (relativo ao root `backend`) |
 | **Branch** | `main` |
 | **Region** | Same as Supabase when possible |
 | **Instance type** | Free |
@@ -476,10 +526,13 @@ Path prefix: `tenants/{tenantId}/...`
 | Setting | Value |
 |---|---|
 | **Health check path** | `/health` |
-| **Auto-deploy** | Yes (on push to `main`) |
-| **Wait for CI** | **Enable** — aguardar check **Backend Deploy** (`deploy-backend.yml`) antes do deploy |
+| **Auto-deploy** | Yes (on push to `main` que altere `backend/`) |
+| **After CI Checks Pass** | **On** — aguardar checks do commit (incl. **Backend Deploy** de `deploy-backend.yml`) |
+| **Build Filters** (opcional) | Included: `backend/**`, `.github/workflows/deploy-backend.yml`, `docs/DATABASE.md` |
 | **Build command** | (Docker handles build) |
 | **Start command** | (from Dockerfile `ENTRYPOINT`) |
+
+**Monorepo:** com **Root directory** = `backend`, alterações só em `frontend/` **não** redeployam a API. Ver seção 4.6.
 
 **Free tier behavior:**
 
@@ -516,6 +569,8 @@ Set in **Environment → Environment Variables** (or `render.yaml`):
 ### 7.5 Render checklist
 
 - [ ] Web service created (Docker)
+- [ ] **Root directory** = `backend` (monorepo — seção 4.6)
+- [ ] **After CI Checks Pass** enabled
 - [ ] Health check returns 200 at `/health`
 - [ ] All env vars set
 - [ ] Custom domain `api.onlineportfolio.com.br` verified + HTTPS
@@ -579,9 +634,11 @@ Set in **Environment → Environment Variables** (or `render.yaml`):
 | Setting | Value |
 |---|---|
 | **Import** | GitHub repository |
-| **Root directory** | `frontend` |
+| **Root directory** | **`frontend`** — obrigatório no monorepo; push só em `backend/` não dispara este projeto (seção 4.6) |
 | **Framework preset** | Nuxt.js (auto-detected) |
-| **Production auto-deploy** | **Off** — prod via `deploy-frontend.yml` (seção 4.3) |
+| **Production auto-deploy** | **Off** — prod só via `deploy-frontend.yml` (paths `frontend/**`; seção 4.3) |
+
+**Monorepo:** com **Root directory** = `frontend` + auto-deploy de produção desligado, alterações só em `backend/` **não** publicam o Nuxt em produção. PR previews continuam limitados a mudanças em `frontend/`.
 
 ### 9.2 Environment variables
 
@@ -606,9 +663,9 @@ Domínios custom por artista → seção 12.
 
 ### 9.4 Vercel checklist
 
-- [ ] Project connected; root `frontend`
+- [ ] Project connected; **Root directory** = `frontend` (monorepo — seção 4.6)
 - [ ] Env vars set; PR previews on
-- [ ] Production auto-deploy **off**
+- [ ] Production auto-deploy **off** (prod via `deploy-frontend.yml`)
 - [ ] Proxy reaches Render API
 
 ---
@@ -795,8 +852,8 @@ Ao adicionar Google, **mesclar SPF** com SendGrid: `v=spf1 include:sendgrid.net 
 
 | Secret / config | Configured in | Used by |
 |---|---|---|
-| Supabase pooler connection string | Render | API runtime (EF) |
-| Supabase direct connection string | GitHub Actions secret, local `.env` | Migrations only |
+| Supabase Transaction pooler (`:6543`) | Render | API runtime (EF) |
+| Supabase Session pooler (`:5432`) | GitHub Actions secret `SUPABASE_MIGRATION_CONNECTION_STRING` | EF migrations (CI only) |
 | Supabase service role key | Render env | API Storage writes (Phase 3+) |
 | `Jwt__Secret` | Render env | API-issued JWT signing |
 | SendGrid API key | Render env | API email (invites + contact) |
@@ -842,7 +899,8 @@ Ao adicionar Google, **mesclar SPF** com SendGrid: `v=spf1 include:sendgrid.net 
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | API 500 on DB connect | Wrong connection string or pooler mode | Transaction pooler on 6543; check SSL |
-| EF migrations fail | Using pooler for migrations | Direct connection port 5432 |
+| EF migrations fail in CI (`Network is unreachable`, IPv6) | Secret usa `db.*.supabase.co` (direct, IPv6) | Trocar secret para **Session pooler** `:5432` (`aws-*-*.pooler.supabase.com`, user `postgres.[ref]`) |
+| EF migrations fail | Transaction pooler (`6543`) no migrate | Usar **Session** pooler `:5432` |
 | Login 401 | Wrong password or inactive user | Identity seed; proxy forwards body |
 | CORS error | Direct browser → Render | Nuxt `/api` proxy only |
 | SendGrid emails not arriving | Domain not authenticated | DKIM/SPF seção 10.4 |

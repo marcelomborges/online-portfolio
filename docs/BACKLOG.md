@@ -161,7 +161,7 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 **Acceptance criteria:**
 - [x] `ApplicationDbContext` registered in DI
 - [x] Connection string from config (`ConnectionStrings__Default`)
-- [x] `ApplicationDbContextFactory` + `ConnectionStrings:Migration` for `dotnet ef` (direct `:5432`)
+- [x] `ApplicationDbContextFactory` + `ConnectionStrings:Migration` for `dotnet ef` (session pooler `:5432` prod / `localhost` local)
 - [ ] `dotnet ef migrations add Initial` works locally *(run manually — see README)*
 - [ ] `dotnet ef database update` applies against Compose Postgres *(run manually)*
 
@@ -305,7 +305,7 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 | **Depends on** | DEV-006, DEV-004 |
 | **Status** | ✅ **Done** — workflow `deploy-backend.yml`; Render **Wait for CI** manual |
 
-**Description:** `deploy-backend.yml` on push to `main` — backend test → EF migrate (Supabase direct) → pass status for Render Wait for CI.
+**Description:** `deploy-backend.yml` on push to `main` — backend test → EF migrate (Supabase session pooler `:5432`) → pass status for Render After CI Checks Pass.
 
 **Acceptance criteria:**
 - [x] `SUPABASE_MIGRATION_CONNECTION_STRING` in GitHub Secrets
@@ -344,19 +344,19 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 | **Depends on** | — |
 | **Status** | ✅ **Done** — projeto `online-portfolio-db-prod` (US East) |
 
-**Description:** Create Supabase **production** project `online-portfolio-db-prod`; store pooler + direct connection strings and API keys for Render + CI. Deploy de API/front continua **somente prod** ([docs/ARCHITECTURE.md](./ARCHITECTURE.md)) — DB dev é [DEV-008b](#dev-008b--supabase-dev-project). Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
+**Description:** Create Supabase **production** project `online-portfolio-db-prod`; store Transaction + Session pooler strings and API keys for Render + CI. Deploy de API/front continua **somente prod** ([docs/ARCHITECTURE.md](./ARCHITECTURE.md)) — DB dev é [DEV-008b](#dev-008b--supabase-dev-project). Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Acceptance criteria:**
 - [x] Prod project `online-portfolio-db-prod` in **US East** (alinhado ao Render Virginia)
 - [x] Pooler URI (6543, Transaction) → Render `ConnectionStrings__Default`
-- [x] Direct URI (5432) → GitHub secret `SUPABASE_MIGRATION_CONNECTION_STRING` (CI migrate prod)
+- [x] Session pooler URI (5432) → GitHub secret `SUPABASE_MIGRATION_CONNECTION_STRING` (CI migrate prod; IPv4)
 - [x] Project URL + **service_role** / secret API key no password manager (Render env; Storage Fase 3+)
 - [x] Migration `Initial` aplicada em prod (`dotnet ef database update` local)
 - [x] Checklist [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) (prod)
 
 **Done notes (2025-06-21):**
 - Project ref: `mfxuthlwrfjscxnnjeud` · região US East · pooler Transaction `aws-1-us-east-1.pooler.supabase.com:6543`
-- Templates sem senha em `backend/OnlinePortfolio.Api/appsettings.json` (`Default` = pooler, `Migration` = direct)
+- Templates sem senha em `backend/OnlinePortfolio.Api/appsettings.json` (`Default` = Transaction pooler `:6543`, `Migration` = Session pooler `:5432`)
 - `__EFMigrationsHistory` em prod: `20260622012938_Initial` (EF Core 10.0.4)
 - GitHub secret `SUPABASE_MIGRATION_CONNECTION_STRING` configurado (usado quando [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) existir)
 - `Supabase__Url` / `Supabase__ServiceRoleKey` no Render **deferidos** até Storage (Fase 3)
@@ -376,9 +376,9 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 
 **Acceptance criteria:**
 - [ ] Dev project `online-portfolio-db-dev` criado (mesma região que prod, ex. US East)
-- [ ] Direct URI (5432) + pooler (6543) guardados no **password manager** — **não** em Render, **não** no secret de migrate prod
+- [ ] Session pooler (5432, migrate) + Transaction pooler (6543, runtime) guardados no **password manager**
 - [ ] `appsettings.Development.json` / `appsettings.json` documentado: alternar `ConnectionStrings` entre **Docker local** e **Supabase dev**
-- [ ] Migrations aplicadas em dev (`dotnet ef database update` contra direct dev)
+- [ ] Migrations aplicadas em dev local (`dotnet ef database update` contra `localhost` / Compose)
 - [ ] [docs/DEV_COMMANDS.md](./DEV_COMMANDS.md) descreve os dois modos (Compose vs Supabase dev)
 
 **Nota:** CI e Render usam **sempre** prod. Dev Supabase é só para máquina do desenvolvedor.
