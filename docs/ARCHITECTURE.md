@@ -4,7 +4,7 @@ Multi-tenant SaaS platform for artist portfolios. One shared application stack s
 
 **Status:** Approved for implementation  
 **Platform domain:** `onlineportfolio.com.br` (`onlineportfolio.com` unavailable — registered via Registro.br)  
-**Last updated:** 2025-06-21 (Identity completo + JWT, BFF, admin centralizado, ADR-016 frontend surfaces)
+**Last updated:** 2026-06-21 (ADR-017 Resend email; ADR-016 frontend surfaces)
 
 ---
 
@@ -22,7 +22,8 @@ Multi-tenant SaaS platform for artist portfolios. One shared application stack s
 8. [Storage (Supabase Storage)](#8-storage-supabase-storage)
 9. [Authentication & authorization](#9-authentication--authorization)
 10. [API design](#10-api-design)
-11. [Email (SendGrid)](#11-email-sendgrid)
+11. [Email (Resend)](#11-email-resend)
+    - [ADR-017: Email transacional via Resend](#adr-017-email-transacional-via-resend)
 12. [PDF generation (QuestPDF)](#12-pdf-generation-questpdf)
 13. [Custom domains per tenant](#13-custom-domains-per-tenant)
 14. [Local development (Docker Compose)](#14-local-development-docker-compose)
@@ -165,19 +166,19 @@ Operador    →  app.../platform/tenants        →  cria tenants, convida usuá
 
 **Auth:** ASP.NET Identity **completo** + JWT na API — sem Supabase Auth no browser. Ver seção 9.
 
-### Email v1 — SendGrid `noreply@` (só envio, sem caixa postal)
+### Email v1 — Resend `noreply@` (só envio, sem caixa postal)
 
-**Decisão:** no início, **apenas envio transacional** via SendGrid. **Não** configurar caixa postal, MX para receber, Google Workspace nem email no Registro.br.
+**Decisão:** envio transacional via **Resend** ([ADR-017](./ADR-017-resend-transactional-email.md)). **Não** configurar caixa postal, MX para receber, Google Workspace nem email no Registro.br.
 
 | Item | v1 |
 |---|---|
 | **Remetente** | `noreply@onlineportfolio.com.br` |
-| **Provedor** | SendGrid (free tier — 100 emails/dia) |
+| **Provedor** | Resend (free tier — 3.000 emails/mês, máx. 100/dia) |
 | **Quem envia** | API .NET (server-side) |
 | **Caixa postal** | **Nenhuma** — `noreply@` não recebe respostas |
 | **Registro.br** | Só registro do domínio; sem servidor de email |
 
-**O que o SendGrid envia no v1:**
+**O que o Resend envia no v1:**
 
 | Email | Fase |
 |---|---|
@@ -205,10 +206,10 @@ Operador    →  app.../platform/tenants        →  cria tenants, convida usuá
 
 | Sistema | Função | Quando |
 |---|---|---|
-| **SendGrid** | App **envia** (`noreply@`, contato, convites) | v1 |
+| **Resend** | App **envia** (`noreply@`, contato, convites) | v1 |
 | **Google Workspace** | Você **lê/responde** no domínio | futuro |
 
-SendGrid (SPF/DKIM) e Google (MX) podem coexistir no mesmo domínio quando o Workspace for configurado. No v1, **só SendGrid**.
+Resend (SPF/DKIM) e Google (MX) podem coexistir no mesmo domínio quando o Workspace for configurado. No v1, **só Resend**.
 
 ### Domain purchase (Registro.br)
 
@@ -266,7 +267,7 @@ All hosting providers issue and renew certificates for free. You do **not** buy 
 | **Render** | `api.onlineportfolio.com.br` | Auto (Let's Encrypt + Google Trust) | Single CNAME; HTTP → HTTPS redirect |
 | **Supabase** | `*.supabase.co` (default URL) | Auto | Custom domain optional later (paid) |
 | **Registro.br** | — | No | DNS only |
-| **SendGrid** | — | N/A | Email authentication (SPF/DKIM), not web hosting |
+| **Resend** | — | N/A | Email authentication (SPF/DKIM), not web hosting |
 
 Provider acceptance of `.com.br` and subdomains: **yes** — TLD is not a blocker.
 
@@ -282,7 +283,7 @@ Provider acceptance of `.com.br` and subdomains: **yes** — TLD is not a blocke
 | Database | PostgreSQL | Supabase | Access only via EF Core |
 | File storage | Supabase Storage | Supabase | Image uploads; not on Render disk |
 | Auth | ASP.NET Identity **completo** + JWT | API (.NET) | Roles, stores e token providers padrão; Supabase = DB + Storage |
-| Email (app) | SendGrid | SendGrid (free) | `noreply@` — só envio transacional; sem caixa postal |
+| Email (app) | Resend | Resend (free) | `noreply@` — só envio transacional; sem caixa postal |
 | Email (operador) | Google Workspace | Google (depois) | Inbox humano — **não v1** |
 | PDF | QuestPDF | NuGet in API (no extra host) | Portfolio catalog export; API generates |
 | CI/CD | GitHub Actions + Vercel/Render deploy | GitHub (orchestrator) | See seção 15 |
@@ -752,7 +753,7 @@ POST /api/v1/auth/accept-invite   token + new password (complete invite)
 | Supabase anon key | **Not used in v1** (no client-side Supabase SDK) |
 | JWT | Issued and validated by **API** (`Jwt__Secret` in Render env) |
 | Tenant membership | `ApplicationUser.TenantId` + roles em `AspNetUserRoles` |
-| Invite flow | `UserManager` + `AddToRoleAsync` → SendGrid → `/accept-invite` |
+| Invite flow | `UserManager` + `AddToRoleAsync` → Resend → `/accept-invite` |
 
 ### Custom domains and auth
 
@@ -784,7 +785,7 @@ GET /api/v1/tenants/{slug}/portfolio.pdf
 
 Only published content. Tenant resolved by slug (Nuxt passes slug from Host resolution).
 
-Contact form submissions are handled by the API and delivered via SendGrid (see seção 11).
+Contact form submissions are handled by the API and delivered via Resend (see seção 11).
 
 Portfolio PDF is generated by the API using QuestPDF (see seção 12).
 
@@ -818,19 +819,21 @@ List endpoints paginated from v1.
 
 ---
 
-## 11. Email (SendGrid)
+## 11. Email (Resend)
 
 ### Decisão v1
 
-**SendGrid + `noreply@onlineportfolio.com.br` — apenas envio.** Sem caixa postal, sem MX para receber, sem Google Workspace no início.
+**Resend + `noreply@onlineportfolio.com.br` — apenas envio.** Sem caixa postal, sem MX para receber, sem Google Workspace no início.
 
-A API envia todo email transacional; o frontend nunca guarda a API key do SendGrid.
+Ver decisão completa: [ADR-017](./ADR-017-resend-transactional-email.md).
+
+A API envia todo email transacional; o frontend nunca guarda a API key do Resend.
 
 | Config (Render) | Valor |
 |---|---|
-| `SendGrid__FromEmail` | `noreply@onlineportfolio.com.br` |
-| `SendGrid__FromName` | Online Portfolio |
-| `SendGrid__ApiKey` | server only |
+| `Resend__ApiKey` | server only (API token `re_...`) |
+| `Resend__FromEmail` | `noreply@onlineportfolio.com.br` |
+| `Resend__FromName` | Online Portfolio |
 
 Inbox operador (`hello@`, etc.) → [seção 2 — Google Workspace depois](#caixa-postal-operador-google-workspace--depois).
 
@@ -838,8 +841,8 @@ Inbox operador (`hello@`, etc.) → [seção 2 — Google Workspace depois](#cai
 
 | Use case | Phase | Detail |
 |---|---|---|
-| **Contact form** | Phase 1 | Visitante → API → SendGrid → `ContactEmail` do tenant; Reply-To = visitante |
-| **Convite de usuário** | Phase 1.5 | SendGrid com link accept-invite |
+| **Contact form** | Phase 1 | Visitante → API → Resend → `ContactEmail` do tenant; Reply-To = visitante |
+| **Convite de usuário** | Phase 1.5 | Resend com link accept-invite |
 | **Notificações da plataforma** | Depois | Billing, domínio verificado, etc. |
 
 ### O que `noreply@` **não** é
@@ -854,31 +857,45 @@ Inbox operador (`hello@`, etc.) → [seção 2 — Google Workspace depois](#cai
 1. Visitor submits contact form on tenant public site (Nuxt)
 2. Nuxt server route or client POST → POST /api/v1/tenants/{slug}/contact
 3. API resolves tenant, validates input, applies rate limiting
-4. API sends email via SendGrid to TenantSettings.ContactEmail
+4. API renders template + sends via Resend to TenantSettings.ContactEmail
 5. Optional: set Reply-To to visitor email for direct artist reply
-6. API returns success without exposing SendGrid details
+6. API returns success without exposing Resend details
 ```
 
 Messages are **not stored in the database** by default (email-only). Add a `ContactMessage` table later if audit/history is needed.
 
-### SendGrid free tier notes
+### Resend free tier notes
 
-- **100 emails/day** on free tier — sufficient for portfolio contact forms at early scale
-- Verify **sender identity** (single platform From address, e.g. `noreply@onlineportfolio.com.br`)
-- Verify domain (SPF/DKIM) on `onlineportfolio.com.br` for deliverability
-- Use **dynamic templates** or plain transactional API from .NET (`SendGrid` NuGet package)
+- **3.000 emails/mês**, máx. **100/dia** — free tier permanente (suficiente para contato + convites no início)
+- **1 domínio** verificado no free tier
+- Verificar domínio `onlineportfolio.com.br` (DKIM/SPF) — [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 10.4 · DEV-011
+- Templates em `EmailTemplates/` (Razor ou HTML) — versionados no repo
 
 ### Implementation (backend)
 
-- `IEmailService` abstraction with `SendGridEmailService` implementation
-- Config: `SendGrid__ApiKey`, `SendGrid__FromEmail`, `SendGrid__FromName`
+- NuGet: `Resend` (SDK oficial)
+- `IEmailService` abstraction with `ResendEmailService` implementation
+- Config: `Resend__ApiKey`, `Resend__FromEmail`, `Resend__FromName`
 - Contact endpoint validates: name, email, message, honeypot/rate limit
-- Log send failures; do not leak SendGrid errors to client
+- Log send failures; do not leak Resend errors to client
 
 ### Local development
 
-- Use SendGrid **sandbox mode** or a dev API key with mail restricted to verified recipients
-- Alternatively, log email payload to console when `ASPNETCORE_ENVIRONMENT=Development`
+- API key de dev no password manager; smoke test com `onboarding@resend.dev` ([EXTERNAL_PROVIDERS](./EXTERNAL_PROVIDERS.md) seção 8.5)
+- Ou log do payload em `Development` sem enviar
+- Domínio `onlineportfolio.com.br` obrigatório em prod (DEV-011)
+
+### ADR-017: Email transacional via Resend
+
+| | |
+|---|---|
+| **Status** | ✅ Aceito |
+| **Data** | 2026-06-21 |
+| **Contexto** | SendGrid (Twilio) removeu free tier permanente (mai/2025). Projeto precisa de email transacional .NET com custo zero no MVP. |
+| **Decisão** | **Resend** — SDK .NET oficial, templates no repo, 3k emails/mês free. |
+| **Alternativas** | SendGrid (pago cedo), Brevo (mais free, SDK verboso), Postmark/SES (custo/complexidade). |
+
+Documento completo: [ADR-017-resend-transactional-email.md](./ADR-017-resend-transactional-email.md).
 
 ---
 
@@ -1140,11 +1157,11 @@ Em todo PR (humano ou agente), **depois dos testes** e **antes do merge**, confe
 | Endpoint / DTO / contrato API | Controller, service, validação, `[Authorize]`, OpenAPI | Rota proxy `server/api/**`, composable, tipos TS, página/componente |
 | Schema / entidade EF | Migration + seed se necessário | Tipos/consumo da API; formulários se expõe o campo |
 | Auth / JWT / roles | Identity, policies, middleware tenant | Proxy (cookies/headers), middleware host, fluxo login em `app.*` |
-| Variável de ambiente | `appsettings`, Render env, `backend/OnlinePortfolio.Api/.env.example` | `runtimeConfig`, Vercel env, `frontend/.env.example` |
+| Variável de ambiente | `appsettings`, Render env | `runtimeConfig`, Vercel env, `frontend/.env.example` |
 | Regra multi-tenant | Filtro EF + checagem membership | Nunca enviar `tenantId` confiável do client; UI admin vs público |
 | Feature admin | Rotas protegidas API | Páginas em host `app.*` |
 | Feature site público | API pública (só conteúdo publicado) | Páginas `{slug}.*`, middleware tenant |
-| Email transacional | SendGrid service + template | Só se houver UI (ex.: preview) |
+| Email transacional | Resend service + template | Só se houver UI (ex.: preview) |
 | Storage / upload (Fase 3) | Multipart API + service role | Proxy upload; `<img>` CDN URL |
 
 **Checklist rápido antes do merge:**
@@ -1152,7 +1169,7 @@ Em todo PR (humano ou agente), **depois dos testes** e **antes do merge**, confe
 1. CI relevante verde (`Backend CI` / `Frontend CI` conforme paths do PR).
 2. Comentários sticky **Backend coverage** / **Frontend coverage** no PR (se o CI da stack rodou).
 3. **Pareamento front↔back** — tabela acima; se API mudou, front **ou** docs do contrato atualizados.
-3. `.env.example` (ambos os lados) se novos env vars.
+3. `frontend/.env.example` se novos env vars Nuxt; `appsettings.json` (+ `Development`) se novos env vars da API.
 4. `docs/DATABASE.md` se schema mudou de forma relevante.
 5. Commits [Conventional Commits](./CONVENTIONAL_COMMITS.md); escopo `frontend` / `backend` coerente com paths.
 
@@ -1259,7 +1276,7 @@ Even with GitHub Actions preference, configure in provider UIs:
 | Supabase | Free tier |
 | Domain registrar | R$ 40/year (`onlineportfolio.com.br` at Registro.br) |
 | Operator email (future) | Google Workspace ~US$ 6/user/month (not v1) |
-| Email (SendGrid) | Free tier (100 emails/day) |
+| Email (Resend) | Free tier (3.000 emails/month) |
 | PDF (QuestPDF) | Free (Community license; revenue threshold applies) |
 
 ---
@@ -1271,7 +1288,7 @@ Even with GitHub Actions preference, configure in provider UIs:
 ```text
 1. Create Tenant (name, slug, plan)
 2. Create TenantSettings defaults
-3. PlatformAdmin invites tenant admin(s) via API (email + role) → SendGrid invite link
+3. PlatformAdmin invites tenant admin(s) via API (email + role) → Resend invite link
 4. Invitee sets password via `POST /auth/accept-invite` → `users` row active
 5. Tenant public site live at {slug}.onlineportfolio.com.br
 6. PlatformAdmin can add more users to the same tenant later (Owner/Editor)
@@ -1363,7 +1380,7 @@ Category (optional v1)
 - SSG gallery pages
 - Docker Compose local setup
 - API + EF + migrations
-- Contact form → SendGrid → tenant `ContactEmail`
+- Contact form → Resend → tenant `ContactEmail`
 
 ### Phase 1.5 — Admin login + add user (MVP)
 
@@ -1371,7 +1388,7 @@ Category (optional v1)
 - Login UI at **`app.onlineportfolio.com.br/login`** (unique URL)
 - Nuxt BFF: all admin calls proxied to API
 - **Login / logout** (Owner, Editor, PlatformAdmin)
-- **Add user** — PlatformAdmin invites per tenant (SendGrid + accept-invite)
+- **Add user** — PlatformAdmin invites per tenant (Resend + accept-invite)
 - Admin shell routes (`/admin`, `/platform/tenants`, `/platform/tenants/{id}/users`)
 
 ### Phase 2 — Admin features (post-login)
@@ -1431,7 +1448,8 @@ online-portfolio/
 ├── docker-compose.yml
 ├── docker-compose.override.yml      # local overrides (gitignored optional)
 ├── docs/
-│   ├── ARCHITECTURE.md              # system design and decisions (ADR-015, ADR-016, …)
+│   ├── ADR-017-resend-transactional-email.md
+│   ├── ARCHITECTURE.md              # system design and decisions (ADR-015, ADR-016, ADR-017, …)
 │   ├── FRONTEND_COMPONENTS.md       # Nuxt surfaces, tenant UI, composables
 │   ├── EXTERNAL_PROVIDERS.md        # third-party setup (Supabase, Vercel, etc.)
 │   ├── BACKLOG.md                   # development tasks (Linear-ready)
@@ -1495,9 +1513,9 @@ Supabase__Url=https://xxx.supabase.co                  # Storage only (Phase 3+)
 Supabase__ServiceRoleKey=...                           # server only
 ASPNETCORE_ENVIRONMENT=Production
 Cors__AllowedOrigins=                                  # optional if all traffic via Nuxt proxy
-SendGrid__ApiKey=SG....                               # server only; invites + contact
-SendGrid__FromEmail=noreply@onlineportfolio.com.br
-SendGrid__FromName=Online Portfolio
+Resend__ApiKey=re_....                               # server only; invites + contact
+Resend__FromEmail=noreply@onlineportfolio.com.br
+Resend__FromName=Online Portfolio
 ```
 
 ### Local (docker-compose / .env)
@@ -1509,7 +1527,7 @@ POSTGRES_PASSWORD=...
 POSTGRES_DB=portfolio_dev
 ```
 
-Use `.env.example` in frontend and backend; never commit secrets.
+Use `frontend/.env.example` for Nuxt; backend config via `appsettings` / Render env — never commit secrets.
 
 ---
 
@@ -1520,8 +1538,8 @@ Use `.env.example` in frontend and backend; never commit secrets.
 | Repo layout | Monorepo vs split | **Decidido** — monorepo; Vercel + Render same repo, different roots |
 | Subdomain vs path fallback | `ana.onlineportfolio.com.br` vs `onlineportfolio.com.br/ana` | Subdomain recommended |
 | Self-serve signup | Manual vs automated | Manual for first customers |
-| Contact message history | Email only vs store in DB | Email only for v1 (SendGrid) |
-| Operator inbox | Google Workspace | **Decidido** — fora do v1; v1 = só SendGrid `noreply@` |
+| Contact message history | Email only vs store in DB | Email only for v1 (Resend) |
+| Operator inbox | Google Workspace | **Decidido** — fora do v1; v1 = só Resend `noreply@` |
 | Global `.com` domain | `onlineportfolio.com` taken | Revisit alternative `.com` later if expanding internationally |
 | CI/CD approach | GitHub Actions orchestrator | **Decidido** — see seção 15 |
 | Ambientes deployados | Prod only vs prod + staging | **Decidido** — [ADR-015](#adr-015-deploy-somente-em-production); staging deployado **fora do v1** |
@@ -1609,7 +1627,7 @@ API:            api.onlineportfolio.com.br (via proxy Nuxt)       →  Render
 Database:       Supabase PostgreSQL                               →  EF Core only
 Files:          Supabase Storage                                  →  tenants/{tenantId}/...
 Auth:           ASP.NET Identity completo + JWT na API           →  Supabase = DB + Storage
-Email (app):    SendGrid + noreply@ (só envio)                    →  contato + convites
+Email (app):    Resend + noreply@ (só envio)                    →  contato + convites
 Email (ops):    Google Workspace (depois)                         →  caixa postal
 PDF:            QuestPDF                                          →  catálogo via API
 Domain:         onlineportfolio.com.br (Registro.br)

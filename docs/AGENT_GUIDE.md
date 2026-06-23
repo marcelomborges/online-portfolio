@@ -36,7 +36,7 @@ Cross-reference: [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · BACKLOG [docs/BACK
 
 - **Cross-tenant data leak** (tenant A sees tenant B) — primary risk
 - **Privilege escalation** (Editor → PlatformAdmin, cross-tenant admin)
-- **Secret exposure** (service role, JWT secret, SendGrid in git or frontend)
+- **Secret exposure** (service role, JWT secret, Resend in git or frontend)
 - **IDOR** on artworks, settings, users by guessing IDs
 - **Abuse** of public contact/auth endpoints (spam, brute force)
 - **Unsafe uploads** (malware, path traversal, oversized files)
@@ -48,7 +48,7 @@ Cross-reference: [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · BACKLOG [docs/BACK
 | **Tenant isolation** | `TenantId` on all tenant tables; EF global query filters; API verifies membership on every protected operation |
 | **No client tenant trust** | `TenantId` for authorization comes from **authenticated user row**, never from request body/query alone |
 | **IDOR prevention** | Load resource → assert `resource.TenantId == currentUser.TenantId` (or PlatformAdmin path) |
-| **Secrets** | `.env` gitignored; `.env.example` placeholders only; Supabase **service role** + SendGrid + `Jwt__Secret` **only on Render**; no secrets in Nuxt `NUXT_PUBLIC_*` |
+| **Secrets** | Frontend: `.env` gitignored, `frontend/.env.example` placeholders only; backend: `appsettings` / Render env (no `.env.example`); Supabase **service role** + Resend + `Jwt__Secret` **only on Render**; no secrets in Nuxt `NUXT_PUBLIC_*` |
 | **Auth hardening** | Identity lockout; password policy; invite-only; JWT short TTL + refresh policy; httpOnly cookie if used; same-site where applicable |
 | **Login responses** | Same error for bad email vs bad password (no enumeration) |
 | **Public API** | Only published content; no internal IDs/flags leaked unnecessarily |
@@ -78,7 +78,7 @@ If any answer is uncertain → **stop and fix or ask the user**.
 - `AllowAnyOrigin()` CORS in production without explicit user approval
 - Skip `[Authorize]` “for now” on admin endpoints
 - Return different login errors for unknown email vs wrong password
-- Log JWTs, passwords, or SendGrid payloads with PII
+- Log JWTs, passwords, or Resend payloads with PII
 - Raw SQL with string concatenation
 - Client-chosen file paths for Storage
 - Self-signup endpoint in v1
@@ -109,7 +109,7 @@ chore(security): add rate limit to contact endpoint
 | **Supabase connections** | Local = `localhost`. Prod runtime = Transaction pooler `:6543`. Prod migrate (CI) = Session pooler `:5432`. **No** direct `db.*.supabase.co` in repo/secrets. |
 | **Admin host** | Login only at `app.onlineportfolio.com.br` — not on `{slug}.` subdomains. |
 | **Public hosts** | `{slug}.onlineportfolio.com.br` = tenant landing + posts/gallery. |
-| **Email v1** | SendGrid `noreply@` — send only, no mailbox. No Google Workspace in v1. |
+| **Email v1** | Resend `noreply@` — send only, no mailbox. [ADR-017](./ADR-017-resend-transactional-email.md). No Google Workspace in v1. |
 | **Uploads v1** | Through API multipart (Phase 3). Exception: public `<img>` CDN URLs. |
 | **Tenant isolation** | `TenantId` on tenant data; EF filters + API checks; never trust `TenantId` from request body alone. |
 
@@ -125,9 +125,9 @@ One email = one account globally. PlatformAdmin has `tenant_id = NULL`.
 
 ### Secrets
 
-- Never commit `.env`, API keys, connection strings, JWT secrets, SendGrid/Supabase service role keys.
-- Frontend: no service role key, no SendGrid key.
-- Use `.env.example` with placeholders only.
+- Never commit `.env`, API keys, connection strings, JWT secrets, Resend/Supabase service role keys.
+- Frontend: no service role key, no Resend key.
+- Frontend: use `frontend/.env.example` with placeholders only. Backend: `appsettings.json` templates + Render env.
 
 ### Git
 
@@ -187,13 +187,13 @@ Dois comentários independentes no mesmo PR quando ambos os CIs rodam. Artefatos
 | API / DTO | Controller, service, validation, OpenAPI | `server/api/**` proxy, composables, types, pages |
 | EF / schema | Migration (+ seed se necessário) | API consumers, forms |
 | Auth / JWT | Identity, `[Authorize]`, tenant middleware | Proxy auth forwarding, `app.*` login |
-| Env var | Render, `backend/OnlinePortfolio.Api/.env.example` | Vercel, `frontend/.env.example`, `runtimeConfig` |
+| Env var | `appsettings`, Render env | Vercel, `frontend/.env.example`, `runtimeConfig` |
 | Tenant isolation | EF filters + membership checks | Never trust client `tenantId`; correct host routing |
 | Admin feature | Protected routes | UI em `components/app/`, host `app.*`, dark mode (`surface-dark`) |
 | Site público tenant | API pública (só conteúdo publicado) | `{slug}.*`, `public/tenants/{slug}/`, `themes/{slug}.css` ([docs/ARCHITECTURE.md](./ARCHITECTURE.md)) |
-| Email / Storage (fases futuras) | SendGrid / multipart API | Proxy ou UI se aplicável |
+| Email / Storage (fases futuras) | Resend / multipart API | Proxy ou UI se aplicável |
 
-4. **Docs** — `DATABASE.md` se schema; `.env.example` nos dois lados se novos env vars; `EXTERNAL_PROVIDERS.md` se novo secret de provider.
+4. **Docs** — `DATABASE.md` se schema; `frontend/.env.example` ou `appsettings` se novos env vars; `EXTERNAL_PROVIDERS.md` se novo secret de provider.
 5. **Commits** — [Conventional Commits](./CONVENTIONAL_COMMITS.md); escopo `backend` / `frontend` coerente com paths tocados.
 
 **Agentes:** em todo PR, verificar a tabela de pareamento mesmo quando o diff toca só um lado — perguntar: “o outro lado precisa de follow-up **neste** PR?”.

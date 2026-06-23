@@ -27,7 +27,7 @@ All **AI assistants** (Cursor, GitHub Copilot, Copilot coding agent) and **human
 ### Subject line rules
 
 - **Imperative mood:** `add login endpoint`, not `added` or `adds`
-- **Lowercase** description (proper nouns OK: `SendGrid`, `Identity`)
+- **Lowercase** description (proper nouns OK: `Resend`, `Identity`)
 - **No period** at the end
 - **≤ 72 characters** when possible
 - One primary intent per commit
@@ -99,7 +99,7 @@ build(docker): add multi-stage Dockerfile for API
 ```text
 feat(db): add initial migration for tenants and Identity tables
 
-chore(infra): document SendGrid noreply sender setup
+chore(infra): document Resend noreply sender setup
 ```
 
 ### Breaking changes

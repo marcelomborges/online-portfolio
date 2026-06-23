@@ -63,10 +63,18 @@ ISSUE_HEADING = re.compile(
     r"^### ((?:DEV|UT|IT|SEC)-[\w]+) — (.+)$", re.MULTILINE
 )
 EPIC_HEADING = re.compile(r"^## (.+)$", re.MULTILINE)
-FIELD_ROW = re.compile(r"^\|\s\*\*(.+?)\*\*\s\|\s(.+?)\s\|$", re.MULTILINE)
-DESCRIPTION = re.compile(r"^\*\*Description:\*\*\s*(.+)$", re.MULTILINE)
+FIELD_ROW = re.compile(r"^\| \*\*(.+?)\*\* \| (.+?) \|$", re.MULTILINE)
+OBS_META = re.compile(
+    r"^- \*\*(Phase|Area|Priority|Depends on|Status):\*\* (.+)$",
+    re.MULTILINE,
+)
+DESCRIPTION = re.compile(
+    r"^\*\*(?:Description|Descrição):\*\*\s*\n?(.*?)(?=\n\*\*|\Z)",
+    re.MULTILINE | re.DOTALL,
+)
 ACCEPTANCE = re.compile(
-    r"^\*\*Acceptance criteria:\*\*\s*\n((?:- \[[ x]\].+\n?)+)",
+    r"^\*\*(?:Acceptance criteria|Critérios de aceitação):\*\*\s*\n"
+    r"((?:- \[[ x]\].+(?:\n|$))+)",
     re.MULTILINE,
 )
 
@@ -90,6 +98,10 @@ def parse_table_fields(block: str) -> dict[str, str]:
         key = match.group(1).strip()
         value = strip_markdown_link(match.group(2).strip())
         fields[key] = value
+    for match in OBS_META.finditer(block):
+        key = match.group(1).strip()
+        value = strip_markdown_link(match.group(2).strip())
+        fields.setdefault(key, value)
     return fields
 
 

@@ -4,7 +4,7 @@ Step-by-step configuration for every third-party service required to run the art
 
 **Related:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [BACKLOG.md](./BACKLOG.md)  
 **Platform domain:** `onlineportfolio.com.br` — **registrado** no [Registro.br](https://registro.br)  
-**Email v1:** SendGrid `noreply@onlineportfolio.com.br` — só envio transacional, sem caixa postal  
+**Email v1:** Resend `noreply@onlineportfolio.com.br` — só envio transacional, sem caixa postal ([ADR-017](./ADR-017-resend-transactional-email.md))  
 **Project management:** [Linear](https://linear.app) — issues a partir do BACKLOG (`DEV-xxx`)  
 **Operator inbox (futuro):** Google Workspace — depois do lançamento  
 **Cobrança / billing:** **opcional** — v1 **sem cobrança**; tenants provisionados manualmente pelo operador
@@ -22,7 +22,7 @@ Step-by-step configuration for every third-party service required to run the art
 5. [Linear](#5-linear-project-management)
 6. [Supabase](#6-supabase)
 7. [Render (API)](#7-render-api)
-8. [SendGrid (Email)](#8-sendgrid-email)
+8. [Resend (Email)](#8-resend-email)
 9. [Vercel (Frontend)](#9-vercel-frontend)
 10. [DNS no deploy](#10-dns-no-deploy)
 11. [QuestPDF (sem conta)](#11-questpdf-sem-conta-externa)
@@ -47,7 +47,7 @@ Step-by-step configuration for every third-party service required to run the art
 | **Linear** | Issues, sprints (`DEV-xxx`) | 1 workspace | seção 5 |
 | **Supabase** | PostgreSQL, Storage | 1 prod | seção 6 |
 | **Render** | ASP.NET Core API (Docker) | 1 web service | seção 7 |
-| **SendGrid** | Email transacional (`noreply@`) | 1 conta | seção 8 |
+| **Resend** | Email transacional (`noreply@`) | 1 conta | seção 8 |
 | **Vercel** | Nuxt frontend | 1 project | seção 9 |
 | **Stripe** | Cobrança SaaS (**opcional**, futuro) | ⏸️ não usar agora | seção 13 |
 | **Google Workspace** | Inbox operador (futuro) | ⏸️ pós-lançamento | seção 14 |
@@ -63,8 +63,8 @@ Use esta tabela para abrir cada serviço na ordem. Marque conforme for concluind
 | 2 | **GitHub** | [github.com/signup](https://github.com/signup) | [github.com](https://github.com) | seção 4 | ⬜ Criar repo `online-portfolio` |
 | 3 | **Linear** | [linear.app/signup](https://linear.app/signup) | [linear.app](https://linear.app) | seção 5 | ✅ Backlog importado |
 | 4 | **Supabase** | [supabase.com/dashboard](https://supabase.com/dashboard) | [Dashboard](https://supabase.com/dashboard) | seção 6 | ✅ `online-portfolio-db-prod` + opcional `online-portfolio-db-dev` |
-| 5 | **Render** | [dashboard.render.com/register](https://dashboard.render.com/register) | [Render](https://dashboard.render.com) | seção 7 | ⬜ Web service API |
-| 6 | **SendGrid** | [signup.sendgrid.com](https://signup.sendgrid.com/) | [SendGrid](https://app.sendgrid.com) | seção 8 | ⬜ API key (domínio no deploy seção 10) |
+| 5 | **Render** | [dashboard.render.com/register](https://dashboard.render.com/register) | [Render](https://dashboard.render.com) | seção 7 | ✅ API prod (`*.onrender.com`; domínio custom → DEV-011) |
+| 6 | **Resend** | [resend.com/signup](https://resend.com/signup) | [Resend](https://resend.com/domains) | seção 8 | ✅ conta + API key + Render env (DEV-014) |
 | 7 | **Vercel** | [vercel.com/signup](https://vercel.com/signup) | [Vercel](https://vercel.com/dashboard) | seção 9 | ⬜ Projeto Nuxt |
 | 8 | **Google Workspace** | [workspace.google.com](https://workspace.google.com/) | [Admin](https://admin.google.com) | seção 14 | ⏸️ Depois do lançamento |
 | 9 | **Stripe** | [dashboard.stripe.com/register](https://dashboard.stripe.com/register) | [Stripe](https://dashboard.stripe.com) | seção 13 | ⏸️ **Opcional** — só se/quando cobrar |
@@ -101,7 +101,7 @@ Mapa completo: [docs/ARCHITECTURE.md](./ARCHITECTURE.md)
                           │
                           ▼
                      ┌──────────┐
-                     │ SendGrid │
+                     │ Resend │
                      └──────────┘
 ```
 
@@ -118,9 +118,9 @@ Siga esta ordem para evitar dependências circulares. As seções **3–9** dest
 | 3 | **Linear** | Workspace + BACKLOG (pode ser cedo) | seção 5 |
 | 4 | **Supabase** | `online-portfolio-db-prod` (+ opcional `online-portfolio-db-dev` para local) | seção 6 |
 | 5 | **Render** | Conta + web service (após DEV-001) | seção 7 |
-| 6 | **SendGrid** | Conta + API key | seção 8 |
+| 6 | **Resend** | Conta + API key | seção 8 |
 | 7 | **Vercel** | Conta + projeto Nuxt (após DEV-001) | seção 9 |
-| 8 | **DNS** | NS Vercel, `api.`, DKIM SendGrid | seção 10 |
+| 8 | **DNS** | NS Vercel, `api.`, DKIM Resend | seção 10 |
 | 9 | **GitHub Actions** | Workflows + secrets | seção 4.3 |
 | — | **Por tenant** | Domínio custom do artista | seção 12 |
 | — | **Stripe** | Cobrança — **opcional, não agora** | seção 13 |
@@ -172,7 +172,7 @@ Siga esta ordem para evitar dependências circulares. As seções **3–9** dest
 #### Por que `.com.br` continua ok
 
 - Your first two artists are in Brazil — `.com.br` is trusted locally
-- Vercel, Render, Supabase, SendGrid, and Google Workspace all support `.com.br` custom domains
+- Vercel, Render, Supabase, Resend, and Google Workspace all support `.com.br` custom domains
 - Same architecture: `app.`, `api.`, `{slug}.` subdomains work identically
 - Fixed price: **R$ 40/year** with no renewal surprises
 - Payment: Pix, boleto, or card — no international card required
@@ -186,7 +186,7 @@ Siga esta ordem para evitar dependências circulares. As seções **3–9** dest
 | **Agora (pós-compra)** | Confirmar **Ativo** no painel; guardar credenciais; opcional: criar contas GitHub, Linear, Supabase |
 | **Epic 0 (DEV-001)** | Push monorepo no GitHub |
 | **Deploy** | Nameservers Vercel + domínios (seção 10) |
-| **Pós-deploy** | SendGrid DKIM na Vercel DNS (seção 10.4) |
+| **Pós-deploy** | Resend DKIM na Vercel DNS (seção 10.4) |
 
 #### Registro.br + Vercel nameservers (titular continua no Registro.br)
 
@@ -212,7 +212,7 @@ No separate SSL purchase. Certificates are free and auto-renewed.
 | **Render** | `api.onlineportfolio.com.br` | Auto | CNAME + verify in Render dashboard |
 | **Supabase** | `*.supabase.co` (default) | Auto | Custom domain optional later |
 | **Registro.br** | — | No | DNS only |
-| **SendGrid** | — | N/A | SPF/DKIM for email, not web |
+| **Resend** | — | N/A | SPF/DKIM for email, not web |
 
 All providers accept `.com.br` and subdomains.
 
@@ -238,7 +238,7 @@ All providers accept `.com.br` and subdomains.
 - [ ] Code hosted on GitHub
 - [ ] Branch protection on `main` (recommended)
 - [ ] Vercel connected — PR previews on; **production auto-deploy off**
-- [ ] Render connected — **After CI Checks Pass** + root `backend` (seção 4.6)
+- [ ] Render connected — **After CI Checks Pass** + root `backend` (seção 4.6) — DEV-007 ✅ After CI; confirmar root `backend`
 
 ### 4.2 GitHub Actions secrets
 
@@ -270,9 +270,9 @@ Além dos testes, conferir pareamento front↔back antes do merge. Referência: 
 
 - [ ] Repo created and pushed
 - [x] `ci-backend.yml`, `ci-frontend.yml` (PR CI — DEV-006)
-- [x] `deploy-backend.yml` (DEV-007)
+- [x] `deploy-backend.yml` (DEV-007) — migrate prod + gate Render
 - [ ] `deploy-frontend.yml` (DEV-007b)
-- [ ] Secrets configured; Render **Wait for CI** enabled
+- [x] `SUPABASE_MIGRATION_CONNECTION_STRING` configured; Render **After CI Checks Pass** enabled
 
 ### 4.6 Monorepo — deploy isolado por stack
 
@@ -448,7 +448,7 @@ Login admin usa **ASP.NET Identity + JWT** na API .NET. Supabase fornece **Postg
 | Senhas | Postgres via EF Identity |
 | Assinatura JWT | Render: `Jwt__Secret`, `Jwt__Issuer`, `Jwt__Audience` |
 | UI de login | `app.onlineportfolio.com.br/login` → proxy Nuxt → API |
-| Emails de convite | SendGrid (API envia no convite) |
+| Emails de convite | Resend (API envia no convite) |
 
 Nenhuma configuração do dashboard Supabase Auth no v1.
 
@@ -487,7 +487,7 @@ Path prefix: `tenants/{tenantId}/...`
 **Phase 1.5 (auth — API, not Supabase):**
 
 - [ ] Render: `Jwt__Secret`, `Jwt__Issuer`, `Jwt__Audience`
-- [ ] SendGrid: invite + transactional email
+- [ ] Resend: invite + transactional email
 - [ ] Test login via Nuxt proxy at `app.onlineportfolio.com.br/login`
 
 **Phase 3 (storage):**
@@ -560,62 +560,126 @@ Set in **Environment → Environment Variables** (or `render.yaml`):
 | `Jwt__Audience` | `OnlinePortfolio.Admin` | No |
 | `Supabase__Url` | `https://[ref].supabase.co` (Storage, Fase 3+) | No |
 | `Supabase__ServiceRoleKey` | Supabase service role | Yes |
-| `SendGrid__ApiKey` | SendGrid | Yes |
-| `SendGrid__FromEmail` | `noreply@onlineportfolio.com.br` | No |
-| `SendGrid__FromName` | Your platform name | No |
+| `Resend__ApiKey` | Resend API token (`re_...`) | Yes |
+| `Resend__FromEmail` | `noreply@onlineportfolio.com.br` | No |
+| `Resend__FromName` | Your platform name | No |
+
+**Render UI:** após salvar, valores ficam mascarados (ícone de **olho** para revelar). Não há toggle separado de “secret” no painel atual — mesmo assim, trate `Resend__ApiKey`, `Jwt__Secret`, connection strings e `service_role` como credenciais: password manager + nunca no git.
 
 **Do not set** `ConnectionStrings__Migration` on Render unless you intentionally run migrations from the container (not recommended — use CI instead).
 
 ### 7.5 Render checklist
 
-- [ ] Web service created (Docker)
-- [ ] **Root directory** = `backend` (monorepo — seção 4.6)
-- [ ] **After CI Checks Pass** enabled
-- [ ] Health check returns 200 at `/health`
-- [ ] All env vars set
-- [ ] Custom domain `api.onlineportfolio.com.br` verified + HTTPS
-- [ ] Logs visible in Render dashboard
-- [ ] Test: `GET https://api.onlineportfolio.com.br/health`
+- [x] Web service created (Docker)
+- [x] **Root directory** = `backend` (monorepo — seção 4.6)
+- [x] **After CI Checks Pass** enabled
+- [x] Health check returns 200 at `/health` (`*.onrender.com`)
+- [x] All env vars set (DB pooler, `Jwt__*`, `Resend__*`, `ASPNETCORE_*`)
+- [ ] Custom domain `api.onlineportfolio.com.br` verified + HTTPS (DEV-011)
+- [x] Logs visible in Render dashboard
+- [ ] Test: `GET https://api.onlineportfolio.com.br/health` (após DEV-011)
 - [ ] Test: public API endpoint returns data
 
 ---
 
-## 8. SendGrid (Email)
+## 8. Resend (Email)
 
-**Decisão v1:** `noreply@onlineportfolio.com.br` — só envio (contato, convites). Sem caixa postal.
+**Decisão v1:** `noreply@onlineportfolio.com.br` — só envio (contato, convites). Sem caixa postal. Ver [ADR-017](./ADR-017-resend-transactional-email.md) (substitui SendGrid — fim do free tier permanente em mai/2025).
 
 | | |
 |---|---|
-| **Criar conta** | [signup.sendgrid.com](https://signup.sendgrid.com/) |
-| **Painel** | [app.sendgrid.com](https://app.sendgrid.com) |
-| **Docs** | [docs.sendgrid.com](https://docs.sendgrid.com/) |
-| **API Keys** | Painel → **Settings → API Keys** |
-| **Domínio (prod)** | **Settings → Sender Authentication** — registros DNS em seção 10.4 |
-| **Pricing** | [sendgrid.com/pricing](https://sendgrid.com/pricing) — 100 emails/dia free |
+| **Criar conta** | [resend.com/signup](https://resend.com/signup) |
+| **Painel** | [resend.com/domains](https://resend.com/domains) |
+| **Docs** | [resend.com/docs](https://resend.com/docs) |
+| **API Keys** | Painel → **API Keys** |
+| **Domínio (prod)** | **Domains** → adicionar `onlineportfolio.com.br` — DNS em seção 10.4 |
+| **SDK .NET** | [resend.com/docs/send-with-dotnet](https://resend.com/docs/send-with-dotnet) · NuGet `Resend` |
+| **Pricing** | [resend.com/pricing](https://resend.com/pricing) — **3.000 emails/mês** free (máx. 100/dia) |
 
 ### 8.1 Escopo v1
 
 | Incluído | Fora do v1 |
 |---|---|
 | Formulário de contato, convites | Caixa postal / MX |
-| `noreply@onlineportfolio.com.br` | SendGrid no frontend |
+| `noreply@onlineportfolio.com.br` | Resend no frontend |
+| Templates em `EmailTemplates/` (repo) | Editor visual no painel |
 
-### 8.2 API key
+### 8.2 API key (DEV-014)
 
-- [ ] Conta SendGrid + verificação
-- [ ] API key `portfolio-api-prod` — permissão **Mail Send** only
-- [ ] Guardar no Render como `SendGrid__ApiKey`
+1. Criar conta Resend + verificar email — ✅
+2. **API Keys** → Create → nome `portfolio-api-prod` — ✅
+3. Copiar key `re_...` (só aparece uma vez) → **password manager** (nunca no git)
+4. Render → **Environment** → variáveis abaixo (`Resend__ApiKey` mascarada no painel após salvar)
+5. Smoke test local (seção 8.5) — opcional antes do Render
 
-### 8.3 Remetente (`noreply@`)
+| Render env | Valor |
+|---|---|
+| `Resend__ApiKey` | `re_...` (sensível — mascarada no Render) |
+| `Resend__FromEmail` | `noreply@onlineportfolio.com.br` |
+| `Resend__FromName` | Online Portfolio |
 
-- **Dev:** single sender verification (rápido)
-- **Prod:** autenticar domínio `onlineportfolio.com.br` — DNS em seção 10.4
+Equivalente local: secção `Resend` em `appsettings.Development.json` ou `Resend__*` via env (ver `backend/OnlinePortfolio.Api/appsettings.json`).
 
-### 8.4 SendGrid checklist
+### 8.5 Smoke test — primeiro email (antes de DEV-011)
 
-- [ ] API key no Render
-- [ ] Domínio autenticado (prod)
-- [ ] Teste de envio via API
+Valida conta + API key **sem** domínio próprio: o Resend permite enviar de `onboarding@resend.dev` até verificares `onlineportfolio.com.br` (DEV-011).
+
+1. Instalar SDK (projeto de teste ou futuro DEV-107):
+
+```bash
+dotnet add package Resend
+```
+
+2. Substituir `re_xxxxxxxxx` pela API key real (**só local** — nunca commitar).
+
+```csharp
+using Resend;
+
+IResend resend = ResendClient.Create("re_xxxxxxxxx");
+
+var resp = await resend.EmailSendAsync(new EmailMessage()
+{
+    From = "onboarding@resend.dev",
+    To = "seu-email@exemplo.com",
+    Subject = "Hello World",
+    HtmlBody = "<p>Congrats on sending your <strong>first email</strong>!</p>",
+});
+
+Console.WriteLine(resp);
+```
+
+3. **PowerShell** (env var, sem hardcode no código):
+
+```powershell
+$env:Resend__ApiKey = "re_xxxxxxxxx"   # colar do password manager
+```
+
+4. Após **DEV-011:** trocar `From` para `Online Portfolio <noreply@onlineportfolio.com.br>`.
+
+Referência produção (DI no `Program.cs` — implementação em DEV-107):
+
+```csharp
+builder.Services.AddHttpClient<ResendClient>();
+builder.Services.Configure<ResendClientOptions>(o =>
+    o.ApiToken = builder.Configuration["Resend:ApiKey"]!);
+builder.Services.AddTransient<IResend, ResendClient>();
+```
+
+### 8.3 Domínio e remetente
+
+- **DEV-011 (prod):** adicionar domínio no Resend → copiar registros DNS → Vercel DNS (seção 10.4)
+- Até DKIM verificado: testes com domínio de onboarding Resend ou key de dev (não usar em prod)
+- `noreply@` não tem inbox — não usar Single Sender com endereço sem caixa
+
+### 8.4 Resend checklist
+
+- [x] Conta Resend criada
+- [x] API key `portfolio-api-prod` criada
+- [x] API key no password manager
+- [x] `Resend__*` no Render
+- [ ] Smoke test enviado (seção 8.5)
+- [ ] Domínio `onlineportfolio.com.br` verificado (DEV-011)
+- [ ] `IEmailService` + `ResendEmailService` (DEV-107)
 
 ---
 
@@ -709,17 +773,24 @@ Configurar **depois** de Render (seção 7) e Vercel (seção 9) existirem.
 
 Enable **HTTPS** on Render after DNS verification.
 
-### 10.4 DNS de email — SendGrid (v1, só envio)
+### 10.4 DNS de email — Resend (v1, só envio)
 
-Na **Vercel DNS** (sem MX — sem caixa postal):
+Na **Vercel DNS** (sem MX para caixa postal — só envio):
 
-| Type | Name | Value |
-|---|---|---|
-| `CNAME` | `emXXXX` (SendGrid) | SendGrid target |
-| `CNAME` | `s1._domainkey` | SendGrid DKIM |
-| `CNAME` | `s2._domainkey` | SendGrid DKIM |
+1. Resend → **Domains** → Add `onlineportfolio.com.br`
+2. Copiar registros exatos do painel (DKIM, SPF — valores gerados por conta)
+3. Adicionar na Vercel DNS conforme indicado (ex.: `resend._domainkey`, subdomínio `send`, etc.)
+4. **Verify DNS Records** no Resend
 
-Add **SPF** TXT if SendGrid instructs (`include:sendgrid.net`).
+| Tipo típico | Notas |
+|---|---|
+| `TXT` / `CNAME` DKIM | Ex.: `resend._domainkey` — valor exato do painel |
+| `TXT` SPF | Subdomínio `send` (ou conforme Resend) |
+| `MX` (bounce) | Se Resend indicar para o subdomínio de envio |
+
+Não reutilizar registros DNS de outros provedores (ex. `sendgrid.net`) — usar só os gerados pelo Resend. Ver [ADR-017](./ADR-017-resend-transactional-email.md).
+
+Ao adicionar Google Workspace depois, **mesclar SPF** conforme docs Resend + Google.
 
 ---
 
@@ -788,7 +859,7 @@ Processador de **pagamentos** para **assinatura mensal** dos artistas (tenants).
 | **Webhooks** | API recebe eventos e atualiza `subscriptions` no Postgres |
 | **Limites por plano** | Ex.: nº de obras, domínio custom só no Pro |
 
-**Não substitui:** SendGrid, Vercel/Render, Identity (login).
+**Não substitui:** Resend, Vercel/Render, Identity (login).
 
 ```text
 Artista → Checkout → webhook → API .NET → Postgres (subscription) → limites do tenant
@@ -831,9 +902,9 @@ Artista → Checkout → webhook → API .NET → Postgres (subscription) → li
 
 ## 14. Google Workspace (caixa postal operador — futuro)
 
-**Status:** ⏸️ Fora do v1. SendGrid cobre **envio**; Google Workspace cobre **inbox** (`hello@`, `marcelo@`, …).
+**Status:** ⏸️ Fora do v1. Resend cobre **envio**; Google Workspace cobre **inbox** (`hello@`, `marcelo@`, …).
 
-| | SendGrid (v1) | Google Workspace (futuro) |
+| | Resend (v1) | Google Workspace (futuro) |
 |---|---|---|
 | **Função** | App **envia** (`noreply@`, contato, convites) | Você **lê/responde** |
 | **Caixa postal** | Não | Sim |
@@ -844,7 +915,7 @@ Artista → Checkout → webhook → API .NET → Postgres (subscription) → li
 | **Criar conta** | [workspace.google.com](https://workspace.google.com/) |
 | **Painel** | [admin.google.com](https://admin.google.com) |
 
-Ao adicionar Google, **mesclar SPF** com SendGrid: `v=spf1 include:sendgrid.net include:_spf.google.com ~all`
+Ao adicionar Google, **mesclar SPF** conforme documentação Resend + Google (não copiar `include:sendgrid.net`).
 
 ---
 
@@ -856,13 +927,13 @@ Ao adicionar Google, **mesclar SPF** com SendGrid: `v=spf1 include:sendgrid.net 
 | Supabase Session pooler (`:5432`) | GitHub Actions secret `SUPABASE_MIGRATION_CONNECTION_STRING` | EF migrations (CI only) |
 | Supabase service role key | Render env | API Storage writes (Phase 3+) |
 | `Jwt__Secret` | Render env | API-issued JWT signing |
-| SendGrid API key | Render env | API email (invites + contact) |
-| SendGrid from email/name | Render env | API email headers |
+| Resend API key | Render env | API email (invites + contact) |
+| Resend from email/name | Render env | API email headers |
 | `NUXT_PUBLIC_*` vars | Vercel env | Nuxt client + build |
 | Stripe keys (opcional) | Render env | Billing webhooks — só se DEV-403 |
 | Database password | Supabase (set at create) | Embedded in connection strings |
 
-**Never commit:** connection strings, `service_role`, `Jwt__Secret`, SendGrid/Stripe keys. Use `.env.example` in `frontend/` and `backend/`.
+**Never commit:** connection strings, `service_role`, `Jwt__Secret`, Resend/Stripe keys. Frontend: `frontend/.env.example` placeholders only; backend: `appsettings` templates + Render env.
 
 ---
 
@@ -881,7 +952,7 @@ Ao adicionar Google, **mesclar SPF** com SendGrid: `v=spf1 include:sendgrid.net 
 
 | Provider | Configure |
 |---|---|
-| Render, SendGrid, Vercel | seção 7 · seção 8 · seção 9 |
+| Render, Resend, Vercel | seção 7 · seção 8 · seção 9 |
 | DNS | seção 10 |
 
 ### Phase 4 — Custom domains (+ billing opcional)
@@ -903,7 +974,7 @@ Ao adicionar Google, **mesclar SPF** com SendGrid: `v=spf1 include:sendgrid.net 
 | EF migrations fail | Transaction pooler (`6543`) no migrate | Usar **Session** pooler `:5432` |
 | Login 401 | Wrong password or inactive user | Identity seed; proxy forwards body |
 | CORS error | Direct browser → Render | Nuxt `/api` proxy only |
-| SendGrid emails not arriving | Domain not authenticated | DKIM/SPF seção 10.4 |
+| Resend emails not arriving | Domain not authenticated | DKIM/SPF seção 10.4 |
 | Wildcard SSL fail | DNS wildcard missing | seção 10.2 |
 | JWT invalid | Wrong `Jwt__Secret` | Verify Render env |
 
@@ -911,7 +982,7 @@ Ao adicionar Google, **mesclar SPF** com SendGrid: `v=spf1 include:sendgrid.net 
 
 ## Quick reference — URLs to bookmark
 
-**Ordem de setup:** Registro.br → GitHub → Linear → Supabase → Render → SendGrid → Vercel → DNS.
+**Ordem de setup:** Registro.br → GitHub → Linear → Supabase → Render → Resend → Vercel → DNS.
 
 | Service | Criar conta | Painel | Docs |
 |---|---|---|---|
@@ -920,7 +991,7 @@ Ao adicionar Google, **mesclar SPF** com SendGrid: `v=spf1 include:sendgrid.net 
 | **Linear** | [Signup](https://linear.app/signup) | [linear.app](https://linear.app) | [Docs](https://linear.app/docs) |
 | **Supabase** | [Dashboard](https://supabase.com/dashboard) | [Dashboard](https://supabase.com/dashboard) | [Docs](https://supabase.com/docs) |
 | **Render** | [Register](https://dashboard.render.com/register) | [Dashboard](https://dashboard.render.com) | [Domains](https://render.com/docs/custom-domains) |
-| **SendGrid** | [Signup](https://signup.sendgrid.com/) | [App](https://app.sendgrid.com) | [Sender auth](https://docs.sendgrid.com/ui/account-and-settings/how-to-set-up-domain-authentication) |
+| **Resend** | [Signup](https://resend.com/signup) | [Dashboard](https://resend.com/domains) | [Domain setup](https://resend.com/docs/dashboard/domains/introduction) |
 | **Vercel** | [Signup](https://vercel.com/signup) | [Dashboard](https://vercel.com/dashboard) | [Domains](https://vercel.com/docs/projects/domains) |
 | **Stripe** (opcional) | [Register](https://dashboard.stripe.com/register) | [Dashboard](https://dashboard.stripe.com) | [Webhooks](https://docs.stripe.com/webhooks) |
 | **Google Workspace** | [workspace.google.com](https://workspace.google.com/) | [Admin](https://admin.google.com) | — |
