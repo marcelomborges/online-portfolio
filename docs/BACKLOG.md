@@ -1980,25 +1980,25 @@ Dedicated security activities (beyond tests). Cross-reference [docs/ARCHITECTURE
 ## Sprint plan (ciclos fixos de 2 semanas)
 
 **Cadência:** sprints de **14 dias**, início todo **domingo**.  
-**Sprint 1 começou:** 2026-06-14 (domingo passado).
+**Sprint 1 começou:** 2026-06-21 (domingo).
 
 | Sprint | Período | Foco |
 |--------|---------|------|
-| **1** | 2026-06-14 → 2026-06-27 | Foundation + bootstrap cloud (Epic 0) |
-| **2** | 2026-06-28 → 2026-07-11 | Fechar Epic 0 (deploy front, DNS, Resend) |
-| **3** | 2026-07-12 → 2026-07-25 | Login MVP (Epic 1.5) |
-| **4** | 2026-07-26 → 2026-08-08 | Site público por tenant (Epic 1) |
-| **5** | 2026-08-09 → 2026-08-22 | Contato + hardening |
-| **6** | 2026-08-23 → 2026-09-05 | Admin CRUD pós-login |
-| **7** | 2026-09-06 → 2026-09-19 | Uploads (Fase 3) |
+| **1** | 2026-06-21 → 2026-07-04 | Foundation + bootstrap cloud (Epic 0) |
+| **2** | 2026-07-05 → 2026-07-18 | Fechar Epic 0 (deploy front, DNS, Resend) |
+| **3** | 2026-07-19 → 2026-08-01 | Login MVP (Epic 1.5) |
+| **4** | 2026-08-02 → 2026-08-15 | Site público por tenant (Epic 1) |
+| **5** | 2026-08-16 → 2026-08-29 | Contato + hardening |
+| **6** | 2026-08-30 → 2026-09-12 | Admin CRUD pós-login |
+| **7** | 2026-09-13 → 2026-09-26 | Uploads (Fase 3) |
 
 ---
 
-### Sprint 1 — 2026-06-14 → 2026-06-27 — Foundation & prod bootstrap
+### Sprint 1 — 2026-06-21 → 2026-07-04 — Foundation & prod bootstrap
 
-**Objetivo:** monorepo, dev local, CI/CD backend, Supabase prod, API no Render.
+**Objetivo:** monorepo, dev local, CI/CD backend, Supabase prod, API no Render, Vercel previews.
 
-#### ✅ Concluído (semana 1)
+#### ✅ Concluído (início sprint 1 — até 21/06)
 
 | Issue | Notas |
 |-------|--------|
@@ -2018,7 +2018,7 @@ Dedicated security activities (beyond tests). Cross-reference [docs/ARCHITECTURE
 | DEV-009 | API Render prod — env vars, `/health`, After CI Checks Pass |
 | DEV-010 | Vercel `online-portfolio-web` — previews, env vars, prod auto-deploy off |
 
-#### ⬜ Restante Sprint 1 (semana 2 — até 27/06)
+#### ⬜ Restante Sprint 1 (até 04/07)
 
 | Issue | Prioridade |
 |-------|------------|
@@ -2029,7 +2029,7 @@ Dedicated security activities (beyond tests). Cross-reference [docs/ARCHITECTURE
 
 ---
 
-### Sprint 2 — 2026-06-28 → 2026-07-11 — Epic 0 done + DNS
+### Sprint 2 — 2026-07-05 → 2026-07-18 — Epic 0 done + DNS
 
 **Objetivo:** produção fechada (front + API + domínios), pronto para features.
 
@@ -2039,31 +2039,31 @@ DEV-011 → DEV-007b → SEC-001 → UT-003 → IT-006
 
 ---
 
-### Sprint 3 — 2026-07-12 → 2026-07-25 — Login MVP (Epic 1.5)
+### Sprint 3 — 2026-07-19 → 2026-08-01 — Login MVP (Epic 1.5)
 
 DEV-150 → DEV-151 → DEV-152 → DEV-153 → DEV-154 → DEV-155 → DEV-156 → DEV-157 → DEV-158 → DEV-159 → DEV-161 → DEV-162 → DEV-160 → UT-012 → IT-011 → IT-012 → IT-013
 
 ---
 
-### Sprint 4 — 2026-07-26 → 2026-08-08 — Site público por tenant (Epic 1)
+### Sprint 4 — 2026-08-02 → 2026-08-15 — Site público por tenant (Epic 1)
 
 DEV-100 → DEV-101 → DEV-102 → DEV-103 → DEV-104 → DEV-105 → DEV-106 → UT-002 → IT-001 → IT-002
 
 ---
 
-### Sprint 5 — 2026-08-09 → 2026-08-22 — Contato + hardening
+### Sprint 5 — 2026-08-16 → 2026-08-29 — Contato + hardening
 
 DEV-107 → DEV-109 → SEC-007 → SEC-003 → UT-005 → SEC-011 *(parcial)*
 
 ---
 
-### Sprint 6 — 2026-08-23 → 2026-09-05 — Admin CRUD
+### Sprint 6 — 2026-08-30 → 2026-09-12 — Admin CRUD
 
 DEV-203 → DEV-204 → DEV-205 → IT-004 → IT-005
 
 ---
 
-### Sprint 7 — 2026-09-06 → 2026-09-19 — Uploads
+### Sprint 7 — 2026-09-13 → 2026-09-26 — Uploads
 
 DEV-300 → DEV-301 → DEV-302 → DEV-303 → SEC-006 → IT-008
 
@@ -2075,7 +2075,7 @@ DEV-008b · DEV-207 · DEV-400+ · DEV-403 · DEV-404 · IT-010 · SEC-009 · SE
 
 ---
 
-*Last updated: 2026-06-21 — ADR-017 Resend (substitui SendGrid); DEV-007 done*
+*Last updated: 2026-06-21 — Sprint 1 desde 21/06; DEV-010 done*
 
 ---
 
