@@ -291,6 +291,22 @@ A API **não** executa `Migrate()` na startup em produção.
 
 ---
 
+## Deploy frontend (prod) — DEV-007b
+
+**Workflow:** `.github/workflows/deploy-frontend.yml` — push `main` com mudança em `frontend/**`.
+
+**GitHub Secrets** (repo → Settings → Secrets and variables → Actions):
+
+| Secret | Valor |
+|--------|--------|
+| `VERCEL_TOKEN` | [vercel.com/account/tokens](https://vercel.com/account/tokens) |
+| `VERCEL_ORG_ID` | Vercel → projeto → Settings → General → Team ID |
+| `VERCEL_PROJECT_ID` | Vercel → projeto → Settings → General → Project ID |
+
+Vercel dashboard: **Only build pre-production** ON (prod só via Actions). PR previews continuam pela integração Git.
+
+---
+
 ## Resend — smoke test (DEV-014)
 
 Valida conta + API key antes de DEV-107 / DEV-011. Runbook completo: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 8.5.

@@ -163,7 +163,7 @@ Dispara em `pull_request` e `push` → `main`, com **path filters** — só roda
 
 **Path filters:** PR que muda só `docs/` ou só `scripts/` pode **não** disparar nenhum CI — ok. PR que muda `backend/` **e** `frontend/` dispara **os dois**. Checks **skipped** por path filter contam como OK no GitHub (branch protection).
 
-**Deploy** (`deploy-backend.yml` ✅, `deploy-frontend.yml` — DEV-007b).
+**Deploy** (`deploy-backend.yml` ✅, `deploy-frontend.yml` ✅).
 
 ### Comentários de coverage no PR
 

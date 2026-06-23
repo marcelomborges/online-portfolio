@@ -257,7 +257,7 @@ All providers accept `.com.br` and subdomains.
   ci-backend.yml       # ✅ pull_request + push main: dotnet test + build (paths backend/**)
   ci-frontend.yml      # ✅ pull_request + push main: npm run lint (nuxi typecheck)
   deploy-backend.yml   # ✅ push main: test → EF migrate → gate Render (DEV-007)
-  deploy-frontend.yml  # push main: lint/test → vercel deploy --prod (DEV-007b)
+  deploy-frontend.yml  # ✅ push main: lint/test → vercel deploy --prod (DEV-007b)
 ```
 
 **Decisão:** CI **e deploy separados**; **somente production** ([docs/ARCHITECTURE.md](./ARCHITECTURE.md)).
@@ -271,7 +271,7 @@ Além dos testes, conferir pareamento front↔back antes do merge. Referência: 
 - [ ] Repo created and pushed
 - [x] `ci-backend.yml`, `ci-frontend.yml` (PR CI — DEV-006)
 - [x] `deploy-backend.yml` (DEV-007) — migrate prod + gate Render
-- [ ] `deploy-frontend.yml` (DEV-007b)
+- [x] `deploy-frontend.yml` (DEV-007b)
 - [x] `SUPABASE_MIGRATION_CONNECTION_STRING` configured; Render **After CI Checks Pass** enabled
 
 ### 4.6 Monorepo — deploy isolado por stack
@@ -280,9 +280,9 @@ Push em `main` no monorepo **não** deve redeployar a stack que não mudou. Trê
 
 | Camada | Só `frontend/**` | Só `backend/**` |
 |--------|------------------|-----------------|
-| **GitHub Actions** | `ci-frontend.yml` + `deploy-frontend.yml` (quando existir) | `ci-backend.yml` + `deploy-backend.yml` |
+| **GitHub Actions** | `ci-frontend.yml` + `deploy-frontend.yml` | `ci-backend.yml` + `deploy-backend.yml` |
 | **Render (API)** | Sem autodeploy | Autodeploy após **Backend Deploy** green |
-| **Vercel (frontend)** | Prod via `deploy-frontend.yml` (quando existir) | Sem deploy de produção |
+| **Vercel (frontend)** | Prod via `deploy-frontend.yml` | Sem deploy de produção |
 
 **GitHub:** `paths` nos workflows de deploy (`deploy-backend.yml`, `deploy-frontend.yml`) e nos CIs em **push**; em **PR**, os workflows sempre reportam status (skip interno com `paths-filter` — ver `ci-backend.yml` / `ci-frontend.yml`).
 
@@ -304,7 +304,7 @@ Push em `main` no monorepo **não** deve redeployar a stack que não mudou. Trê
 
 ```
 push main só frontend/
-  → Frontend CI (push) · deploy-frontend (futuro)
+  → Frontend CI (push) · deploy-frontend
   → Render API: não
   → Vercel prod: sim (via Actions)
 
@@ -730,7 +730,8 @@ Domínios custom por artista → seção 12.
 - [x] Project `online-portfolio-web` connected; **Root directory** = `frontend` (monorepo — seção 4.6)
 - [x] Env vars set; PR previews on (testado)
 - [x] Production auto-deploy **off** (`Only build pre-production`; prod via `deploy-frontend.yml` — DEV-007b)
-- [x] `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` no password manager (GitHub Secrets → DEV-007b)
+- [x] `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` no password manager
+- [x] Mesmos três secrets em **GitHub Actions** (DEV-007b)
 - [ ] Domínios custom + `NUXT_API_INTERNAL_BASE` → `api.` (DEV-011)
 
 ---

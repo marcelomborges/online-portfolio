@@ -365,16 +365,19 @@ Dois workflows de CI no PR — **separados** por stack (não um `ci.yml` único)
 `deploy-frontend.yml` on push to `main` — frontend lint/test → `vercel deploy --prod`. Disable Vercel production auto-deploy; PR previews stay on Vercel GitHub App.
 
 **Critérios de aceitação:**
-- [ ] `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` in GitHub Secrets
-- [ ] Workflow runs on push to `main` (paths: `frontend/**`)
-- [ ] Production deploy only via Actions (Vercel dashboard auto-deploy **off** for prod)
-- [ ] PR preview deploys still work via Vercel integration
+- [x] `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` in GitHub Secrets
+- [x] `deploy-frontend.yml` — lint/test → `vercel pull` → `vercel build --prod` → `vercel deploy --prebuilt --prod`
+- [x] Workflow runs on push to `main` (paths: `frontend/**`, workflow file)
+- [x] Production auto-deploy **disabled** on Vercel (`Only build pre-production`; DEV-010)
+- [ ] 1º **Frontend Deploy** green na `main` (após merge do workflow)
+- [ ] PR preview deploys still work via Vercel integration (regression check)
 
 **Observações:**
 - **Phase:** 0
 - **Area:** devops
 - **Priority:** P1
 - **Depends on:** DEV-006, DEV-005, DEV-010
+- **Status:** 🔄 **In progress** — secrets ✅; falta merge do workflow na `main` + 1º deploy green
 
 ---
 
