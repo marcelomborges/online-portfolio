@@ -97,7 +97,7 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 | 6 | Resend | [DEV-014](#dev-014--resend-account--api-key) → [DEV-107](#dev-107--contact-form--resend) | ✅ conta + Render env; código Epic 1 |
 | 7 | Vercel | [DEV-010](#dev-010--vercel-frontend-deployment) | ✅ Done — `online-portfolio-web` |
 | 8 | DNS + email DNS | [DEV-011](#dev-011--dns--https-production) | Após Render + Vercel |
-| 9 | GitHub Actions | [DEV-006](#dev-006--github-actions-ci-pr--workflows-separados) · [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) ✅ · [DEV-007b](#dev-007b--github-actions-deploy-pipeline-frontend) | ✅ CI + backend deploy; frontend deploy pendente |
+| 9 | GitHub Actions | [DEV-006](#dev-006--github-actions-ci-pr--workflows-separados) · [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) ✅ · [DEV-007b](#dev-007b--github-actions-deploy-pipeline-frontend) ✅ | ✅ CI + deploy backend + frontend |
 | — | Google Workspace | [DEV-404](#dev-404--google-workspace-operator-inbox) | Opcional, pós-lançamento |
 | — | Stripe / billing | [DEV-403](#dev-403--billing--subscriptions-optional--skip-until-charging) | **Opcional** — skip no v1 |
 
@@ -359,25 +359,25 @@ Dois workflows de CI no PR — **separados** por stack (não um `ci.yml` único)
 
 ---
 
-### DEV-007b — GitHub Actions deploy pipeline (frontend)
+### DEV-007b — GitHub Actions deploy pipeline (frontend) ✅
 
 **Descrição:**
 `deploy-frontend.yml` on push to `main` — frontend lint/test → `vercel deploy --prod`. Disable Vercel production auto-deploy; PR previews stay on Vercel GitHub App.
 
 **Critérios de aceitação:**
 - [x] `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` in GitHub Secrets
-- [x] `deploy-frontend.yml` — lint/test → `vercel pull` + `vercel env pull` → `npm run build` → `vercel deploy --prebuilt --prod`
+- [x] `deploy-frontend.yml` — lint/test → `vercel pull` + `vercel env pull` → `npm run build` → stage `.vercel/output` → `vercel deploy --prebuilt --prod`
 - [x] Workflow runs on push to `main` (paths: `frontend/**`, workflow file)
 - [x] Production auto-deploy **disabled** on Vercel (`Only build pre-production`; DEV-010)
-- [ ] 1º **Frontend Deploy** green na `main` (após merge do workflow)
-- [ ] PR preview deploys still work via Vercel integration (regression check)
+- [x] 1º **Frontend Deploy** green na `main`
+- [x] PR preview deploys still work via Vercel integration (regression check)
 
 **Observações:**
 - **Phase:** 0
 - **Area:** devops
 - **Priority:** P1
 - **Depends on:** DEV-006, DEV-005, DEV-010
-- **Status:** 🔄 **In progress** — secrets ✅; falta merge do workflow na `main` + 1º deploy green
+- **Status:** ✅ **Done** — prod `online-portfolio-web-xi.vercel.app` via Actions; previews OK (ex. `*-git-*-marcelomborges-dev.vercel.app`)
 
 ---
 

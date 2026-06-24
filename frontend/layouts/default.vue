@@ -4,7 +4,7 @@
     <UiPageContainer>
       <slot />
     </UiPageContainer>
-    <DevShellFooter note="DEV-005 — Nuxt 3 skeleton (modo dev)" />
+    <DevShellFooter note="Online Portfolio — ambiente de desenvolvimento" />
   </div>
 </template>
 
