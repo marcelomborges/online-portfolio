@@ -4,7 +4,7 @@ Step-by-step configuration for every third-party service required to run the art
 
 **Related:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [BACKLOG.md](./BACKLOG.md)  
 **Platform domain:** `onlineportfolio.com.br` — **registrado** no [Registro.br](https://registro.br)  
-**Email v1:** Resend `noreply@onlineportfolio.com.br` — só envio transacional, sem caixa postal ([ADR-017](./ADR-017-resend-transactional-email.md))  
+**Email v1:** Resend `mail@onlineportfolio.com.br` — só envio transacional, sem caixa postal; Reply-To para respostas ([ADR-017](./ADR-017-resend-transactional-email.md))  
 **Project management:** [Linear](https://linear.app) — issues a partir do BACKLOG (`DEV-xxx`)  
 **Operator inbox (futuro):** Google Workspace — depois do lançamento  
 **Cobrança / billing:** **opcional** — v1 **sem cobrança**; tenants provisionados manualmente pelo operador
@@ -47,7 +47,7 @@ Step-by-step configuration for every third-party service required to run the art
 | **Linear** | Issues, sprints (`DEV-xxx`) | 1 workspace | seção 5 |
 | **Supabase** | PostgreSQL, Storage | 1 prod | seção 6 |
 | **Render** | ASP.NET Core API (Docker) | 1 web service | seção 7 |
-| **Resend** | Email transacional (`noreply@`) | 1 conta | seção 8 |
+| **Resend** | Email transacional (`mail@`) | 1 conta | seção 8 |
 | **Vercel** | Nuxt frontend | 1 project | seção 9 |
 | **Stripe** | Cobrança SaaS (**opcional**, futuro) | ⏸️ não usar agora | seção 13 |
 | **Google Workspace** | Inbox operador (futuro) | ⏸️ pós-lançamento | seção 14 |
@@ -60,12 +60,12 @@ Use esta tabela para abrir cada serviço na ordem. Marque conforme for concluind
 | # | Provider | Criar conta | Painel | Doc deste repo | Status |
 |---|---|---|---|---|---|
 | 1 | **Registro.br** | [registro.br](https://registro.br) | [Painel NIC](https://registro.br/login/) | seção 3.1 | ✅ **Feito** — domínio comprado |
-| 2 | **GitHub** | [github.com/signup](https://github.com/signup) | [github.com](https://github.com) | seção 4 | ⬜ Criar repo `online-portfolio` |
+| 2 | **GitHub** | [github.com/signup](https://github.com/signup) | [github.com](https://github.com) | seção 4 | ✅ Repo `online-portfolio` + Actions |
 | 3 | **Linear** | [linear.app/signup](https://linear.app/signup) | [linear.app](https://linear.app) | seção 5 | ✅ Backlog importado |
 | 4 | **Supabase** | [supabase.com/dashboard](https://supabase.com/dashboard) | [Dashboard](https://supabase.com/dashboard) | seção 6 | ✅ `online-portfolio-db-prod` + opcional `online-portfolio-db-dev` |
-| 5 | **Render** | [dashboard.render.com/register](https://dashboard.render.com/register) | [Render](https://dashboard.render.com) | seção 7 | ✅ API prod (`*.onrender.com`; domínio custom → DEV-011) |
-| 6 | **Resend** | [resend.com/signup](https://resend.com/signup) | [Resend](https://resend.com/domains) | seção 8 | ✅ conta + API key + Render env (DEV-014) |
-| 7 | **Vercel** | [vercel.com/signup](https://vercel.com/signup) | [Vercel](https://vercel.com/dashboard) | seção 9 | ✅ `online-portfolio-web`; domínios → DEV-011 |
+| 5 | **Render** | [dashboard.render.com/register](https://dashboard.render.com/register) | [Render](https://dashboard.render.com) | seção 7 | ✅ API prod + `api.onlineportfolio.com.br` |
+| 6 | **Resend** | [resend.com/signup](https://resend.com/signup) | [Resend](https://resend.com/domains) | seção 8 | ✅ domínio verificado + `mail@` no Render |
+| 7 | **Vercel** | [vercel.com/signup](https://vercel.com/signup) | [Vercel](https://vercel.com/dashboard) | seção 9 | ✅ `online-portfolio-web` + domínios prod |
 | 8 | **Google Workspace** | [workspace.google.com](https://workspace.google.com/) | [Admin](https://admin.google.com) | seção 14 | ⏸️ Depois do lançamento |
 | 9 | **Stripe** | [dashboard.stripe.com/register](https://dashboard.stripe.com/register) | [Stripe](https://dashboard.stripe.com) | seção 13 | ⏸️ **Opcional** — só se/quando cobrar |
 
@@ -120,8 +120,8 @@ Siga esta ordem para evitar dependências circulares. As seções **3–9** dest
 | 5 | **Render** | Conta + web service (após DEV-001) | seção 7 |
 | 6 | **Resend** | Conta + API key | seção 8 |
 | 7 | **Vercel** | Conta + projeto Nuxt (após DEV-001) | seção 9 |
-| 8 | **DNS** | NS Vercel, `api.`, DKIM Resend | seção 10 |
-| 9 | **GitHub Actions** | Workflows + secrets | seção 4.3 |
+| 8 | **DNS** | NS Vercel, `api.`, DKIM/DMARC Resend | seção 10 | ✅ DEV-011 |
+| 9 | **GitHub Actions** | Workflows + secrets | seção 4.3 | ✅ CI + deploy (DEV-006/007/007b) |
 | — | **Por tenant** | Domínio custom do artista | seção 12 |
 | — | **Stripe** | Cobrança — **opcional, não agora** | seção 13 |
 | — | **Google Workspace** | Inbox operador — **futuro** | seção 14 |
@@ -136,7 +136,7 @@ Siga esta ordem para evitar dependências circulares. As seções **3–9** dest
 
 ### 3.1 Domínio `onlineportfolio.com.br`
 
-**Status:** ✅ **Registrado** — titular ativo no Registro.br. DNS de produção → seção 10 (após Render + Vercel).
+**Status:** ✅ **Registrado** — titular ativo no Registro.br. DNS de produção na Vercel (NS `ns1`/`ns2.vercel-dns.com`) — DEV-011 ✅.
 
 | Item | Valor |
 |---|---|
@@ -145,8 +145,8 @@ Siga esta ordem para evitar dependências circulares. As seções **3–9** dest
 | **Painel** | [registro.br/login](https://registro.br/login/) |
 | **Renovação** | ~R$ 40/ano (Pix, boleto ou cartão) |
 | **Titular** | Seu CPF/CNPJ — não transfere para Vercel |
-| **DNS agora** | Pode manter DNS padrão Registro.br até deploy |
-| **DNS no deploy** | Nameservers Vercel — seção 10 |
+| **DNS agora** | ✅ Nameservers Vercel (`ns1`/`ns2.vercel-dns.com`) |
+| **DNS no deploy** | ✅ Concluído — seção 10 |
 
 | Check | Result |
 |---|---|
@@ -158,7 +158,7 @@ Siga esta ordem para evitar dependências circulares. As seções **3–9** dest
 - [x] Domínio `onlineportfolio.com.br` com status **Ativo** / **Publicado**
 - [ ] Anotar data de expiração / renovação automática
 - [ ] Guardar login Registro.br no password manager
-- [ ] DNS: deixar padrão **ou** apontar NS Vercel no deploy (seção 10)
+- [x] DNS: nameservers → Vercel (`ns1`/`ns2.vercel-dns.com`) — DEV-011
 
 #### Referências Registro.br
 
@@ -185,8 +185,8 @@ Siga esta ordem para evitar dependências circulares. As seções **3–9** dest
 |---|---|
 | **Agora (pós-compra)** | Confirmar **Ativo** no painel; guardar credenciais; opcional: criar contas GitHub, Linear, Supabase |
 | **Epic 0 (DEV-001)** | Push monorepo no GitHub |
-| **Deploy** | Nameservers Vercel + domínios (seção 10) |
-| **Pós-deploy** | Resend DKIM na Vercel DNS (seção 10.4) |
+| **Deploy** | ✅ Nameservers Vercel + domínios (seção 10) |
+| **Pós-deploy** | ✅ Resend DKIM/DMARC + `mail@` na Vercel DNS (seção 10.4) |
 
 #### Registro.br + Vercel nameservers (titular continua no Registro.br)
 
@@ -235,10 +235,10 @@ All providers accept `.com.br` and subdomains.
 
 ### 4.1 Repository
 
-- [ ] Code hosted on GitHub
-- [ ] Branch protection on `main` (recommended)
-- [ ] Vercel connected — PR previews on; **production auto-deploy off**
-- [ ] Render connected — **After CI Checks Pass** + root `backend` (seção 4.6) — DEV-007 ✅ After CI; confirmar root `backend`
+- [x] Code hosted on GitHub
+- [x] Branch protection on `main` (recommended)
+- [x] Vercel connected — PR previews on; **production auto-deploy off**
+- [x] Render connected — **After CI Checks Pass** + root `backend` (seção 4.6)
 
 ### 4.2 GitHub Actions secrets
 
@@ -561,7 +561,7 @@ Set in **Environment → Environment Variables** (or `render.yaml`):
 | `Supabase__Url` | `https://[ref].supabase.co` (Storage, Fase 3+) | No |
 | `Supabase__ServiceRoleKey` | Supabase service role | Yes |
 | `Resend__ApiKey` | Resend API token (`re_...`) | Yes |
-| `Resend__FromEmail` | `noreply@onlineportfolio.com.br` | No |
+| `Resend__FromEmail` | `mail@onlineportfolio.com.br` | No |
 | `Resend__FromName` | Your platform name | No |
 
 **Render UI:** após salvar, valores ficam mascarados (ícone de **olho** para revelar). Não há toggle separado de “secret” no painel atual — mesmo assim, trate `Resend__ApiKey`, `Jwt__Secret`, connection strings e `service_role` como credenciais: password manager + nunca no git.
@@ -575,16 +575,16 @@ Set in **Environment → Environment Variables** (or `render.yaml`):
 - [x] **After CI Checks Pass** enabled
 - [x] Health check returns 200 at `/health` (`*.onrender.com`)
 - [x] All env vars set (DB pooler, `Jwt__*`, `Resend__*`, `ASPNETCORE_*`)
-- [ ] Custom domain `api.onlineportfolio.com.br` verified + HTTPS (DEV-011)
+- [x] Custom domain `api.onlineportfolio.com.br` verified + HTTPS (DEV-011)
 - [x] Logs visible in Render dashboard
-- [ ] Test: `GET https://api.onlineportfolio.com.br/health` (após DEV-011)
+- [x] Test: `GET https://api.onlineportfolio.com.br/health` → Healthy (DEV-011)
 - [ ] Test: public API endpoint returns data
 
 ---
 
 ## 8. Resend (Email)
 
-**Decisão v1:** `noreply@onlineportfolio.com.br` — só envio (contato, convites). Sem caixa postal. Ver [ADR-017](./ADR-017-resend-transactional-email.md) (substitui SendGrid — fim do free tier permanente em mai/2025).
+**Decisão v1:** `mail@onlineportfolio.com.br` — só envio (contato, convites). Sem caixa postal; **Reply-To** para respostas. Ver [ADR-017](./ADR-017-resend-transactional-email.md) (substitui SendGrid — fim do free tier permanente em mai/2025).
 
 | | |
 |---|---|
@@ -601,7 +601,7 @@ Set in **Environment → Environment Variables** (or `render.yaml`):
 | Incluído | Fora do v1 |
 |---|---|
 | Formulário de contato, convites | Caixa postal / MX |
-| `noreply@onlineportfolio.com.br` | Resend no frontend |
+| `mail@onlineportfolio.com.br` | Resend no frontend |
 | Templates em `EmailTemplates/` (repo) | Editor visual no painel |
 
 ### 8.2 API key (DEV-014)
@@ -615,7 +615,7 @@ Set in **Environment → Environment Variables** (or `render.yaml`):
 | Render env | Valor |
 |---|---|
 | `Resend__ApiKey` | `re_...` (sensível — mascarada no Render) |
-| `Resend__FromEmail` | `noreply@onlineportfolio.com.br` |
+| `Resend__FromEmail` | `mail@onlineportfolio.com.br` |
 | `Resend__FromName` | Online Portfolio |
 
 Equivalente local: secção `Resend` em `appsettings.Development.json` ou `Resend__*` via env (ver `backend/OnlinePortfolio.Api/appsettings.json`).
@@ -654,7 +654,7 @@ Console.WriteLine(resp);
 $env:Resend__ApiKey = "re_xxxxxxxxx"   # colar do password manager
 ```
 
-4. Após **DEV-011:** trocar `From` para `Online Portfolio <noreply@onlineportfolio.com.br>`.
+4. Após **DEV-011** (domínio verificado), smoke test com domínio próprio — ver seção 8.6.
 
 Referência produção (DI no `Program.cs` — implementação em DEV-107):
 
@@ -665,20 +665,60 @@ builder.Services.Configure<ResendClientOptions>(o =>
 builder.Services.AddTransient<IResend, ResendClient>();
 ```
 
+### 8.6 Smoke test — domínio verificado (após DEV-011)
+
+Valida DKIM/SPF/DMARC + remetente `mail@`. Pode usar Insomnia, curl ou o SDK.
+
+**HTTP** — `POST https://api.resend.com/emails` (sem barra final no URL)
+
+| Header | Valor |
+|---|---|
+| `Authorization` | `Bearer re_...` |
+| `Content-Type` | `application/json` |
+
+**Body (exemplo):**
+
+```json
+{
+  "from": "Online Portfolio <mail@onlineportfolio.com.br>",
+  "to": ["seu-email@exemplo.com"],
+  "reply_to": "seu-email@exemplo.com",
+  "subject": "hello world",
+  "html": "<p>it works!</p>"
+}
+```
+
+- `reply_to`: email que você lê (operador v1) — o botão **Responder** no cliente de email vai para este endereço, não para `mail@`.
+- Formulário de contato (DEV-107): `reply_to` = email do **visitante** (artista responde direto).
+- Painel Resend → **Emails** → status **Delivered**.
+
+**SDK .NET** (equivalente):
+
+```csharp
+await resend.EmailSendAsync(new EmailMessage()
+{
+    From = "Online Portfolio <mail@onlineportfolio.com.br>",
+    To = "seu-email@exemplo.com",
+    ReplyTo = "seu-email@exemplo.com",
+    Subject = "hello world",
+    HtmlBody = "<p>it works!</p>",
+});
+```
+
 ### 8.3 Domínio e remetente
 
-- **DEV-011 (prod):** adicionar domínio no Resend → copiar registros DNS → Vercel DNS (seção 10.4)
+- **DEV-011 (prod):** domínio verificado no Resend — registros DNS na Vercel (seção 10.4), incluindo `_dmarc`; remetente `mail@` no Render
 - Até DKIM verificado: testes com domínio de onboarding Resend ou key de dev (não usar em prod)
-- `noreply@` não tem inbox — não usar Single Sender com endereço sem caixa
+- `mail@` não tem inbox no v1 — sempre definir **Reply-To** quando resposta fizer sentido
 
 ### 8.4 Resend checklist
 
 - [x] Conta Resend criada
 - [x] API key `portfolio-api-prod` criada
 - [x] API key no password manager
-- [x] `Resend__*` no Render
-- [ ] Smoke test enviado (seção 8.5)
-- [ ] Domínio `onlineportfolio.com.br` verificado (DEV-011)
+- [x] `Resend__*` no Render (`Resend__FromEmail` = `mail@onlineportfolio.com.br`)
+- [x] Smoke test enviado com domínio verificado (seção 8.6)
+- [x] Domínio `onlineportfolio.com.br` verificado (DEV-011)
 - [ ] `IEmailService` + `ResendEmailService` (DEV-107)
 
 ---
@@ -732,7 +772,39 @@ Domínios custom por artista → seção 12.
 - [x] Production auto-deploy **off** (`Only build pre-production`; prod via `deploy-frontend.yml` — DEV-007b)
 - [x] `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` no password manager
 - [x] Mesmos três secrets em **GitHub Actions** (DEV-007b)
-- [ ] Domínios custom + `NUXT_API_INTERNAL_BASE` → `api.` (DEV-011)
+- [x] Domínios custom + `NUXT_API_INTERNAL_BASE` → `https://api.onlineportfolio.com.br` (DEV-011)
+- [ ] Web Analytics habilitado no painel + código [DEV-110](./BACKLOG.md#dev-110--vercel-web-analytics) (opcional; domínios prod ✅)
+
+### 9.5 Web Analytics (opcional — DEV-110)
+
+Métricas agregadas de page views no painel Vercel — **não** substitui error tracking (Sentry etc.).
+
+| | |
+|---|---|
+| **Docs** | [vercel.com/docs/analytics](https://vercel.com/docs/analytics) |
+| **Pacote** | `@vercel/analytics` + módulo Nuxt |
+| **Quando** | Domínios prod ✅ — ideal com sites públicos no ar (Epic 1) |
+| **Prioridade** | P2 — opcional |
+
+**Habilitar no painel**
+
+1. Vercel → projeto `online-portfolio-web` → **Analytics** → **Enable Web Analytics**
+2. No repo (DEV-110): `npm i @vercel/analytics` em `frontend/`
+3. `nuxt.config.ts`: `modules: ['@vercel/analytics']`
+4. **Plugin condicional:** carregar analytics **apenas** se `surface === 'platform'` ou `surface === 'tenant'` — **não** em `app.*` (admin/login), alinhado a [ADR-018](./ADR-018-frontend-ui-motion-stack.md)
+5. Deploy prod: `deploy-frontend.yml` (ou **Run workflow**)
+6. Validar: navegar entre páginas em `onlineportfolio.com.br` ou `{slug}.` → dados no painel (~30s)
+
+**Limitações v1**
+
+| Item | Nota |
+|---|---|
+| Separação por tenant | Painel Vercel agrega o deployment; usar filtro por host/URL manualmente |
+| Admin | Excluir `app.*` no código — evita inflar métricas com uso do operador |
+| LGPD | Sites públicos de artistas → política de privacidade quando houver clientes reais |
+| Adblock | Pode subcontar visitantes |
+
+**Não confundir com:** Speed Insights (Core Web Vitals) — outro produto Vercel; adotar só se houver ticket separado.
 
 ---
 
@@ -781,14 +853,17 @@ Na **Vercel DNS** (sem MX para caixa postal — só envio):
 
 1. Resend → **Domains** → Add `onlineportfolio.com.br`
 2. Copiar registros exatos do painel (DKIM, SPF — valores gerados por conta)
-3. Adicionar na Vercel DNS conforme indicado (ex.: `resend._domainkey`, subdomínio `send`, etc.)
+3. Adicionar na Vercel DNS conforme indicado (ex.: `resend._domainkey`, subdomínio `send`, `_dmarc`, etc.)
 4. **Verify DNS Records** no Resend
+
+**TTL na Vercel:** ao criar ou editar registro manualmente, deixar **TTL = Auto** (padrão da Vercel ≈ 60s). Se a integração Resend→Vercel criou registros com `3600`, edite cada um (⋯ → Edit) e troque TTL para **Auto**. Não é obrigatório mudar se o domínio já está Verified — só alinha com a recomendação da Vercel/Resend.
 
 | Tipo típico | Notas |
 |---|---|
 | `TXT` / `CNAME` DKIM | Ex.: `resend._domainkey` — valor exato do painel |
 | `TXT` SPF | Subdomínio `send` (ou conforme Resend) |
 | `MX` (bounce) | Se Resend indicar para o subdomínio de envio |
+| `TXT` `_dmarc` | Ex.: `v=DMARC1; p=none; rua=mailto:seu-email@...` — ver [Resend DMARC](https://resend.com/docs/dashboard/domains/dmarc). **Obrigatório** para boa entrega em prod. |
 
 Não reutilizar registros DNS de outros provedores (ex. `sendgrid.net`) — usar só os gerados pelo Resend. Ver [ADR-017](./ADR-017-resend-transactional-email.md).
 
@@ -908,7 +983,7 @@ Artista → Checkout → webhook → API .NET → Postgres (subscription) → li
 
 | | Resend (v1) | Google Workspace (futuro) |
 |---|---|---|
-| **Função** | App **envia** (`noreply@`, contato, convites) | Você **lê/responde** |
+| **Função** | App **envia** (`mail@`, contato, convites) | Você **lê/responde** |
 | **Caixa postal** | Não | Sim |
 | **Custo** | Free tier (100/dia) | ~US$ 6–7/usuário/mês |
 

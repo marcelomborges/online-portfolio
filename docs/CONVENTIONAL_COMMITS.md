@@ -99,7 +99,7 @@ build(docker): add multi-stage Dockerfile for API
 ```text
 feat(db): add initial migration for tenants and Identity tables
 
-chore(infra): document Resend noreply sender setup
+chore(infra): document Resend mail@ sender setup
 ```
 
 ### Breaking changes

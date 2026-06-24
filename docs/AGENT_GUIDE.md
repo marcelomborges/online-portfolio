@@ -19,7 +19,7 @@ Instructions for **Cursor**, **GitHub Copilot**, **Copilot coding agent**, and o
 ## Repository status
 
 - **Layout:** **monorepo** — `frontend/` (Nuxt 3) + `backend/` (ASP.NET Core); see root [README.md](../README.md).
-- **Phase:** Epic 0 in progress — CI PR (DEV-006) ✅, deploy pipelines (DEV-007/007b) ✅; DNS prod (DEV-011) next.
+- **Phase:** Epic 0 — CI PR (DEV-006) ✅, deploy pipelines (DEV-007/007b) ✅, DNS prod (DEV-011) ✅; Epic 1.5 next.
 - Do **not** create separate Git repos for front/back unless the user explicitly changes this.
 - **Domain:** `onlineportfolio.com.br` (Registro.br).
 - Before coding, read BACKLOG **Suggested implementation order** — do not skip Epic 0 / 1.5 foundations.
@@ -109,7 +109,7 @@ chore(security): add rate limit to contact endpoint
 | **Supabase connections** | Local = `localhost`. Prod runtime = Transaction pooler `:6543`. Prod migrate (CI) = Session pooler `:5432`. **No** direct `db.*.supabase.co` in repo/secrets. |
 | **Admin host** | Login only at `app.onlineportfolio.com.br` — not on `{slug}.` subdomains. |
 | **Public hosts** | `{slug}.onlineportfolio.com.br` = tenant landing + posts/gallery. |
-| **Email v1** | Resend `noreply@` — send only, no mailbox. [ADR-017](./ADR-017-resend-transactional-email.md). No Google Workspace in v1. |
+| **Email v1** | Resend `mail@onlineportfolio.com.br` — send only, no mailbox; Reply-To para respostas. [ADR-017](./ADR-017-resend-transactional-email.md). No Google Workspace in v1. |
 | **Uploads v1** | Through API multipart (Phase 3). Exception: public `<img>` CDN URLs. |
 | **Tenant isolation** | `TenantId` on tenant data; EF filters + API checks; never trust `TenantId` from request body alone. |
 
@@ -228,15 +228,15 @@ online-portfolio/
 ├── docker-compose.yml
 ├── AGENTS.md
 └── .github/
-    └── workflows/       # ci-backend, ci-frontend (+ deploy-* planned)
+    └── workflows/       # ci-backend, ci-frontend, deploy-backend, deploy-frontend
 ```
 
 ---
 
 ## Implementation order (summary)
 
-1. **Epic 0** — monorepo, Docker, CI skeleton (DEV-001…)
-2. **Epic 1.5** — DB + Identity + login + add user (DEV-150…162) — **before** public gallery admin features
+1. **Epic 0** ✅ — monorepo, Docker, CI/deploy, DNS prod, Resend `mail@` (DEV-001…011)
+2. **Epic 1.5** ← **atual** — DB + Identity + login + add user (DEV-150…162)
 3. **Epic 1** — public tenant sites (DEV-101…105)
 4. **Epic 3** — uploads via API
 

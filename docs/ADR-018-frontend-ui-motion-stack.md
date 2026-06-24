@@ -124,6 +124,16 @@ plugins/tenant-motion.client.ts     → registrar Lenis/GSAP só se surface=tena
 - Evitar animar `width`/`height`; preferir `transform` e `opacity`
 - Medir LCP no hero — WebGL não pode bloquear first paint
 
+### Analytics (Vercel Web Analytics — DEV-110)
+
+| Superfície | `@vercel/analytics` |
+|---|---|
+| Admin / login (`app.*`) | ❌ Não carregar |
+| Platform (apex) | ✅ Sim |
+| Tenant público (`{slug}.*`) | ✅ Sim |
+
+Runbook: [EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 9.5 · [BACKLOG DEV-110](./BACKLOG.md#dev-110--vercel-web-analytics).
+
 ---
 
 ## Alternativas rejeitadas

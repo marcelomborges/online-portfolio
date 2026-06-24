@@ -52,7 +52,7 @@ feat(backend): add POST /api/v1/auth/login with Identity JWT
 
 fix(frontend): redirect unauthenticated users to /login on app host
 
-docs: document Identity completo and Resend noreply strategy
+docs: document Identity completo and Resend mail@ sender strategy
 
 ci: run EF migrations on Supabase direct connection in deploy workflow
 

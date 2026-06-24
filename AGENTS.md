@@ -24,11 +24,11 @@ Cursor: `.cursor/rules/security-first.mdc` · GitHub: `.github/instructions/secu
 | Tasks (DEV-xxx) | [docs/BACKLOG.md](docs/BACKLOG.md) |
 | Commits | [docs/CONVENTIONAL_COMMITS.md](docs/CONVENTIONAL_COMMITS.md) |
 | Git flow & CI | [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md) |
-| Supabase/Vercel/Render | [docs/EXTERNAL_PROVIDERS.md](docs/EXTERNAL_PROVIDERS.md) |
+| Supabase/Vercel/Render | [docs/EXTERNAL_PROVIDERS.md](docs/EXTERNAL_PROVIDERS.md) (Vercel Analytics → seção 9.5 / DEV-110) |
 
 ## Repository status
 
-Epic 0 in progress — monorepo, Docker, **CI PR** (`ci-backend`, `ci-frontend`, coverage comments). Deploy pipelines: DEV-007+.
+Epic 0 foundation done — monorepo, Docker, **CI PR** (`ci-backend`, `ci-frontend`, coverage comments), deploy pipelines (DEV-007/007b), DNS prod (DEV-011). Next: Epic 1.5 (login MVP).
 
 ## Non-negotiables
 
@@ -37,7 +37,7 @@ Epic 0 in progress — monorepo, Docker, **CI PR** (`ci-backend`, `ci-frontend`,
 2. **Auth** — ASP.NET Identity completo + JWT; roles in `AspNetRoles`; admin at `app.{domain}` only.
 3. **No Supabase Auth** in frontend.
 4. **Multi-tenant** — row isolation via `TenantId`; PlatformAdmin only adds users in v1.
-5. **Email** — Resend `noreply@` transactional only (no inbox v1). See [docs/ADR-017-resend-transactional-email.md](docs/ADR-017-resend-transactional-email.md).
+5. **Email** — Resend `mail@onlineportfolio.com.br` transactional only (no inbox v1; use Reply-To). See [docs/ADR-017-resend-transactional-email.md](docs/ADR-017-resend-transactional-email.md).
 6. **Commits** — [Conventional Commits](docs/CONVENTIONAL_COMMITS.md); commit/push only when user asks.
 7. **Scope** — implement BACKLOG acceptance criteria; minimal diff; PT-BR in product docs.
 8. **Git/CI** — workflows separados; CI PR + coverage comments on PR; deploy **prod only** ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)) — [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md).

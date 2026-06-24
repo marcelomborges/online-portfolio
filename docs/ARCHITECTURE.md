@@ -166,16 +166,16 @@ Operador    →  app.../platform/tenants        →  cria tenants, convida usuá
 
 **Auth:** ASP.NET Identity **completo** + JWT na API — sem Supabase Auth no browser. Ver seção 9.
 
-### Email v1 — Resend `noreply@` (só envio, sem caixa postal)
+### Email v1 — Resend `mail@` (só envio, sem caixa postal)
 
 **Decisão:** envio transacional via **Resend** ([ADR-017](./ADR-017-resend-transactional-email.md)). **Não** configurar caixa postal, MX para receber, Google Workspace nem email no Registro.br.
 
 | Item | v1 |
 |---|---|
-| **Remetente** | `noreply@onlineportfolio.com.br` |
+| **Remetente** | `mail@onlineportfolio.com.br` |
 | **Provedor** | Resend (free tier — 3.000 emails/mês, máx. 100/dia) |
 | **Quem envia** | API .NET (server-side) |
-| **Caixa postal** | **Nenhuma** — `noreply@` não recebe respostas |
+| **Caixa postal** | **Nenhuma** — `mail@` não recebe respostas no v1 |
 | **Registro.br** | Só registro do domínio; sem servidor de email |
 
 **O que o Resend envia no v1:**
@@ -188,7 +188,7 @@ Operador    →  app.../platform/tenants        →  cria tenants, convida usuá
 
 **Importante:**
 
-- `noreply@` é **identidade de envio**, não inbox. Respostas do visitante no contato usam **Reply-To** (email do visitante ou do tenant), não uma caixa `@onlineportfolio.com.br`.
+- `mail@` é **identidade de envio**, não inbox. Respostas usam **Reply-To** (visitante no contato; operador em convites/notificações), não uma caixa `@onlineportfolio.com.br`.
 - Autenticação do domínio (SPF/DKIM) na **Vercel DNS** melhora entrega — ver [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 - Quando precisar **ler** email no domínio (`hello@`, `marcelo@`), aí sim Google Workspace ou similar — ver abaixo.
 
@@ -206,7 +206,7 @@ Operador    →  app.../platform/tenants        →  cria tenants, convida usuá
 
 | Sistema | Função | Quando |
 |---|---|---|
-| **Resend** | App **envia** (`noreply@`, contato, convites) | v1 |
+| **Resend** | App **envia** (`mail@`, contato, convites) | v1 |
 | **Google Workspace** | Você **lê/responde** no domínio | futuro |
 
 Resend (SPF/DKIM) e Google (MX) podem coexistir no mesmo domínio quando o Workspace for configurado. No v1, **só Resend**.
@@ -283,7 +283,7 @@ Provider acceptance of `.com.br` and subdomains: **yes** — TLD is not a blocke
 | Database | PostgreSQL | Supabase | Access only via EF Core |
 | File storage | Supabase Storage | Supabase | Image uploads; not on Render disk |
 | Auth | ASP.NET Identity **completo** + JWT | API (.NET) | Roles, stores e token providers padrão; Supabase = DB + Storage |
-| Email (app) | Resend | Resend (free) | `noreply@` — só envio transacional; sem caixa postal |
+| Email (app) | Resend | Resend (free) | `mail@` — só envio transacional; Reply-To; sem caixa postal |
 | Email (operador) | Google Workspace | Google (depois) | Inbox humano — **não v1** |
 | PDF | QuestPDF | NuGet in API (no extra host) | Portfolio catalog export; API generates |
 | CI/CD | GitHub Actions + Vercel/Render deploy | GitHub (orchestrator) | See seção 15 |
@@ -421,6 +421,7 @@ Browser → {tenant-host}/api/...  (Nuxt server route)
 - Wildcard DNS for subdomains: `*.onlineportfolio.com.br`
 - Custom domains added per tenant (manual initially, Vercel Domains API later)
 - Check plan limits on number of domains per project
+- **Web Analytics (opcional):** [DEV-110](./BACKLOG.md#dev-110--vercel-web-analytics) — `@vercel/analytics` só em superfícies `platform` + `tenant`; não em `app.*` admin
 
 ### ADR-016: Três superfícies e UI por tenant
 
@@ -822,7 +823,7 @@ List endpoints paginated from v1.
 
 ### Decisão v1
 
-**Resend + `noreply@onlineportfolio.com.br` — apenas envio.** Sem caixa postal, sem MX para receber, sem Google Workspace no início.
+**Resend + `mail@onlineportfolio.com.br` — apenas envio.** Sem caixa postal, sem MX para receber, sem Google Workspace no início. Respostas via **Reply-To**.
 
 Ver decisão completa: [ADR-017](./ADR-017-resend-transactional-email.md).
 
@@ -831,7 +832,7 @@ A API envia todo email transacional; o frontend nunca guarda a API key do Resend
 | Config (Render) | Valor |
 |---|---|
 | `Resend__ApiKey` | server only (API token `re_...`) |
-| `Resend__FromEmail` | `noreply@onlineportfolio.com.br` |
+| `Resend__FromEmail` | `mail@onlineportfolio.com.br` |
 | `Resend__FromName` | Online Portfolio |
 
 Inbox operador (`hello@`, etc.) → [seção 2 — Google Workspace depois](#caixa-postal-operador-google-workspace--depois).
@@ -844,11 +845,11 @@ Inbox operador (`hello@`, etc.) → [seção 2 — Google Workspace depois](#cai
 | **Convite de usuário** | Phase 1.5 | Resend com link accept-invite |
 | **Notificações da plataforma** | Depois | Billing, domínio verificado, etc. |
 
-### O que `noreply@` **não** é
+### O que `mail@` **não** é
 
-- **Não** é caixa postal — ninguém lê `noreply@`.
+- **Não** é caixa postal — ninguém lê `mail@` no v1.
 - **Não** precisa de MX no Registro.br/Vercel para **receber** mail.
-- Respostas ao contato vão para o email do artista ou via Reply-To, não para `noreply@`.
+- Respostas ao contato vão para o email do artista via Reply-To (visitante); convites usam Reply-To do operador.
 
 ### Contact form flow
 
@@ -867,7 +868,7 @@ Messages are **not stored in the database** by default (email-only). Add a `Cont
 
 - **3.000 emails/mês**, máx. **100/dia** — free tier permanente (suficiente para contato + convites no início)
 - **1 domínio** verificado no free tier
-- Verificar domínio `onlineportfolio.com.br` (DKIM/SPF) — [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 10.4 · DEV-011
+- Domínio `onlineportfolio.com.br` **verificado** em prod (DKIM/SPF/DMARC — DEV-011 ✅)
 - Templates em `EmailTemplates/` (Razor ou HTML) — versionados no repo
 
 ### Implementation (backend)
@@ -882,7 +883,7 @@ Messages are **not stored in the database** by default (email-only). Add a `Cont
 
 - API key de dev no password manager; smoke test com `onboarding@resend.dev` ([EXTERNAL_PROVIDERS](./EXTERNAL_PROVIDERS.md) seção 8.5)
 - Ou log do payload em `Development` sem enviar
-- Domínio `onlineportfolio.com.br` obrigatório em prod (DEV-011)
+- Domínio `onlineportfolio.com.br` verificado em prod — remetente `mail@onlineportfolio.com.br` (DEV-011 ✅)
 
 ### ADR-017: Email transacional via Resend
 
@@ -1537,7 +1538,7 @@ Supabase__ServiceRoleKey=...                           # server only
 ASPNETCORE_ENVIRONMENT=Production
 Cors__AllowedOrigins=                                  # optional if all traffic via Nuxt proxy
 Resend__ApiKey=re_....                               # server only; invites + contact
-Resend__FromEmail=noreply@onlineportfolio.com.br
+Resend__FromEmail=mail@onlineportfolio.com.br
 Resend__FromName=Online Portfolio
 ```
 
@@ -1562,7 +1563,7 @@ Use `frontend/.env.example` for Nuxt; backend config via `appsettings` / Render 
 | Subdomain vs path fallback | `ana.onlineportfolio.com.br` vs `onlineportfolio.com.br/ana` | Subdomain recommended |
 | Self-serve signup | Manual vs automated | Manual for first customers |
 | Contact message history | Email only vs store in DB | Email only for v1 (Resend) |
-| Operator inbox | Google Workspace | **Decidido** — fora do v1; v1 = só Resend `noreply@` |
+| Operator inbox | Google Workspace | **Decidido** — fora do v1; v1 = só Resend `mail@` + Reply-To |
 | Global `.com` domain | `onlineportfolio.com` taken | Revisit alternative `.com` later if expanding internationally |
 | CI/CD approach | GitHub Actions orchestrator | **Decidido** — see seção 15 |
 | Ambientes deployados | Prod only vs prod + staging | **Decidido** — [ADR-015](#adr-015-deploy-somente-em-production); staging deployado **fora do v1** |
@@ -1650,7 +1651,7 @@ API:            api.onlineportfolio.com.br (via proxy Nuxt)       →  Render
 Database:       Supabase PostgreSQL                               →  EF Core only
 Files:          Supabase Storage                                  →  tenants/{tenantId}/...
 Auth:           ASP.NET Identity completo + JWT na API           →  Supabase = DB + Storage
-Email (app):    Resend + noreply@ (só envio)                    →  contato + convites
+Email (app):    Resend + mail@ (só envio; Reply-To)              →  contato + convites
 Email (ops):    Google Workspace (depois)                         →  caixa postal
 PDF:            QuestPDF                                          →  catálogo via API
 Domain:         onlineportfolio.com.br (Registro.br)

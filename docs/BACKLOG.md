@@ -6,11 +6,13 @@ Detailed activity list for building the multi-tenant artist portfolio SaaS.
 
 **Related:** [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · [docs/FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md) · [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) · [docs/DATABASE.md](./DATABASE.md)
 
-**Frontend (superfícies + UI por tenant):** [docs/ARCHITECTURE.md](./ARCHITECTURE.md) — não exige ticket novo; escopo distribuído em DEV-005, DEV-104, DEV-105, DEV-109 e Epic 1.5 (DEV-155–158).
+**Frontend (superfícies + UI por tenant):** [docs/ARCHITECTURE.md](./ARCHITECTURE.md) — escopo em DEV-005, DEV-104, DEV-105, DEV-109, [DEV-110](#dev-110--vercel-web-analytics) e Epic 1.5 (DEV-155–158).
 
-**Domínio da plataforma:** `onlineportfolio.com.br` — ✅ registrado (Registro.br)
+**Domínio da plataforma:** `onlineportfolio.com.br` — ✅ registrado + **prod live** (apex, `app.`, `api.`, wildcard `*.`, Resend DKIM/DMARC)
 
 **Mapa de domínios:** [docs/ARCHITECTURE.md](./ARCHITECTURE.md) — site público por tenant (`ana.`, `mark.`), admin padronizado em `app.`, BFF via Nuxt → API .NET.
+
+**Fase atual:** Epic 0 ✅ concluído — próximo: **Epic 1.5** (login MVP em `app.`).
 
 ---
 
@@ -81,7 +83,9 @@ Uma ou mais frases: o quê, por quê, links para runbooks/ADRs.
 
 ---
 
-## Epic 0 — Foundation & tooling
+## Epic 0 — Foundation & tooling ✅
+
+**Status:** concluído (2026-06-23) — monorepo, Docker, CI/deploy Actions, Supabase prod, API Render, Vercel, DNS/HTTPS, Resend `mail@`. **Próximo:** [Epic 1.5](#epic-15--multi-tenant-db--admin-login--add-user-mvp).
 
 ### Provider setup index
 
@@ -93,10 +97,10 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 | 2 | GitHub | [DEV-012](#dev-012--github-repository--platform-integrations) | ✅ Done |
 | 3 | Linear | [DEV-013](#dev-013--linear-workspace) | ✅ Done |
 | 4 | Supabase | [DEV-008](#dev-008--supabase-production-project) · [DEV-008b](#dev-008b--supabase-dev-project) | ✅ prod (`online-portfolio-db-prod`); dev opcional |
-| 5 | Render | [DEV-009](#dev-009--render-api-deployment) | ✅ Done — API prod `*.onrender.com` |
-| 6 | Resend | [DEV-014](#dev-014--resend-account--api-key) → [DEV-107](#dev-107--contact-form--resend) | ✅ conta + Render env; código Epic 1 |
+| 5 | Render | [DEV-009](#dev-009--render-api-deployment) | ✅ Done — `api.onlineportfolio.com.br` |
+| 6 | Resend | [DEV-014](#dev-014--resend-account--api-key) → [DEV-107](#dev-107--contact-form--resend) | ✅ conta + domínio verificado + `mail@` no Render; código → Epic 1 |
 | 7 | Vercel | [DEV-010](#dev-010--vercel-frontend-deployment) | ✅ Done — `online-portfolio-web` |
-| 8 | DNS + email DNS | [DEV-011](#dev-011--dns--https-production) | Após Render + Vercel |
+| 8 | DNS + email DNS | [DEV-011](#dev-011--dns--https-production) | ✅ Done — apex/`app.`/`api.` + Resend DKIM/DMARC |
 | 9 | GitHub Actions | [DEV-006](#dev-006--github-actions-ci-pr--workflows-separados) ✅ · [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) ✅ · [DEV-007b](#dev-007b--github-actions-deploy-pipeline-frontend) ✅ | ✅ CI + deploy backend + frontend |
 | — | Google Workspace | [DEV-404](#dev-404--google-workspace-operator-inbox) | Opcional, pós-lançamento |
 | — | Stripe / billing | [DEV-403](#dev-403--billing--subscriptions-optional--skip-until-charging) | **Opcional** — skip no v1 |
@@ -106,13 +110,13 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 ### DEV-000 — Register domain ✅
 
 **Descrição:**
-Register `onlineportfolio.com.br` at Registro.br. DNS configuration deferred until [DEV-011](#dev-011--dns--https-production). Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
+Register `onlineportfolio.com.br` at Registro.br. DNS de produção configurado em [DEV-011](#dev-011--dns--https-production). Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
 
 **Critérios de aceitação:**
 - [x] Domain status **Ativo** in Registro.br panel
 - [ ] Renewal date noted; renewal reminder configured
 - [ ] Titular (CPF/CNPJ) and login credentials saved securely (password manager)
-- [ ] DNS left at Registro.br default until deploy (DEV-011)
+- [x] DNS: nameservers Registro.br → Vercel (`ns1`/`ns2.vercel-dns.com`) — [DEV-011](#dev-011--dns--https-production)
 
 **Observações:**
 - **Phase:** 0 — Foundation
@@ -182,7 +186,7 @@ ASP.NET Core Web API with health check, Swagger, Serilog, global exception handl
 
 ---
 
-### DEV-004 — EF Core + PostgreSQL setup
+### DEV-004 — EF Core + PostgreSQL setup ✅
 
 **Descrição:**
 DbContext, Npgsql provider, initial migration infrastructure. Local connection to Compose Postgres.
@@ -192,15 +196,14 @@ DbContext, Npgsql provider, initial migration infrastructure. Local connection t
 - [x] Connection string from config (`ConnectionStrings__Default`)
 - [x] `ApplicationDbContextFactory` + `ConnectionStrings:Migration` for `dotnet ef` (session pooler `:5432` prod / `localhost` local)
 - [ ] `dotnet ef migrations add Initial` works locally *(run manually — see README)*
-- [ ] `dotnet ef database update` applies against Compose Postgres *(run manually)*
+- [x] `dotnet ef database update` applies against Compose Postgres *(e local/prod — migration `Initial` em prod via DEV-008)*
 
 **Observações:**
 - **Phase:** 0
 - **Area:** database
 - **Priority:** P0
 - **Depends on:** DEV-003, DEV-002
-
----
+- **Status:** ✅ **Done** — `Initial` migration + DbContext/factory; prod aplicado (DEV-008)
 
 ### DEV-005 — Nuxt 3 frontend skeleton ✅
 
@@ -224,7 +227,7 @@ Nuxt 3 app with TypeScript, basic layout, env config for API base URL. Inclui fu
 
 ---
 
-### DEV-005b — Backend test project scaffold
+### DEV-005b — Backend test project scaffold ✅
 
 **Descrição:**
 Create `OnlinePortfolio.Api.Tests` xUnit project with standard .NET test stack. Folders `Unit/` and `Integration/` already exist; wire project into solution.
@@ -244,6 +247,7 @@ Create `OnlinePortfolio.Api.Tests` xUnit project with standard .NET test stack. 
 - **Area:** backend, unit-test
 - **Priority:** P0
 - **Depends on:** DEV-003
+- **Status:** ✅ **Done**
 
 ---
 
@@ -287,25 +291,25 @@ Workspace Linear para issues `DEV-xxx`. Runbook: [docs/EXTERNAL_PROVIDERS.md](./
 
 ---
 
-### DEV-014 — Resend account & API key
+### DEV-014 — Resend account & API key ✅
 
 **Descrição:**
-Conta Resend e API key para envio transacional (`noreply@onlineportfolio.com.br`). **Só configuração de conta** — integração na API em [DEV-107](#dev-107--contact-form--resend); verificação de domínio (DKIM) em [DEV-011](#dev-011--dns--https-production). Decisão: [ADR-017](./ADR-017-resend-transactional-email.md). Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 8.5 (smoke test).
+Conta Resend e API key para envio transacional (`mail@onlineportfolio.com.br`). **Só configuração de conta** — integração na API em [DEV-107](#dev-107--contact-form--resend); domínio verificado em [DEV-011](#dev-011--dns--https-production). Decisão: [ADR-017](./ADR-017-resend-transactional-email.md). Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 8.6 (smoke test prod).
 
 **Critérios de aceitação:**
 - [x] Conta Resend criada e verificada
 - [x] API key `portfolio-api-prod` criada
 - [x] Key guardada no password manager
-- [x] `Resend__ApiKey`, `Resend__FromEmail`, `Resend__FromName` no Render
-- [x] Domínio prod adiado até DEV-011 (DKIM na Vercel DNS)
-- [x] `Resend__FromEmail` = `noreply@onlineportfolio.com.br` documentado
-- [ ] Smoke test (seção 8.5 EXTERNAL_PROVIDERS) — opcional
+- [x] `Resend__ApiKey`, `Resend__FromEmail`, `Resend__FromName` no Render (`mail@` confirmado em prod)
+- [x] Domínio `onlineportfolio.com.br` verificado — DKIM/SPF/MX/DMARC (DEV-011)
+- [x] `Resend__FromEmail` = `mail@onlineportfolio.com.br` documentado e aplicado no Render
+- [x] Smoke test enviado com domínio verificado (seção 8.6 EXTERNAL_PROVIDERS)
 
 **Observações:**
 - **Phase:** 0
 - **Area:** infra
 - **Priority:** P1
-- **Status:** ✅ **Done** — conta, API key, password manager, Render env
+- **Status:** ✅ **Done** — conta, API key, domínio verificado, `mail@` no Render, smoke test prod
 
 ---
 
@@ -452,14 +456,14 @@ Deploy backend Docker image to Render free tier; connect GitHub repo. Runbook: [
 - [x] Health check `/health` configured e retornando 200
 - [x] Production env vars set (`ConnectionStrings__Default`, `Jwt__*`, `Resend__*` de DEV-014, `ASPNETCORE_*`)
 - [x] **After CI Checks Pass** habilitado (gate em `deploy-backend.yml` — DEV-007)
-- [ ] Custom domain `api.onlineportfolio.com.br` (adiado — DEV-011; OK com `*.onrender.com`)
+- [x] Custom domain `api.onlineportfolio.com.br` verificado + HTTPS ([DEV-011](#dev-011--dns--https-production))
 
 **Observações:**
 - **Phase:** 0
 - **Area:** devops
 - **Priority:** P1
 - **Depends on:** DEV-003, DEV-008, DEV-007, DEV-014
-- **Status:** ✅ **Done** — deploy prod ok com env vars; domínio custom → DEV-011
+- **Status:** ✅ **Done** — deploy prod + domínio `api.onlineportfolio.com.br`
 
 ---
 
@@ -473,36 +477,51 @@ Connect repo to Vercel; root directory `frontend`; PR previews enabled; **produc
 - [x] PR preview deploys enabled (testado — comentário da Vercel no PR)
 - [x] Production auto-deploy **disabled** in Vercel (`Only build pre-production`; prod = Actions DEV-007b)
 - [x] Env vars configured in Vercel dashboard (`NUXT_PUBLIC_*`, `NUXT_API_INTERNAL_BASE` → Render `*.onrender.com`)
-- [x] Custom domains deferred until [DEV-011](#dev-011--dns--https-production)
+- [x] Custom domains: apex, `app.`, wildcard `*.` — [DEV-011](#dev-011--dns--https-production)
+- [x] `NUXT_API_INTERNAL_BASE` = `https://api.onlineportfolio.com.br` (pós-DEV-011)
 
 **Observações:**
 - **Phase:** 0
 - **Area:** devops
 - **Priority:** P1
 - **Depends on:** DEV-005, DEV-012
-- **Status:** ✅ **Done** — deploy Ready; `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` no password manager (GitHub Secrets → DEV-007b)
+- **Status:** ✅ **Done** — deploy Ready; domínios prod + `NUXT_API_INTERNAL_BASE` → `api.`; secrets no password manager (GitHub Secrets → DEV-007b)
 
 ---
 
-### DEV-011 — DNS & HTTPS (production)
+### DEV-011 — DNS & HTTPS (production) ✅
 
 **Descrição:**
-DNS de produção: Registro.br nameservers → Vercel; domínios apex/`app.`/wildcard; CNAME `api.` → Render; registros Resend (DKIM/SPF). Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md).
+DNS de produção: Registro.br nameservers → Vercel; domínios apex/`app.`/wildcard; CNAME `api.` → Render; registros Resend (DKIM/SPF/MX) + DMARC na Vercel DNS; remetente `mail@onlineportfolio.com.br`. Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seções 7.5, 8.6, 9, 10.4.
 
 **Critérios de aceitação:**
-- [ ] Nameservers `ns1.vercel-dns.com` / `ns2.vercel-dns.com` at Registro.br
-- [ ] Domains added in Vercel: apex, `app.`, `*.onlineportfolio.com.br`
-- [ ] HTTPS active on Vercel domains (auto)
-- [ ] `api.onlineportfolio.com.br` verified on Render with HTTPS (auto)
-- [ ] Resend domain verification: DNS records na Vercel DNS (seção 10.4)
-- [ ] Resend dashboard mostra domínio `onlineportfolio.com.br` verificado
-- [ ] Checklist [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) marcado
+- [x] Nameservers `ns1.vercel-dns.com` / `ns2.vercel-dns.com` no Registro.br
+- [x] Domínios na Vercel com status **Valid**: apex `onlineportfolio.com.br`, `app.`, wildcard `*.onlineportfolio.com.br`
+- [x] Subdomínios tenant de teste (`ana.`, `joao.`) resolvem via wildcard
+- [x] HTTPS ativo nos domínios Vercel (automático)
+- [x] `api.onlineportfolio.com.br` no Render — domínio verificado + HTTPS
+- [x] `GET https://api.onlineportfolio.com.br/health` → **Healthy**
+- [x] `NUXT_API_INTERNAL_BASE` = `https://api.onlineportfolio.com.br` na Vercel + redeploy frontend
+- [x] Resend: domínio `onlineportfolio.com.br` **Verified** (região `sa-east-1`; DNS via integração Vercel)
+- [x] Registros DNS email na Vercel: `resend._domainkey` (DKIM), `send` (SPF), `send` (MX bounce), `_dmarc` (TXT)
+- [x] Smoke test envio com `mail@onlineportfolio.com.br` + `reply_to` (API Resend — seção 8.6 EXTERNAL_PROVIDERS)
+- [x] `Resend__FromEmail` = `mail@onlineportfolio.com.br` no Render
+- [x] Checklist [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seções 7.5, 8.4, 9, 10.4 atualizado
+
+**Validação manual (comportamento esperado):**
+- `dev.onlineportfolio.com.br` → erro de tenant inexistente (slug `dev` fora do seed) — confirma wildcard, não é falha de DNS
 
 **Observações:**
 - **Phase:** 0
 - **Area:** infra
 - **Priority:** P1
 - **Depends on:** DEV-000, DEV-009, DEV-010
+- **Status:** ✅ **Done** — prod em `onlineportfolio.com.br` / `app.` / `{slug}.` (Vercel) + `api.` (Render) + email DKIM/DMARC + `mail@` no Render
+
+**Done notes (2026-06-23):**
+- `Resend__FromEmail` = `mail@onlineportfolio.com.br` confirmado no Render
+- Smoke test API Resend com `reply_to` (Insomnia) — Delivered
+- DMARC `TXT` `_dmarc` na Vercel DNS
 
 ---
 
@@ -655,17 +674,17 @@ Rotas server fazem proxy de **todas** as chamadas (público + admin) para a API 
 ### DEV-107 — Contact form + Resend
 
 **Descrição:**
-Formulário de contato POST → API → Resend (`noreply@`) → `ContactEmail` do tenant. Requer [DEV-014](#dev-014--resend-account--api-key) (conta) e domínio verificado em [DEV-011](#dev-011--dns--https-production) para prod. Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) · [ADR-017](./ADR-017-resend-transactional-email.md).
+Formulário de contato POST → API → Resend (`mail@`) → `ContactEmail` do tenant. Requer [DEV-014](#dev-014--resend-account--api-key) (conta) e domínio verificado em [DEV-011](#dev-011--dns--https-production) para prod. Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) · [ADR-017](./ADR-017-resend-transactional-email.md).
 
 **Critérios de aceitação:**
 - [ ] `POST /api/v1/tenants/{slug}/contact` with validation
 - [ ] `IEmailService` + `ResendEmailService` (NuGet `Resend`)
 - [ ] Templates em `EmailTemplates/` (contact, invite)
-- [ ] `Resend__FromEmail` = `noreply@onlineportfolio.com.br`
+- [ ] `Resend__FromEmail` = `mail@onlineportfolio.com.br`
 - [ ] Reply-To = email do visitante (artista responde direto)
 - [ ] Rate limiting on contact endpoint (basic)
 - [ ] Contact form UI on public site (`pages/contact.vue` + `useTenantComponent('ContactSection')` stub; override por tenant em `public/tenants/{slug}/`)
-- [ ] Prod: domínio autenticado via [DEV-011](#dev-011--dns--https-production)
+- [x] Prod: domínio autenticado via [DEV-011](#dev-011--dns--https-production) ✅
 - [ ] Honeypot or basic anti-spam field
 
 **Observações:**
@@ -710,6 +729,36 @@ Landing page at `onlineportfolio.com.br` when host is apex (not tenant subdomain
 - **Area:** frontend
 - **Priority:** P2
 - **Depends on:** DEV-104
+
+---
+
+### DEV-110 — Vercel Web Analytics
+
+**Descrição:**
+Métricas básicas de tráfego (page views) via [Vercel Web Analytics](https://vercel.com/docs/analytics) + pacote `@vercel/analytics` no Nuxt. **Opcional** no v1 — não bloqueia DEV-011. Medir visitantes em **platform** (apex) e **sites públicos tenant** (`{slug}.*`); **excluir admin/login** (`app.*`) para não misturar uso interno com tráfego público. Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 9.5 · [ADR-018](./ADR-018-frontend-ui-motion-stack.md).
+
+**Critérios de aceitação:**
+- [ ] **Vercel** → Project → **Analytics** → Web Analytics habilitado no projeto `online-portfolio-web`
+- [ ] `npm i @vercel/analytics` em `frontend/`; módulo registrado em `nuxt.config.ts`
+- [ ] Script carrega **somente** quando `surface` é `platform` ou `tenant` (plugin condicional — **não** em `app` / `/admin` / `/login`)
+- [ ] Deploy prod via `deploy-frontend.yml`; page views aparecem no painel Vercel (aguardar ~30s; testar navegação entre rotas)
+- [ ] Nota LGPD: quando sites públicos de clientes estiverem ativos, política de privacidade deve mencionar analytics (follow-up legal — fora do escopo técnico deste ticket)
+
+**Observações:**
+- **Phase:** 1
+- **Area:** frontend, infra
+- **Priority:** P2
+- **Depends on:** DEV-011, DEV-104
+- **Não usar** para métricas de produto por tenant no v1 (painel Vercel agrega por deployment; filtro manual por host/URL). Analytics avançado por tenant → fase futura (Plausible/Umami/eventos).
+
+**Implementação sugerida:**
+
+```ts
+// nuxt.config.ts — após adoção
+modules: ['@vercel/analytics']
+```
+
+Plugin `.client.ts` que só monta analytics se `useRequestSurface().surface` ∈ `platform` | `tenant`.
 
 ---
 
@@ -1997,9 +2046,9 @@ Dedicated security activities (beyond tests). Cross-reference [docs/ARCHITECTURE
 
 | Sprint | Período | Foco |
 |--------|---------|------|
-| **1** | 2026-06-21 → 2026-07-04 | Foundation + bootstrap cloud (Epic 0) |
-| **2** | 2026-07-05 → 2026-07-18 | Fechar Epic 0 (deploy front, DNS, Resend) |
-| **3** | 2026-07-19 → 2026-08-01 | Login MVP (Epic 1.5) |
+| **1** | 2026-06-21 → 2026-07-04 | Foundation + bootstrap cloud (Epic 0) ✅ |
+| **2** | 2026-07-05 → 2026-07-18 | Epic 0 fechado (DNS, Resend, domínios prod) ✅ |
+| **3** | 2026-07-19 → 2026-08-01 | Login MVP (Epic 1.5) ← **atual** |
 | **4** | 2026-08-02 → 2026-08-15 | Site público por tenant (Epic 1) |
 | **5** | 2026-08-16 → 2026-08-29 | Contato + hardening |
 | **6** | 2026-08-30 → 2026-09-12 | Admin CRUD pós-login |
@@ -2031,24 +2080,25 @@ Dedicated security activities (beyond tests). Cross-reference [docs/ARCHITECTURE
 | DEV-009 | API Render prod — env vars, `/health`, After CI Checks Pass |
 | DEV-010 | Vercel `online-portfolio-web` — previews, env vars, prod auto-deploy off |
 | DEV-007b | `deploy-frontend.yml` + GitHub Secrets `VERCEL_*` + `workflow_dispatch` |
+| DEV-011 | DNS apex + `app.` + `api.` + Resend DKIM/DMARC + `mail@` no Render |
 
-#### ⬜ Restante Sprint 1 (até 04/07)
+#### ✅ Sprint 1 concluído (até 04/07)
 
-| Issue | Prioridade |
-|-------|------------|
-| DEV-011 | *(stretch)* DNS apex + `api.` + DKIM Resend |
+_Epic 0 foundation fechado — ver Sprint 2._
 
 **Fora do sprint 1:** DEV-008b (Supabase dev opcional) · Epic 1+
 
 ---
 
-### Sprint 2 — 2026-07-05 → 2026-07-18 — Epic 0 done + DNS
+### Sprint 2 — 2026-07-05 → 2026-07-18 — Epic 0 done + features
 
-**Objetivo:** produção fechada (front + API + domínios), pronto para features.
+**Objetivo:** produção fechada (front + API + domínios) ✅ — pronto para Epic 1.5 / Epic 1.
 
-DEV-011 → SEC-001 → UT-003 → IT-006
+DEV-011 ✅ → SEC-001 → UT-003 → IT-006
 
-**Critério de saída:** `onlineportfolio.com.br` + `app.` no Vercel, `api.` no Render, e-mail DKIM OK, deploys só via Actions.
+**Critério de saída:** ✅ `onlineportfolio.com.br` + `app.` no Vercel, `api.` no Render, e-mail DKIM/DMARC OK, deploys só via Actions, `mail@` no Render.
+
+**Próximo:** SEC-001 → UT-003 → IT-006 (ou iniciar Epic 1.5 em paralelo conforme prioridade).
 
 ---
 
@@ -2066,7 +2116,7 @@ DEV-100 → DEV-101 → DEV-102 → DEV-103 → DEV-104 → DEV-105 → DEV-106 
 
 ### Sprint 5 — 2026-08-16 → 2026-08-29 — Contato + hardening
 
-DEV-107 → DEV-109 → SEC-007 → SEC-003 → UT-005 → SEC-011 *(parcial)*
+DEV-107 → DEV-109 → DEV-110 → SEC-007 → SEC-003 → UT-005 → SEC-011 *(parcial)*
 
 ---
 
@@ -2088,7 +2138,7 @@ DEV-008b · DEV-207 · DEV-400+ · DEV-403 · DEV-404 · IT-010 · SEC-009 · SE
 
 ---
 
-*Last updated: 2026-06-21 — Sprint 1 desde 21/06; DEV-010 done*
+*Last updated: 2026-06-23 — Epic 0 ✅ (DEV-011 DNS/HTTPS/Resend `mail@`); Sprint 3 = Epic 1.5*
 
 ---
 

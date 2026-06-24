@@ -9,7 +9,7 @@ alwaysApply: true
 
 **Git:** never commit, push, checkout, or merge unless the user explicitly asks — see `.cursor/rules/git-workflow.mdc`.
 
-**Status:** Epic 0 — Docker + CI PR (DEV-006) ✅ + deploy pipelines (DEV-007/007b) ✅. Read `docs/AGENT_GUIDE.md` and `docs/BACKLOG.md` before coding.
+**Status:** Epic 0 foundation ✅ — Docker + CI PR (DEV-006) + deploy (DEV-007/007b) + DNS prod (DEV-011). Next: Epic 1.5. Read `docs/AGENT_GUIDE.md` and `docs/BACKLOG.md` before coding.
 
 ## Hard rules
 
@@ -20,7 +20,7 @@ alwaysApply: true
 - **Admin login:** only `app.onlineportfolio.com.br` — not tenant subdomains
 - **Public sites:** `{slug}.onlineportfolio.com.br` per tenant — UI custom + **ultra animado** in `components/public/tenants/{slug}/` only ([ADR-018](docs/ADR-018-frontend-ui-motion-stack.md))
 - **Admin UI:** standardized in `components/app/` — **Nuxt UI**, minimal motion — never per-tenant ([ADR-018](docs/ADR-018-frontend-ui-motion-stack.md))
-- **Email v1:** Resend `noreply@` send-only — no mailbox ([ADR-017](docs/ADR-017-resend-transactional-email.md))
+- **Email v1:** Resend `mail@onlineportfolio.com.br` send-only — no mailbox; Reply-To para respostas ([ADR-017](docs/ADR-017-resend-transactional-email.md))
 - **Secrets:** never commit `.env` or API keys; service role only on backend
 
 ## Roles (v1)

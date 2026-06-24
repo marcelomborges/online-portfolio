@@ -158,6 +158,16 @@ Preview: `NUXT_PUBLIC_DEV_SURFACE=app` → `/login` escuro · `tenant` + `ana` �
 
 **Bundle:** motion libs carregadas só na superfície tenant (plugin `.client.ts` + `surface === 'tenant'`).
 
+### Analytics (Vercel Web Analytics — DEV-110)
+
+| Superfície | `@vercel/analytics` |
+|---|---|
+| Admin / login (`app.*`) | ❌ Não carregar |
+| Platform (apex) | ✅ Sim |
+| Tenant público (`{slug}.*`) | ✅ Sim |
+
+Detalhes: [EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 9.5 · [BACKLOG DEV-110](./BACKLOG.md#dev-110--vercel-web-analytics).
+
 ---
 
 ## Customização por tenant — site público (paleta, landing, contato)
@@ -319,6 +329,7 @@ Componentes `ui/` referenciam `var(--op-*)` — evita repetir cores/fontes.
 | Artefato | Descrição |
 |---|---|
 | [ADR-018](./ADR-018-frontend-ui-motion-stack.md) | Admin simples (Nuxt UI) vs tenant ultra animado |
+| [EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 9.5 | Vercel Web Analytics (DEV-110) |
 | [docs/ARCHITECTURE.md](./ARCHITECTURE.md) | Decisão: três superfícies + UI por tenant |
 | `frontend/middleware/resolve-host.global.ts` | Host → surface + slug |
 | `frontend/composables/useTenantComponent.ts` | Resolução Ana* → Public* |

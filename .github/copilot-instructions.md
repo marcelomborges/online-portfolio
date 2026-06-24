@@ -19,7 +19,7 @@ Path instructions: `.github/instructions/security.instructions.md`
 
 ## Before coding
 
-- Monorepo scaffold ready (`frontend/` Nuxt 3, `backend/` ASP.NET Core). CI PR (DEV-006) ✅; deploy pipelines (DEV-007/007b) ✅. Next: DNS prod (DEV-011).
+- Monorepo scaffold ready (`frontend/` Nuxt 3, `backend/` ASP.NET Core). CI PR (DEV-006) ✅; deploy pipelines (DEV-007/007b) ✅; DNS prod (DEV-011) ✅. Next: Epic 1.5 (login MVP).
 - Follow task order in [docs/BACKLOG.md](../docs/BACKLOG.md) (Epic 0 → 1.5 login MVP → Epic 1 public sites).
 - Architecture truth: [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md), schema: [docs/DATABASE.md](../docs/DATABASE.md).
 
@@ -28,7 +28,7 @@ Path instructions: `.github/instructions/security.instructions.md`
 - **BFF:** Nuxt server proxy → ASP.NET API; browser never calls Render directly.
 - **Auth:** ASP.NET Identity **completo** + JWT; `AspNetRoles` / `AspNetUserRoles`; no Supabase Auth in frontend.
 - **Hosts:** admin + login = `app.onlineportfolio.com.br`; public = `{slug}.onlineportfolio.com.br`.
-- **Email v1:** Resend `noreply@` send-only; no Google Workspace mailbox yet.
+- **Email v1:** Resend `mail@onlineportfolio.com.br` send-only; Reply-To for replies; no Google Workspace mailbox yet.
 - **Tenants:** PlatformAdmin invites users in v1 only.
 - **Supabase:** Postgres + Storage only; EF migrations; no direct browser → DB.
 

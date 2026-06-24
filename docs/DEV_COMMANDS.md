@@ -348,7 +348,7 @@ Ambos os deploy pipelines aceitam **`workflow_dispatch`** — botão **Run workf
 
 ## Resend — smoke test (DEV-014)
 
-Valida conta + API key antes de DEV-107 / DEV-011. Runbook completo: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 8.5.
+Valida conta + API key. Runbook: [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 8.5 (onboarding) e **8.6** (domínio verificado — prod).
 
 **Pasta:** qualquer (console temporário) ou futuro `backend/OnlinePortfolio.Api/`
 
@@ -372,7 +372,23 @@ var resp = await resend.EmailSendAsync(new EmailMessage()
 });
 ```
 
-Até DEV-011, usar `From = "onboarding@resend.dev"`. Depois: `noreply@onlineportfolio.com.br`.
+**Smoke test prod (domínio verificado):** `mail@onlineportfolio.com.br` com `Reply-To` — ver [EXTERNAL_PROVIDERS](./EXTERNAL_PROVIDERS.md) seção 8.6.
+
+Antes do domínio verificado, usar `From = "onboarding@resend.dev"` (seção 8.5).
+
+**Exemplo HTTP (domínio verificado):**
+
+```json
+{
+  "from": "Online Portfolio <mail@onlineportfolio.com.br>",
+  "to": ["seu-email@exemplo.com"],
+  "reply_to": "seu-email@exemplo.com",
+  "subject": "hello world",
+  "html": "<p>it works!</p>"
+}
+```
+
+`POST https://api.resend.com/emails` · `Authorization: Bearer re_...`
 
 **Render (prod):** `Resend__ApiKey`, `Resend__FromEmail`, `Resend__FromName` — ver [EXTERNAL_PROVIDERS](./EXTERNAL_PROVIDERS.md) seção 8.2.
 

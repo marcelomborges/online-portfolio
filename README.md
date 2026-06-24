@@ -2,7 +2,7 @@
 
 Multi-tenant SaaS platform for artist portfolios (Nuxt 3.21 + Vue 3.5 + .NET 10 LTS).
 
-**Domain:** `onlineportfolio.com.br`
+**Domain:** `onlineportfolio.com.br` — **prod live** (`onlineportfolio.com.br`, `app.`, `api.`, `{slug}.`)
 
 ## Repository layout
 

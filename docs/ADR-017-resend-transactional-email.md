@@ -11,7 +11,7 @@
 
 ## Contexto
 
-A arquitetura v1 documentava **SendGrid** (Twilio) como provedor de email transacional (`noreply@onlineportfolio.com.br`) para:
+A arquitetura v1 documentava **SendGrid** (Twilio) como provedor de email transacional (`mail@onlineportfolio.com.br`) para:
 
 - Formulário de contato (visitante → artista)
 - Convites de usuário (accept-invite)
@@ -49,11 +49,12 @@ Critérios do projeto:
 
 Adotar **Resend** como provedor de email transacional v1.
 
-- Remetente: `noreply@onlineportfolio.com.br`
+- Remetente: `mail@onlineportfolio.com.br` (identidade de envio; sem caixa postal no v1)
+- **Reply-To:** obrigatório quando resposta faz sentido — contato = email do visitante; convites/notificações = email do operador (ex. Outlook pessoal até Workspace)
 - Config no Render: `Resend__ApiKey`, `Resend__FromEmail`, `Resend__FromName`
 - Implementação: `IEmailService` → `ResendEmailService` (pacote NuGet `Resend`)
 - Templates: ficheiros no backend (`EmailTemplates/` — Razor ou HTML estático), versionados no repo
-- Autenticação de domínio (DKIM/SPF): **DEV-011** — registros DNS gerados no painel Resend → Vercel DNS
+- Autenticação de domínio (DKIM/SPF/DMARC): **DEV-011** ✅ — registros DNS na Vercel
 
 **SendGrid deixa de ser referência** em docs, backlog e env vars.
 
@@ -72,7 +73,7 @@ Adotar **Resend** como provedor de email transacional v1.
 
 - Menos volume grátis que Brevo (100/dia vs 300/dia) — aceitável no v1
 - Sem editor drag-and-drop para não-devs — ok para time atual
-- DKIM/SPF via Resend (registros diferentes do SendGrid) — configurar em DEV-011
+- DKIM/SPF/DMARC via Resend — configurado em DEV-011 ✅
 
 ### Rejeitado
 
@@ -123,7 +124,15 @@ await resend.EmailSendAsync(new EmailMessage()
 
 Ver [docs/EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 8.5 · [docs/DEV_COMMANDS.md](./DEV_COMMANDS.md).
 
-**Tickets:** DEV-014 (conta + API key + Render env) · DEV-107 (código) · DEV-011 (domínio verificado)
+**Tickets:** DEV-014 (conta + API key + Render env) ✅ · DEV-107 (código) · DEV-011 (domínio verificado) ✅
+
+---
+
+## Emenda (2026-06-23)
+
+- Remetente alterado de `noreply@` para `mail@onlineportfolio.com.br` — recomendação Resend para deliverability (`noreply` penaliza entrega e o botão Responder).
+- `mail@` continua **sem inbox** no v1; respostas vão para **Reply-To**, não para o domínio.
+- DMARC (`TXT` `_dmarc` na Vercel DNS) documentado em [EXTERNAL_PROVIDERS](./EXTERNAL_PROVIDERS.md) seção 10.4.
 
 ---
 
