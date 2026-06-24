@@ -6,6 +6,12 @@ on:
     paths:
       - 'frontend/**'
       - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Motivo do redeploy manual (opcional)'
+        required: false
+        type: string
 
 concurrency:
   group: deploy-frontend-${{ github.ref }}

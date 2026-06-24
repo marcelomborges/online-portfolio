@@ -7,6 +7,12 @@ on:
       - 'backend/**'
       - 'docs/DATABASE.md'
       - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Motivo do redeploy manual (opcional)'
+        required: false
+        type: string
 
 concurrency:
   group: deploy-backend-${{ github.ref }}
