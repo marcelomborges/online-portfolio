@@ -210,7 +210,7 @@ Dois comentários independentes no mesmo PR quando ambos os CIs rodam. Artefatos
 - Backend: EF Core, snake_case columns in Postgres, OpenAPI on API.
 - Backend tests: xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` ([docs/ARCHITECTURE.md](./ARCHITECTURE.md)).
 - Frontend tests: Vitest + istanbul coverage (expand in UT-009+); CI runs `npm run lint` + `npm run test:coverage`.
-- **Frontend:** thin pages, three surfaces (app/platform/tenant), tenant UI in `public/tenants/{slug}/` — [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md).
+- **Frontend:** thin pages, three surfaces — **admin = Nuxt UI, minimal motion**; **tenant `{slug}.*` = ultra animado** — [ADR-018](./ADR-018-frontend-ui-motion-stack.md) · [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md).
 - Do not over-engineer helpers or tests unless requested or in BACKLOG.
 
 ---

@@ -19,7 +19,7 @@ Cursor: `.cursor/rules/security-first.mdc` · GitHub: `.github/instructions/secu
 | Topic | Document |
 |---|---|
 | Architecture & domains | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
-| Frontend surfaces & tenant UI | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [FRONTEND_COMPONENTS.md](docs/FRONTEND_COMPONENTS.md) |
+| Frontend surfaces & tenant UI | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [FRONTEND_COMPONENTS.md](docs/FRONTEND_COMPONENTS.md) · [ADR-018](docs/ADR-018-frontend-ui-motion-stack.md) |
 | Database & Identity | [docs/DATABASE.md](docs/DATABASE.md) |
 | Tasks (DEV-xxx) | [docs/BACKLOG.md](docs/BACKLOG.md) |
 | Commits | [docs/CONVENTIONAL_COMMITS.md](docs/CONVENTIONAL_COMMITS.md) |

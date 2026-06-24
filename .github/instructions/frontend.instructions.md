@@ -4,7 +4,8 @@ applyTo: "frontend/**"
 
 # Frontend (Nuxt 3)
 
-- **Components first:** thin pages; separate **app** (`components/app/`), **platform**, **tenant public** (`public/shared` + `public/tenants/{slug}`); per-tenant themes via CSS `--op-*`. ADR: [docs/ARCHITECTURE.md](./ARCHITECTURE.md). Guia: `docs/FRONTEND_COMPONENTS.md`.
+- **Components first:** thin pages; separate **app** (`components/app/` + **Nuxt UI**), **platform**, **tenant public** (`public/tenants/{slug}` — **ultra animado**, GSAP/Lenis OK). ADR-016: [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md) · ADR-018: [docs/ADR-018-frontend-ui-motion-stack.md](../../docs/ADR-018-frontend-ui-motion-stack.md) · Guia: `docs/FRONTEND_COMPONENTS.md`.
+- **Admin:** minimal motion; prefer Nuxt UI. **Tenant:** motion stack per slug — never import motion libs in `components/app/`.
 - **BFF:** all API calls via Nuxt server routes (`/api/**` proxy); browser uses relative `/api`, not `api.onlineportfolio.com.br`.
 - Forward auth cookies/headers to backend on proxied requests; never log tokens.
 - **Security:** no secrets in `NUXT_PUBLIC_*`; no `v-html` on user content without sanitization.

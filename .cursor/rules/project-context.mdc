@@ -18,8 +18,8 @@ alwaysApply: true
 - **Auth:** ASP.NET Identity **completo** + JWT on API; roles via `AspNetRoles` / `AspNetUserRoles`
 - **No** Supabase Auth, **no** `@nuxtjs/supabase`, **no** anon key in frontend
 - **Admin login:** only `app.onlineportfolio.com.br` — not tenant subdomains
-- **Public sites:** `{slug}.onlineportfolio.com.br` per tenant — UI custom in `components/public/tenants/{slug}/` only ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md))
-- **Admin UI:** standardized in `components/app/` — never per-tenant
+- **Public sites:** `{slug}.onlineportfolio.com.br` per tenant — UI custom + **ultra animado** in `components/public/tenants/{slug}/` only ([ADR-018](docs/ADR-018-frontend-ui-motion-stack.md))
+- **Admin UI:** standardized in `components/app/` — **Nuxt UI**, minimal motion — never per-tenant ([ADR-018](docs/ADR-018-frontend-ui-motion-stack.md))
 - **Email v1:** Resend `noreply@` send-only — no mailbox ([ADR-017](docs/ADR-017-resend-transactional-email.md))
 - **Secrets:** never commit `.env` or API keys; service role only on backend
 
@@ -47,4 +47,4 @@ Conventional Commits — see `.cursor/rules/conventional-commits.mdc`
 
 ## Docs map
 
-`docs/AGENT_GUIDE.md` · `docs/ARCHITECTURE.md` · `docs/FRONTEND_COMPONENTS.md` · [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · `docs/DATABASE.md` · `docs/BACKLOG.md` SEC-*
+`docs/AGENT_GUIDE.md` · `docs/ARCHITECTURE.md` · `docs/FRONTEND_COMPONENTS.md` · `docs/ADR-018-frontend-ui-motion-stack.md` · `docs/DATABASE.md` · `docs/BACKLOG.md` SEC-*

@@ -6,24 +6,28 @@ alwaysApply: false
 
 # Frontend — componentes e reutilização
 
-**Prioridade:** evitar código repetitivo. ADR: `docs/ARCHITECTURE.md` docs/ARCHITECTURE.md). Guia: `docs/FRONTEND_COMPONENTS.md`.
+**Prioridade:** evitar código repetitivo. ADR-016: `docs/ARCHITECTURE.md` · ADR-018 (UI/motion): `docs/ADR-018-frontend-ui-motion-stack.md` · Guia: `docs/FRONTEND_COMPONENTS.md`.
 
-## Três superfícies (mesma app Nuxt)
+## Duas filosofias de UI (ADR-018)
 
-| Superfície | Host | Tema |
-|---|---|---|
-| **Tenant público** | `{slug}.*` | `theme-{slug}` — só páginas do artista (ana, joao) |
-| **Todo o resto** | `app.*`, apex, dev, error | `surface-dark` fixo |
+| Superfície | Host | Stack | Motion |
+|---|---|---|---|
+| **Admin / login** | `app.*` | **Nuxt UI** — rápido, responsivo | ❌ Sem Lenis/GSAP/WebGL |
+| **Platform** | apex | **Nuxt UI** | ⚠️ Leve opcional |
+| **Tenant público** | `{slug}.*` | Custom `public/tenants/{slug}/` + `themes/{slug}.css` | ✅ **Ultra animado** (GSAP, Lenis, …) |
+| **Resto** | dev, error | `surface-dark` | ❌ Estrutural apenas |
 
 ## Regras obrigatórias
 
-1. **Dark (`surface-dark`)** — admin, login, platform, dev skeleton, `error.vue`, `components/app/`, layouts estruturais.
-2. **Tema artista** — somente rotas com layout `tenant` em `{slug}.*`.
-3. **Novo tenant UI** = `public/tenants/{slug}/` (`LandingHero`, `ContactSection`, …) + `themes/{slug}.css` (glob automático).
-4. **Nunca** customizar dark por tenant no admin.
+1. **Dark (`surface-dark`)** — admin, login, platform, dev skeleton, `error.vue`, `components/app/`.
+2. **Tema artista** — somente rotas layout `tenant` em `{slug}.*`.
+3. **Novo tenant UI** = `public/tenants/{slug}/` + `themes/{slug}.css`.
+4. **Nunca** customizar admin por tenant; **nunca** Nuxt UI como identidade principal do site do artista.
+5. **Nunca** importar GSAP/Lenis/Three em `components/app/`.
 
 ## Anti-patterns
 
-- Tema claro em `/login`, `/admin`, `error.vue` ou marketing platform.
+- Motion pesado em `/login`, `/admin`, `components/app/`.
+- Nuxt UI genérico no hero/galeria do tenant (usar componentes por slug).
 - Imports manuais por tenant em composables.
 - Login em `{slug}.*`.

@@ -4,7 +4,7 @@ Multi-tenant SaaS platform for artist portfolios. One shared application stack s
 
 **Status:** Approved for implementation  
 **Platform domain:** `onlineportfolio.com.br` (`onlineportfolio.com` unavailable — registered via Registro.br)  
-**Last updated:** 2026-06-21 (ADR-017 Resend email; ADR-016 frontend surfaces)
+**Last updated:** 2026-06-23 (ADR-018 frontend UI/motion; ADR-017 Resend; ADR-016 surfaces)
 
 ---
 
@@ -468,16 +468,15 @@ Browser → {tenant-host}/api/...  (Nuxt server route)
 | Positivo | Trade-off |
 |---|---|
 | Ana e João podem ter landings/contato/paletas totalmente distintas | Cada tenant “premium” exige pasta no repo (PR) — não é drag-and-drop no admin |
-| Login/admin único — menos superfície de bugs de auth | `@nuxt/ui` não adotado ainda; primitivos locais em `ui/` |
+| Login/admin único — Nuxt UI, rápido, sem motion pesado ([ADR-018](./ADR-018-frontend-ui-motion-stack.md)) | Site tenant pode exigir GSAP/Lenis/WebGL por slug |
 | Páginas finas + composables — menos repetição | Registry de `TenantComponentKey` cresce conforme novos blocos |
-| Alinha com SSG/ISR por slug (cache key inclui tenant) | DEV-104 ainda deve validar slug desconhecido na API (404) |
+| Alinha com SSG/ISR por slug (cache key inclui tenant) | Pacotes (`@nuxt/ui`, GSAP, …) — adoção incremental Epic 1+ |
 
-**Implementação (skeleton):** ver `frontend/` — layouts `app`, `platform`, `tenant`, `structural`; tenants `ana`, `joao`; guia [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md).
+**Implementação (skeleton):** ver `frontend/` — layouts `app`, `platform`, `tenant`, `structural`; tenants `ana`, `joao`; guias [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md) · [ADR-018](./ADR-018-frontend-ui-motion-stack.md).
 
 **Quando reavaliar:**
 
 - Muitos tenants com UI 100% custom → CMS ou config de blocos no banco (Fase 2+).
-- Adoção de `@nuxt/ui` ou Tailwind — registrar ADR filho ou emendar este doc.
 - White-label total do admin — **fora de escopo** no v1; admin permanece dark mode único.
 
 ---

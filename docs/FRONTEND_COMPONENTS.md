@@ -4,7 +4,9 @@ Prioridade do projeto: **evitar código repetitivo** usando componentes Vue reut
 
 **Decisão arquitetural:** [docs/ARCHITECTURE.md](./ARCHITECTURE.md) — três superfícies (`app` / `platform` / `tenant`), UI pública customizável por slug, login/admin padronizado.
 
-Referência operacional (humanos e agentes). Stack: Nuxt 3.21 + Vue 3 + TypeScript strict.
+**UI e motion (admin vs tenant):** [ADR-018](./ADR-018-frontend-ui-motion-stack.md) — admin **simples + Nuxt UI**; site `{slug}.*` **ultra animado**.
+
+Referência operacional (humanos e agentes). Stack base: Nuxt 3.21 + Vue 3 + TypeScript strict.
 
 ---
 
@@ -29,15 +31,21 @@ Referência operacional (humanos e agentes). Stack: Nuxt 3.21 + Vue 3 + TypeScri
 | **`app.config.ts`** | Metadados estáticos (nome do site, links) — não secrets |
 | **`#components` / `resolveComponent`** | Só quando precisar de componente dinâmico |
 
-### @nuxt/ui (não adotado ainda)
+### @nuxt/ui — admin e platform (decisão ADR-018)
 
-O ecossistema Nuxt inclui [@nuxt/ui](https://ui.nuxt.com/) (Tailwind + Headless UI). **Não está no projeto hoje.** Antes de adicionar:
+**Adotado como design system** para `app.*`, `/admin`, `/login` e marketing da plataforma (apex). Objetivo: **rápido, responsivo, mínimo motion**.
 
-- Avaliar alinhamento com design system do produto.
-- Registrar decisão em `ARCHITECTURE.md`.
-- Preferir `@nuxt/ui` a copiar estilos de botão/card/modal manualmente **depois** da adoção.
+| Superfície | Nuxt UI | Motion |
+|---|---|---|
+| **Admin / login** (`components/app/`) | ✅ Sim — forms, tables, modals | ❌ Não (sem Lenis/GSAP/WebGL) |
+| **Platform** (`components/platform/`) | ✅ Sim | ⚠️ Leve opcional (CSS / micro) |
+| **Tenant público** (`public/tenants/{slug}/`) | ❌ Não como identidade principal | ✅ **Ultra animado** — GSAP, Lenis, etc. |
 
-Até lá, usar componentes locais em `components/ui/` (`UiButton`, `UiCard`, …).
+Detalhes da stack tenant: [ADR-018](./ADR-018-frontend-ui-motion-stack.md).
+
+Até a instalação dos pacotes (Epic 1+), primitivos locais em `components/ui/` (`UiButton`, `UiCard`, …) com tokens `--op-*`.
+
+**Regra:** não importar GSAP/Lenis/Three em `components/app/`. Não usar Nuxt UI como “cara” do site do artista — cada slug tem componentes e tema próprios.
 
 ---
 
@@ -45,12 +53,12 @@ Até lá, usar componentes locais em `components/ui/` (`UiButton`, `UiCard`, …
 
 **Uma app Nuxt**, três modos de UI distintos (resolvidos pelo `Host`):
 
-| Superfície | Host | Layout | Componentes |
-|---|---|---|---|
-| **App (admin/login)** | `app.onlineportfolio.com.br` | `layouts/app.vue` | `components/app/` — **padronizado para todos** |
-| **Plataforma** | `onlineportfolio.com.br` | `layouts/platform.vue` | `components/platform/` |
-| **Público tenant** | `{slug}.onlineportfolio.com.br` | `layouts/tenant.vue` | `components/public/shared/` + `components/public/tenants/{slug}/` |
-| **Dev skeleton** | `localhost` (default) | `layouts/default.vue` | `components/dev/` |
+| Superfície | Host | Layout | Componentes | UI / motion |
+|---|---|---|---|---|
+| **App (admin/login)** | `app.onlineportfolio.com.br` | `layouts/app.vue` | `components/app/` — **padronizado** | Nuxt UI · **sem motion pesado** |
+| **Plataforma** | `onlineportfolio.com.br` | `layouts/platform.vue` | `components/platform/` | Nuxt UI · motion leve |
+| **Público tenant** | `{slug}.onlineportfolio.com.br` | `layouts/tenant.vue` | `public/shared/` + `public/tenants/{slug}/` | Custom por slug · **ultra animado** |
+| **Dev skeleton** | `localhost` (default) | `layouts/default.vue` | `components/dev/` | Dark estrutural |
 
 ```text
 frontend/
@@ -133,7 +141,22 @@ CSS: `assets/css/surfaces/dark.css`. Aplicado por `useSurfaceHtmlClass()` em `ap
 - **Não** toggle claro/escuro no v1.
 - Novos tenants no repo: pasta `tenants/{slug}/` + `themes/{slug}.css` (hoje: `ana`, `joao`).
 
-Preview: `NUXT_PUBLIC_DEV_SURFACE=app` → `/login` escuro · `tenant` + `ana` → landing clara/custom.
+Preview: `NUXT_PUBLIC_DEV_SURFACE=app` → `/login` escuro · `tenant` + `ana` → landing clara/custom animada.
+
+---
+
+## Motion e performance (ADR-018)
+
+| Onde | O que pode | O que evitar |
+|---|---|---|
+| `components/app/` | Transições CSS curtas; Nuxt UI defaults | Lenis, GSAP, ScrollTrigger, Three, Rive |
+| `components/platform/` | Fade/slide leve | Scroll hijacking, WebGL |
+| `public/tenants/{slug}/` | GSAP + ScrollTrigger, Lenis, @vueuse/motion, WebGL opt-in | Importar de `components/app/` para “reaproveitar botão” |
+| `layouts/tenant.vue` | Inicializar smooth scroll / motion composable | Carregar motion no layout `app.vue` |
+
+**Acessibilidade:** `prefers-reduced-motion: reduce` desliga Lenis e simplifica animações tenant.
+
+**Bundle:** motion libs carregadas só na superfície tenant (plugin `.client.ts` + `surface === 'tenant'`).
 
 ---
 
@@ -279,13 +302,15 @@ Componentes `ui/` referenciam `var(--op-*)` — evita repetir cores/fontes.
 
 ## Checklist para PRs frontend
 
-- [ ] Página nova usa layout existente e componentes `ui/` quando aplicável.
+- [ ] Página nova usa layout existente e componentes corretos da superfície (Nuxt UI no admin; custom no tenant).
 - [ ] Nenhum bloco duplicado que já exista como componente.
 - [ ] Links internos com `<NuxtLink>`, não `<a href="/">`.
 - [ ] Lógica em composable, não inline na página.
 - [ ] Sem secrets em `NUXT_PUBLIC_*` ou `app.config.ts`.
 - [ ] Componente de tenant novo está em `public/tenants/{slug}/`, não em `app/`.
 - [ ] Login/admin não importa componentes de `public/tenants/`.
+- [ ] Admin não importa GSAP/Lenis/Three (ADR-018).
+- [ ] Motion tenant respeita `prefers-reduced-motion`.
 
 ---
 
@@ -293,6 +318,7 @@ Componentes `ui/` referenciam `var(--op-*)` — evita repetir cores/fontes.
 
 | Artefato | Descrição |
 |---|---|
+| [ADR-018](./ADR-018-frontend-ui-motion-stack.md) | Admin simples (Nuxt UI) vs tenant ultra animado |
 | [docs/ARCHITECTURE.md](./ARCHITECTURE.md) | Decisão: três superfícies + UI por tenant |
 | `frontend/middleware/resolve-host.global.ts` | Host → surface + slug |
 | `frontend/composables/useTenantComponent.ts` | Resolução Ana* → Public* |
