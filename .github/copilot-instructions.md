@@ -19,7 +19,7 @@ Path instructions: `.github/instructions/security.instructions.md`
 
 ## Before coding
 
-- Monorepo scaffold ready (`frontend/` Nuxt 3, `backend/` ASP.NET Core). CI PR: `ci-backend.yml` + `ci-frontend.yml` (DEV-006). Next: deploy pipelines (DEV-007+).
+- Monorepo scaffold ready (`frontend/` Nuxt 3, `backend/` ASP.NET Core). CI PR (DEV-006) ✅; deploy pipelines (DEV-007/007b) ✅. Next: DNS prod (DEV-011).
 - Follow task order in [docs/BACKLOG.md](../docs/BACKLOG.md) (Epic 0 → 1.5 login MVP → Epic 1 public sites).
 - Architecture truth: [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md), schema: [docs/DATABASE.md](../docs/DATABASE.md).
 

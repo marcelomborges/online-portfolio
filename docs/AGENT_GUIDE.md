@@ -19,7 +19,7 @@ Instructions for **Cursor**, **GitHub Copilot**, **Copilot coding agent**, and o
 ## Repository status
 
 - **Layout:** **monorepo** — `frontend/` (Nuxt 3) + `backend/` (ASP.NET Core); see root [README.md](../README.md).
-- **Phase:** Epic 0 in progress — scaffold, Docker, CI PR (DEV-006) done; deploy pipelines next (DEV-007+).
+- **Phase:** Epic 0 in progress — CI PR (DEV-006) ✅, deploy pipelines (DEV-007/007b) ✅; DNS prod (DEV-011) next.
 - Do **not** create separate Git repos for front/back unless the user explicitly changes this.
 - **Domain:** `onlineportfolio.com.br` (Registro.br).
 - Before coding, read BACKLOG **Suggested implementation order** — do not skip Epic 0 / 1.5 foundations.
@@ -163,7 +163,7 @@ Dispara em `pull_request` e `push` → `main`, com **path filters** — só roda
 
 **Path filters:** PR que muda só `docs/` ou só `scripts/` pode **não** disparar nenhum CI — ok. PR que muda `backend/` **e** `frontend/` dispara **os dois**. Checks **skipped** por path filter contam como OK no GitHub (branch protection).
 
-**Deploy** (`deploy-backend.yml` ✅, `deploy-frontend.yml` ✅).
+**Deploy** (`deploy-backend.yml` ✅, `deploy-frontend.yml` ✅). Redeploy manual: **Run workflow** nos deploy pipelines — [docs/DEV_COMMANDS.md](./DEV_COMMANDS.md).
 
 ### Comentários de coverage no PR
 

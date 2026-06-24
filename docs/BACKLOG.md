@@ -97,7 +97,7 @@ Atividades de **conta e configuração** alinhadas à [docs/EXTERNAL_PROVIDERS.m
 | 6 | Resend | [DEV-014](#dev-014--resend-account--api-key) → [DEV-107](#dev-107--contact-form--resend) | ✅ conta + Render env; código Epic 1 |
 | 7 | Vercel | [DEV-010](#dev-010--vercel-frontend-deployment) | ✅ Done — `online-portfolio-web` |
 | 8 | DNS + email DNS | [DEV-011](#dev-011--dns--https-production) | Após Render + Vercel |
-| 9 | GitHub Actions | [DEV-006](#dev-006--github-actions-ci-pr--workflows-separados) · [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) ✅ · [DEV-007b](#dev-007b--github-actions-deploy-pipeline-frontend) ✅ | ✅ CI + deploy backend + frontend |
+| 9 | GitHub Actions | [DEV-006](#dev-006--github-actions-ci-pr--workflows-separados) ✅ · [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) ✅ · [DEV-007b](#dev-007b--github-actions-deploy-pipeline-frontend) ✅ | ✅ CI + deploy backend + frontend |
 | — | Google Workspace | [DEV-404](#dev-404--google-workspace-operator-inbox) | Opcional, pós-lançamento |
 | — | Stripe / billing | [DEV-403](#dev-403--billing--subscriptions-optional--skip-until-charging) | **Opcional** — skip no v1 |
 
@@ -257,7 +257,7 @@ Criar repo `online-portfolio` no GitHub, primeiro push do monorepo, conectar Ren
 - [x] Render GitHub App instalado com acesso ao repo
 - [x] Vercel GitHub App instalado — PR previews **on**; production auto-deploy **off** (Only build pre-production)
 - [x] GitHub Actions secrets preparados (placeholders OK até DEV-008/010): `SUPABASE_MIGRATION_CONNECTION_STRING`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
-- [x] (Recomendado) Branch protection em `main` exigindo Backend CI + Frontend CI
+- [x] (Recomendado) Branch protection em `main` exigindo Backend CI + Frontend CI — fechado em [DEV-006](#dev-006--github-actions-ci-pr--workflows-separados)
 
 **Observações:**
 - **Phase:** 0
@@ -309,25 +309,34 @@ Conta Resend e API key para envio transacional (`noreply@onlineportfolio.com.br`
 
 ---
 
-### DEV-006 — GitHub Actions CI (PR) — workflows separados
+### DEV-006 — GitHub Actions CI (PR) — workflows separados ✅
 
 **Descrição:**
-Dois workflows de CI no PR — **separados** por stack (não um `ci.yml` único): `ci-backend.yml` e `ci-frontend.yml`, com path filters.
+Dois workflows de CI no PR — **separados** por stack (não um `ci.yml` único): `ci-backend.yml` e `ci-frontend.yml`, com path filters. **Escopo:** só CI em PR/push; deploy pipelines = [DEV-007](#dev-007--github-actions-deploy-pipeline-backend) / [DEV-007b](#dev-007b--github-actions-deploy-pipeline-frontend).
 
 **Critérios de aceitação:**
 - [x] `ci-backend.yml` runs on `pull_request` to `main` (paths: `backend/**`, `docs/DATABASE.md`, …)
 - [x] `ci-frontend.yml` runs on `pull_request` to `main` (paths: `frontend/**`, …)
+- [x] `push` → `main` com path filters + skip via `dorny/paths-filter` quando o commit não toca a stack
 - [x] Backend: `dotnet test` (+ build); uses xUnit stack ([docs/ARCHITECTURE.md](./ARCHITECTURE.md))
 - [x] Frontend: `npm run lint` + `npm run test:coverage` (Vitest; expand in UT-009+)
 - [x] Status checks **Backend CI** and **Frontend CI** visible on PR
 - [x] PR comments: **Backend coverage** / **Frontend coverage** (sticky; só quando o workflow respectivo roda)
 - [x] Documented cross-stack component review before merge ([docs/AGENT_GUIDE.md](./AGENT_GUIDE.md))
+- [x] (Recomendado) Branch protection em `main` exigindo **Backend CI** + **Frontend CI**
+- [x] Documentar redeploy manual via Actions (`workflow_dispatch` nos deploy pipelines) em [docs/DEV_COMMANDS.md](./DEV_COMMANDS.md)
 
 **Observações:**
 - **Phase:** 0
 - **Area:** devops
 - **Priority:** P1
 - **Depends on:** DEV-003, DEV-005, DEV-012
+- **Status:** ✅ **Done**
+
+**Done notes (2026-06-23):**
+- `ci-backend.yml` + `ci-frontend.yml` com `dorny/paths-filter` em PR e push → `main`
+- Branch protection em `main` (Backend CI + Frontend CI)
+- Redeploy manual documentado em DEV_COMMANDS (`workflow_dispatch` em DEV-007 / DEV-007b)
 
 ---
 
@@ -340,7 +349,7 @@ Dois workflows de CI no PR — **separados** por stack (não um `ci.yml` único)
 - [x] `SUPABASE_MIGRATION_CONNECTION_STRING` in GitHub Secrets (Session pooler `:5432`, IPv4)
 - [x] Migrations run before deploy status succeeds
 - [x] Render **After CI Checks Pass** documented and enabled (gate em check **Backend Deploy**)
-- [x] Branch protection on `main` requires Backend CI + Frontend CI (recommended)
+- [x] `workflow_dispatch` em `deploy-backend.yml` (redeploy manual: test + migrate sem commit vazio)
 
 **Observações:**
 - **Phase:** 0
@@ -371,6 +380,7 @@ Dois workflows de CI no PR — **separados** por stack (não um `ci.yml` único)
 - [x] Production auto-deploy **disabled** on Vercel (`Only build pre-production`; DEV-010)
 - [x] 1º **Frontend Deploy** green na `main`
 - [x] PR preview deploys still work via Vercel integration (regression check)
+- [x] `workflow_dispatch` em `deploy-frontend.yml` (redeploy manual após mudar env na Vercel — evita Ignored Build Step do dashboard)
 
 **Observações:**
 - **Phase:** 0
@@ -2014,18 +2024,18 @@ Dedicated security activities (beyond tests). Cross-reference [docs/ARCHITECTURE
 | DEV-005b | Projeto de testes xUnit + coverage script |
 | DEV-012 | Repo GitHub + apps Render/Vercel + branch protection |
 | DEV-013 | Workspace Linear |
-| DEV-006 | `ci-backend.yml` + `ci-frontend.yml` (PR + path-filter fix) |
+| DEV-006 | `ci-backend.yml` + `ci-frontend.yml` + branch protection + doc redeploy manual |
 | DEV-007 | `deploy-backend.yml` + migrate prod + Render After CI Checks Pass |
 | DEV-008 | Supabase prod `online-portfolio-db-prod` |
 | DEV-014 | Resend — conta + API key + Render env |
 | DEV-009 | API Render prod — env vars, `/health`, After CI Checks Pass |
 | DEV-010 | Vercel `online-portfolio-web` — previews, env vars, prod auto-deploy off |
+| DEV-007b | `deploy-frontend.yml` + GitHub Secrets `VERCEL_*` + `workflow_dispatch` |
 
 #### ⬜ Restante Sprint 1 (até 04/07)
 
 | Issue | Prioridade |
 |-------|------------|
-| DEV-007b | `deploy-frontend.yml` + GitHub Secrets `VERCEL_*` |
 | DEV-011 | *(stretch)* DNS apex + `api.` + DKIM Resend |
 
 **Fora do sprint 1:** DEV-008b (Supabase dev opcional) · Epic 1+
@@ -2036,7 +2046,7 @@ Dedicated security activities (beyond tests). Cross-reference [docs/ARCHITECTURE
 
 **Objetivo:** produção fechada (front + API + domínios), pronto para features.
 
-DEV-011 → DEV-007b → SEC-001 → UT-003 → IT-006
+DEV-011 → SEC-001 → UT-003 → IT-006
 
 **Critério de saída:** `onlineportfolio.com.br` + `app.` no Vercel, `api.` no Render, e-mail DKIM OK, deploys só via Actions.
 

@@ -9,7 +9,7 @@ alwaysApply: true
 
 **Git:** never commit, push, checkout, or merge unless the user explicitly asks — see `.cursor/rules/git-workflow.mdc`.
 
-**Status:** Epic 0 — Docker + CI PR (DEV-006) done. Read `docs/AGENT_GUIDE.md` and `docs/BACKLOG.md` before coding.
+**Status:** Epic 0 — Docker + CI PR (DEV-006) ✅ + deploy pipelines (DEV-007/007b) ✅. Read `docs/AGENT_GUIDE.md` and `docs/BACKLOG.md` before coding.
 
 ## Hard rules
 

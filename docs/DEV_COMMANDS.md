@@ -307,6 +307,43 @@ Pipeline: lint/test → `vercel pull` + `vercel env pull` → `npm run build` (N
 
 Vercel dashboard: **Only build pre-production** ON (prod só via Actions). PR previews continuam pela integração Git.
 
+**Redeploy manual:** ver seção [Redeploy manual (production)](#redeploy-manual-production) abaixo.
+
+---
+
+## Deploy backend (prod) — DEV-007
+
+**Workflow:** `.github/workflows/deploy-backend.yml` — push `main` com mudança em `backend/**`, `docs/DATABASE.md` ou no próprio workflow.
+
+Pipeline: `dotnet test` → `dotnet ef database update` (secret `SUPABASE_MIGRATION_CONNECTION_STRING`). O check **Backend Deploy** green libera o autodeploy no Render (**After CI Checks Pass**).
+
+**Redeploy manual:** ver seção abaixo. O workflow **não** dispara deploy no Render — só test + migrate. Para republicar a API: Render dashboard → **Manual Deploy**, ou deploy hook se configurado.
+
+---
+
+## Redeploy manual (production)
+
+Ambos os deploy pipelines aceitam **`workflow_dispatch`** — botão **Run workflow** no GitHub Actions, sem commit vazio.
+
+**Quando usar:**
+
+| Situação | Workflow |
+|---|---|
+| Mudou env na **Vercel** (`NUXT_*`) | **Frontend Deploy** |
+| Quer revalidar test + migrate no **Supabase** | **Backend Deploy** |
+| Redeploy Vercel cancelado por *Ignored Build Step* | **Frontend Deploy** (não use Redeploy do dashboard) |
+
+**Passos:**
+
+1. GitHub → **Actions**
+2. Escolher **Frontend Deploy** ou **Backend Deploy**
+3. **Run workflow** → branch `main` → (opcional) motivo → **Run workflow**
+4. Aguardar job verde
+
+**Frontend Deploy** roda deploy completo em produção (`vercel deploy --prebuilt --prod`).
+
+**Backend Deploy** roda só testes + migrations. Para redeploy da API no Render, use o dashboard Render depois (se necessário).
+
 ---
 
 ## Resend — smoke test (DEV-014)
