@@ -8,6 +8,7 @@ builder.Host.UseSerilog((context, _, configuration) =>
 
 builder.Services.AddControllers();
 builder.Services.AddApplicationDatabase(builder.Configuration);
+builder.Services.AddApplicationIdentity();
 builder.Services.AddHealthChecks();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -37,7 +38,8 @@ app.MapControllers();
 try
 {
     Log.Information("Starting OnlinePortfolio.Api");
-    app.Run();
+    await IdentityRoleSeeder.SeedAsync(app.Services);
+    await app.RunAsync();
 }
 finally
 {

@@ -820,25 +820,32 @@ First migration per DATABASE.md — `plans`, `tenants`, `tenant_settings`, `user
 
 ---
 
-### DEV-151 — EF entities and configurations
+### DEV-151 — EF entities and configurations ✅
 
 **Descrição:**
 C# entities `Plan`, `Tenant`, `TenantSettings`, `User` with Fluent API / snake_case naming.
 
 **Critérios de aceitação:**
-- [ ] Entities in `backend/OnlinePortfolio.Api/Data/Entities/`
-- [ ] `ApplicationDbContext` DbSets registered
-- [ ] `ApplicationUser : IdentityUser<Guid>` com `TenantId`, `InvitedByUserId`, `IsActive` (sem coluna `Role` — ver AspNetRoles)
-- [ ] `ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>`
-- [ ] Seed roles: `PlatformAdmin`, `Owner`, `Editor` via `RoleManager`
-- [ ] Constantes ou enum espelhando nomes das roles Identity
-- [ ] No global query filter on `User` that hides PlatformAdmin
+- [x] Entities in `backend/OnlinePortfolio.Api/Data/Entities/`
+- [x] `ApplicationDbContext` DbSets registered
+- [x] `ApplicationUser : IdentityUser<Guid>` com `TenantId`, `InvitedByUserId`, `IsActive` (sem coluna `Role` — ver AspNetRoles)
+- [x] `ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>`
+- [x] Seed roles: `PlatformAdmin`, `Owner`, `Editor` via `RoleManager`
+- [x] Constantes ou enum espelhando nomes das roles Identity
+- [x] No global query filter on `User` that hides PlatformAdmin
 
 **Observações:**
 - **Phase:** 1.5
 - **Area:** database, backend
 - **Priority:** P0
 - **Depends on:** DEV-150
+- **Status:** ✅ **Done** (2026-06-25)
+
+**Done notes (2026-06-25):**
+- Entidades + Fluent API entregues em DEV-150; DEV-151 fecha Identity DI + seed de roles
+- `AddApplicationIdentity()` + `IdentityRoleSeeder` idempotente no startup (`Program.cs`)
+- `AppRoles` — constantes `PlatformAdmin`, `Owner`, `Editor`
+- UT: `IdentityRoleSeederTests`
 
 ---
 
@@ -2145,7 +2152,7 @@ DEV-008b · DEV-207 · DEV-400+ · DEV-403 · DEV-404 · IT-010 · SEC-009 · SE
 
 ---
 
-*Last updated: 2026-06-25 — DEV-150 ✅ (InitialMultiTenantAndUsers); Sprint 3 = Epic 1.5*
+*Last updated: 2026-06-25 — DEV-150/151 ✅; Sprint 3 = Epic 1.5*
 
 ---
 
