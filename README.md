@@ -38,14 +38,15 @@ docker compose up --build
 
 Parar: `Ctrl+C` ou, noutro terminal na mesma pasta: `docker compose down`.
 
-Reset completo (apaga dados + re-roda seed dos 2 tenants):
+Reset completo (apaga volume Postgres; schema via EF migrations):
 
 ```bash
 docker compose down -v
-docker compose up --build
+docker compose up -d db
+cd backend && dotnet ef database update --project OnlinePortfolio.Api
 ```
 
-Verificar seed:
+Verificar tenants (após DEV-152 seed):
 
 ```bash
 docker compose exec db psql -U portfolio -d portfolio_dev -c "SELECT slug, display_name FROM tenants;"

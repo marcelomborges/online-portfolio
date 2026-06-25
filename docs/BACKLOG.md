@@ -793,23 +793,30 @@ Tenant user (Owner/Editor)
 
 ---
 
-### DEV-150 — EF migration: multi-tenant + users
+### DEV-150 — EF migration: multi-tenant + users ✅
 
 **Descrição:**
 First migration per DATABASE.md — `plans`, `tenants`, `tenant_settings`, `users` only (no artworks).
 
 **Critérios de aceitação:**
-- [ ] Migration `InitialMultiTenantAndUsers` created
-- [ ] Tables match [docs/DATABASE.md](./DATABASE.md) (columns, FKs, checks)
-- [ ] Indexes: `tenants.slug`, `users.email` UNIQUE, partial unique on `custom_domain`
-- [ ] `dotnet ef database update` works on Compose Postgres
-- [ ] Rollback (`dotnet ef migrations remove`) tested locally
+- [x] Migration `InitialMultiTenantAndUsers` created
+- [x] Tables match [docs/DATABASE.md](./DATABASE.md) (columns, FKs, checks)
+- [x] Indexes: `tenants.slug`, `users.email` UNIQUE, partial unique on `custom_domain`
+- [x] `dotnet ef database update` works on Compose Postgres
+- [x] Rollback (`dotnet ef migrations remove`) tested locally
 
 **Observações:**
 - **Phase:** 1.5 — Login + add user MVP
 - **Area:** database, backend
 - **Priority:** P0
 - **Depends on:** DEV-004
+- **Status:** ✅ **Done** (2026-06-25)
+
+**Done notes (2026-06-25):**
+- Migration `20260625220843_InitialMultiTenantAndUsers` — `plans`, `tenants`, `tenant_settings` + Identity (`AspNetUsers`, `AspNetRoles`, …)
+- Entidades/config Fluent API entregues junto (overlap DEV-151 — ver issue)
+- Removido mount `scripts/seed-dev.sql` no Compose (conflitava com EF); reset local = `docker compose down -v` + `dotnet ef database update`
+- Validado local: `database update`, `\dt`, rollback (`database update Initial` → reaplicar)
 
 ---
 
@@ -2138,7 +2145,7 @@ DEV-008b · DEV-207 · DEV-400+ · DEV-403 · DEV-404 · IT-010 · SEC-009 · SE
 
 ---
 
-*Last updated: 2026-06-23 — Epic 0 ✅ (DEV-011 DNS/HTTPS/Resend `mail@`); Sprint 3 = Epic 1.5*
+*Last updated: 2026-06-25 — DEV-150 ✅ (InitialMultiTenantAndUsers); Sprint 3 = Epic 1.5*
 
 ---
 

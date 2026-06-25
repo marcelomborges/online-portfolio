@@ -46,14 +46,14 @@ docker compose down
 docker compose up --build
 ```
 
-Reset total (apaga volume + re-roda `scripts/seed-dev.sql` na 1ª subida do `db`):
+Reset total (apaga volume Postgres; reaplique migrations EF em seguida):
 
 ```cmd
 docker compose down -v
-docker compose up --build
+docker compose up -d db
+cd backend
+dotnet ef database update --project OnlinePortfolio.Api
 ```
-
-Depois de `down -v`, reaplique migrations EF — ver [Migrations](#ef-core-migrations).
 
 Só Postgres (API/frontend nativos):
 
@@ -398,7 +398,7 @@ Antes do domínio verificado, usar `From = "onboarding@resend.dev"` (seção 8.5
 
 **Pasta:** raiz do repo
 
-Seed DEV-002 (tenants `ana` / `joao` — se `scripts/seed-dev.sql` rodou):
+Seed DEV-002 (tenants `ana` / `joao` — após DEV-152 / seed EF):
 
 ```cmd
 docker compose exec db psql -U portfolio -d portfolio_dev -c "SELECT slug, display_name FROM tenants ORDER BY slug;"
