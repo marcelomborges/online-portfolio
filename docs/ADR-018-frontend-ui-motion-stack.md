@@ -69,7 +69,8 @@ Stack recomendada **por slug** (opt-in em `public/tenants/{slug}/`, não global 
 |---|---|---|
 | **P0** | **GSAP** + **ScrollTrigger** | Reveals no scroll, timelines, stagger, pin — padrão de portfolios premium |
 | **P0** | **Lenis** | Smooth scroll fluido |
-| **P1** | **@vueuse/motion** ou **Motion for Vue** | Micro-interações (hover, enter/leave) sem boilerplate |
+| **P1** | **[@vueuse/motion](https://motion.vueuse.org/)** ou **Motion for Vue** | Micro-interações (hover, enter/leave) sem boilerplate |
+| **P1** | **[Vue Bits](https://vue-bits.dev/)** | Catálogo de componentes/backgrounds animados (Vue 3 + Tailwind) — copiar via `jsrepo`/`shadcn` para `public/tenants/{slug}/` |
 | **P1** | **Variable fonts** (Fontsource ou Google Fonts) | Tipografia como identidade |
 | **P2** | **Three.js** / **TresJS** (`@tresjs/core`) | Hero 3D / shaders — **só tenants que pedirem** |
 | **P2** | **Rive** ou **Lottie** | Ilustrações animadas vetoriais |
@@ -87,7 +88,8 @@ Ordem de impacto visual vs esforço:
 3. **Lenis + GSAP ScrollTrigger** — 80% do “feel” premium
 4. **Temas CSS por slug** (`themes/{slug}.css`) — paleta e ritmo já existentes no repo
 5. **Componentes exclusivos por pasta** (`LandingHero.vue`, etc.) — layout único por artista
-6. WebGL / Three — só quando o conceito exigir
+6. **[Vue Bits](https://vue-bits.dev/)** — backgrounds, text effects e UI animada (130+); instalar por componente com `jsrepo`/`shadcn`, não global no admin
+7. WebGL / Three — só quando o conceito exigir
 
 Nuxt UI **não** é a alma do site tenant — é a **fábrica eficiente do admin**. Tenants usam CSS custom + motion stack acima.
 
@@ -100,10 +102,31 @@ Nuxt UI **não** é a alma do site tenant — é a **fábrica eficiente do admin
 ```text
 components/app/           → Nuxt UI; SEM gsap, lenis, three
 components/platform/      → Nuxt UI; motion leve OK
-components/public/tenants/{slug}/  → motion pesado OK (isolado por slug)
+components/public/tenants/{slug}/  → motion pesado OK (isolado por slug); Vue Bits OK aqui
 composables/useTenantMotion.ts      → só chamar em layout tenant ou páginas tenant
 plugins/tenant-motion.client.ts     → registrar Lenis/GSAP só se surface=tenant
 ```
+
+### Vue Bits (catálogo — opt-in por tenant)
+
+[Vue Bits](https://vue-bits.dev/) é biblioteca **open source** de componentes Vue animados (backgrounds, text effects, animações, UI patterns). **Não** substitui Nuxt UI no admin.
+
+| Onde usar | Como |
+|---|---|
+| **`public/tenants/{slug}/`** | ✅ Principal — hero, backgrounds, text shine, etc. |
+| **`components/platform/`** | ⚠️ Opcional, motion leve (1–2 blocos) |
+| **`components/app/`** | ❌ Proibido |
+
+**Adoção:** instalar **por componente** no repo (fica versionado no Git), não como dependência global obrigatória:
+
+```bash
+# Exemplo (jsrepo) — rodar em frontend/; ajustar path de destino para tenants/{slug}/
+npx jsrepo add https://vue-bits.dev/r/aurora.json
+```
+
+Alternativa: CLI compatível com shadcn (ver docs do site). Após copiar, adaptar tokens `--op-*` / `theme-{slug}` e respeitar `prefers-reduced-motion`.
+
+**Revisão:** tratar código copiado como PR normal — sem `v-html` inseguro; não expor secrets; lazy-load em rotas tenant quando pesado.
 
 ### Proibido
 
@@ -166,6 +189,7 @@ Runbook: [EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 9.5 · [BACKLO
 | 1 | `@nuxt/ui` + Tailwind; admin/login stub com `UButton`/`UInput` | DEV-155+ (Epic 1.5) ou ticket dedicado |
 | 2 | `@nuxt/image` em galeria tenant | DEV-105 |
 | 3 | `useTenantMotion` + Lenis + GSAP em um tenant piloto (`ana`) | DEV-104 / extensão tenant UI |
+| 3b | Vue Bits (1–2 componentes piloto em `public/tenants/ana/`) | Por tenant, ref. [vue-bits.dev](https://vue-bits.dev/) |
 | 4 | WebGL / Rive por demanda do cliente | Por tenant, sem ticket global |
 
 ---
@@ -175,5 +199,6 @@ Runbook: [EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 9.5 · [BACKLO
 - [FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md) — pastas, temas, dark mode
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — ADR-016 superfícies
 - [Nuxt UI](https://ui.nuxt.com/)
+- [Vue Bits](https://vue-bits.dev/) — componentes/backgrounds animados Vue 3 + Tailwind (tenant público)
 - [GSAP ScrollTrigger](https://gsap.com/docs/v3/Plugins/ScrollTrigger/)
 - [Lenis](https://github.com/darkroomengineering/lenis)

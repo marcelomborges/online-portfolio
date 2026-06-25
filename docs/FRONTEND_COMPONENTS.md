@@ -43,6 +43,10 @@ Referência operacional (humanos e agentes). Stack base: Nuxt 3.21 + Vue 3 + Typ
 
 Detalhes da stack tenant: [ADR-018](./ADR-018-frontend-ui-motion-stack.md).
 
+### Vue Bits — catálogo animado (tenant)
+
+[Vue Bits](https://vue-bits.dev/) — referência para **backgrounds, text effects e UI animada** (Vue 3 + TypeScript + Tailwind). Uso **opt-in** por slug em `public/tenants/{slug}/`; instalação por componente via `jsrepo` ou shadcn (código entra no repo). **Não** usar no admin (`components/app/`) — lá permanece **Nuxt UI**. Ver [ADR-018](./ADR-018-frontend-ui-motion-stack.md).
+
 Até a instalação dos pacotes (Epic 1+), primitivos locais em `components/ui/` (`UiButton`, `UiCard`, …) com tokens `--op-*`.
 
 **Regra:** não importar GSAP/Lenis/Three em `components/app/`. Não usar Nuxt UI como “cara” do site do artista — cada slug tem componentes e tema próprios.
@@ -319,7 +323,7 @@ Componentes `ui/` referenciam `var(--op-*)` — evita repetir cores/fontes.
 - [ ] Sem secrets em `NUXT_PUBLIC_*` ou `app.config.ts`.
 - [ ] Componente de tenant novo está em `public/tenants/{slug}/`, não em `app/`.
 - [ ] Login/admin não importa componentes de `public/tenants/`.
-- [ ] Admin não importa GSAP/Lenis/Three (ADR-018).
+- [ ] Admin não importa GSAP/Lenis/Three/Vue Bits (ADR-018).
 - [ ] Motion tenant respeita `prefers-reduced-motion`.
 
 ---
@@ -329,6 +333,7 @@ Componentes `ui/` referenciam `var(--op-*)` — evita repetir cores/fontes.
 | Artefato | Descrição |
 |---|---|
 | [ADR-018](./ADR-018-frontend-ui-motion-stack.md) | Admin simples (Nuxt UI) vs tenant ultra animado |
+| [Vue Bits](https://vue-bits.dev/) | Catálogo de componentes animados — tenant público (jsrepo/shadcn) |
 | [EXTERNAL_PROVIDERS.md](./EXTERNAL_PROVIDERS.md) seção 9.5 | Vercel Web Analytics (DEV-110) |
 | [docs/ARCHITECTURE.md](./ARCHITECTURE.md) | Decisão: três superfícies + UI por tenant |
 | `frontend/middleware/resolve-host.global.ts` | Host → surface + slug |

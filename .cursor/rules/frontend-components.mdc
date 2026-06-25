@@ -14,7 +14,7 @@ alwaysApply: false
 |---|---|---|---|
 | **Admin / login** | `app.*` | **Nuxt UI** — rápido, responsivo | ❌ Sem Lenis/GSAP/WebGL |
 | **Platform** | apex | **Nuxt UI** | ⚠️ Leve opcional |
-| **Tenant público** | `{slug}.*` | Custom `public/tenants/{slug}/` + `themes/{slug}.css` | ✅ **Ultra animado** (GSAP, Lenis, …) |
+| **Tenant público** | `{slug}.*` | Custom `public/tenants/{slug}/` + `themes/{slug}.css` | ✅ **Ultra animado** (GSAP, Lenis, [Vue Bits](https://vue-bits.dev/), …) |
 | **Resto** | dev, error | `surface-dark` | ❌ Estrutural apenas |
 
 ## Regras obrigatórias
