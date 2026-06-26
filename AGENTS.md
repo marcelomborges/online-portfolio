@@ -22,9 +22,10 @@ Cursor: `.cursor/rules/security-first.mdc` · GitHub: `.github/instructions/secu
 | Frontend surfaces & tenant UI | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [FRONTEND_COMPONENTS.md](docs/FRONTEND_COMPONENTS.md) · [ADR-018](docs/ADR-018-frontend-ui-motion-stack.md) |
 | Database & Identity | [docs/DATABASE.md](docs/DATABASE.md) |
 | Tasks (DEV-xxx) | [docs/BACKLOG.md](docs/BACKLOG.md) |
+| Language (EN / pt-BR UI) | [docs/LANGUAGE.md](docs/LANGUAGE.md) |
 | Commits | [docs/CONVENTIONAL_COMMITS.md](docs/CONVENTIONAL_COMMITS.md) |
 | Git flow & CI | [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md) |
-| Supabase/Vercel/Render | [docs/EXTERNAL_PROVIDERS.md](docs/EXTERNAL_PROVIDERS.md) (Vercel Analytics → seção 9.5 / DEV-110) |
+| Supabase/Vercel/Render | [docs/EXTERNAL_PROVIDERS.md](docs/EXTERNAL_PROVIDERS.md) (Vercel Analytics → section 9.5 / DEV-110) |
 
 ## Repository status
 
@@ -34,13 +35,13 @@ Epic 0 foundation done — monorepo, Docker, **CI PR** (`ci-backend`, `ci-fronte
 
 0. **SECURITY FIRST** — see [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md); tenant isolation and secrets are never optional.
 1. **BFF** — Nuxt proxies all API calls; browser never hits Render directly.
-2. **Auth** — ASP.NET Identity completo + JWT; roles in `AspNetRoles`; admin at `app.{domain}` only.
+2. **Auth** — full ASP.NET Identity + JWT; roles in `AspNetRoles`; admin at `app.{domain}` only.
 3. **No Supabase Auth** in frontend.
 4. **Multi-tenant** — row isolation via `TenantId`; PlatformAdmin only adds users in v1.
 5. **Email** — Resend `mail@onlineportfolio.com.br` transactional only (no inbox v1; use Reply-To). See [docs/ADR-017-resend-transactional-email.md](docs/ADR-017-resend-transactional-email.md).
 6. **Commits** — [Conventional Commits](docs/CONVENTIONAL_COMMITS.md); commit/push only when user asks.
-7. **Scope** — implement BACKLOG acceptance criteria; minimal diff; PT-BR in product docs.
-8. **Git/CI** — workflows separados; CI PR + coverage comments on PR; deploy **prod only** ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)) — [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md).
+7. **Scope** — implement BACKLOG acceptance criteria; minimal diff; **English** for code/docs; **pt-BR** for product UI only ([LANGUAGE.md](docs/LANGUAGE.md)).
+8. **Git/CI** — separate workflows; CI PR + coverage comments on PR; deploy **prod only** ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)) — [docs/AGENT_GUIDE.md](docs/AGENT_GUIDE.md).
 
 ## Implementation order
 
@@ -52,6 +53,6 @@ See [docs/BACKLOG.md](docs/BACKLOG.md).
 
 | Tool | File |
 |---|---|
-| Cursor | `.cursor/rules/security-first.mdc`, `.cursor/rules/project-context.mdc`, `.cursor/rules/conventional-commits.mdc` |
+| Cursor | `.cursor/rules/security-first.mdc`, `.cursor/rules/project-context.mdc`, `.cursor/rules/language.mdc`, `.cursor/rules/conventional-commits.mdc` |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/git-workflow.instructions.md` |
-| Path instructions | `.github/instructions/*.instructions.md` |
+| Path instructions | `.github/instructions/*.instructions.md` (incl. `language.instructions.md`) |

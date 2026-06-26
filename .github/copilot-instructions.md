@@ -26,7 +26,7 @@ Path instructions: `.github/instructions/security.instructions.md`
 ## Architecture (required)
 
 - **BFF:** Nuxt server proxy → ASP.NET API; browser never calls Render directly.
-- **Auth:** ASP.NET Identity **completo** + JWT; `AspNetRoles` / `AspNetUserRoles`; no Supabase Auth in frontend.
+- **Auth:** ASP.NET Identity (full) + JWT; `AspNetRoles` / `AspNetUserRoles`; no Supabase Auth in frontend.
 - **Hosts:** admin + login = `app.onlineportfolio.com.br`; public = `{slug}.onlineportfolio.com.br`.
 - **Email v1:** Resend `mail@onlineportfolio.com.br` send-only; Reply-To for replies; no Google Workspace mailbox yet.
 - **Tenants:** PlatformAdmin invites users in v1 only.
@@ -46,7 +46,7 @@ Security fixes: `fix(backend): …` or mention security in body. Full guide: [do
 
 ## Git flow & CI
 
-- **CI + deploy separados:** `ci-backend.yml` + `ci-frontend.yml` (✅) + `deploy-backend.yml` + `deploy-frontend.yml` (planned) — not one combined `ci.yml`.
+- **CI + deploy separate:** `ci-backend.yml` + `ci-frontend.yml` (✅) + `deploy-backend.yml` + `deploy-frontend.yml` — not one combined `ci.yml`.
 - **PR coverage comments:** sticky **Backend coverage** / **Frontend coverage** — only when that stack's CI runs on the PR.
 - **Before merge:** green CI + **paired components** — API ↔ proxy/types/UI; schema ↔ migration; auth/env both sides. See [docs/AGENT_GUIDE.md](./AGENT_GUIDE.md).
 
@@ -55,10 +55,12 @@ Path instructions: `.github/instructions/git-workflow.instructions.md`
 ## Code conventions
 
 - Minimal scope; match BACKLOG acceptance criteria.
+- **Language:** English for code, docs, commits; **pt-BR only** for product UI — [docs/LANGUAGE.md](../docs/LANGUAGE.md).
 - Backend: EF Core, snake_case Postgres columns, `/api/v1/` versioning.
 - Backend tests: xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` ([docs/ARCHITECTURE.md](./ARCHITECTURE.md)).
 - Frontend: Nuxt 3, host-based routing; **3 surfaces** (app/platform/tenant), per-tenant public UI — [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · [FRONTEND_COMPONENTS.md](../docs/FRONTEND_COMPONENTS.md).
-- Product/docs text: Brazilian Portuguese. Commits and code identifiers: English.
+
+Path instructions: `.github/instructions/language.instructions.md` · `.github/instructions/frontend.instructions.md`
 
 ## Avoid
 

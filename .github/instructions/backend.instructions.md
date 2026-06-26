@@ -4,7 +4,7 @@ applyTo: "backend/**"
 
 # Backend (ASP.NET Core)
 
-- ASP.NET Identity **completo**: `AddIdentity<ApplicationUser, IdentityRole<Guid>>()`, `RoleManager`, seed `PlatformAdmin` / `Owner` / `Editor`.
+- ASP.NET Identity (full): `AddIdentity<ApplicationUser, IdentityRole<Guid>>()`, `RoleManager`, seed `PlatformAdmin` / `Owner` / `Editor`.
 - JWT issued and validated by API (`Jwt__Secret`); not Supabase JWT.
 - **Security:** `[Authorize(Roles)]` + tenant membership on every protected action; never trust body `TenantId`.
 - EF Core only for Postgres; snake_case columns; migrations via CI (`dotnet ef database update`), not on prod API startup.
@@ -13,5 +13,6 @@ applyTo: "backend/**"
 - Platform routes: `[Authorize(Roles = "PlatformAdmin")]`.
 - Secrets (Resend, Supabase service role, JWT) — Render env only.
 - **Tests:** xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` — see `docs/ARCHITECTURE.md`; project `OnlinePortfolio.Api.Tests`.
+- **Language:** English for code, comments, logs, OpenAPI; **pt-BR** for API messages returned to users — [docs/LANGUAGE.md](../../docs/LANGUAGE.md).
 - **Cross-stack:** API/DTO/auth/env changes usually need matching frontend proxy, types, or pages — see `docs/AGENT_GUIDE.md`.
 - See `docs/DATABASE.md` and `docs/ARCHITECTURE.md`.

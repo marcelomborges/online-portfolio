@@ -15,12 +15,12 @@ alwaysApply: true
 
 - **Security:** tenant isolation, no IDOR, secrets server-only, validate inputs, invite-only auth
 - **BFF:** browser → Nuxt proxy → API — never direct Render from browser
-- **Auth:** ASP.NET Identity **completo** + JWT on API; roles via `AspNetRoles` / `AspNetUserRoles`
+- **Auth:** ASP.NET Identity (full) + JWT on API; roles via `AspNetRoles` / `AspNetUserRoles`
 - **No** Supabase Auth, **no** `@nuxtjs/supabase`, **no** anon key in frontend
 - **Admin login:** only `app.onlineportfolio.com.br` — not tenant subdomains
-- **Public sites:** `{slug}.onlineportfolio.com.br` per tenant — UI custom + **ultra animado** in `components/public/tenants/{slug}/` only ([ADR-018](docs/ADR-018-frontend-ui-motion-stack.md))
+- **Public sites:** `{slug}.onlineportfolio.com.br` per tenant — custom UI + **heavy motion** in `components/public/tenants/{slug}/` only ([ADR-018](docs/ADR-018-frontend-ui-motion-stack.md))
 - **Admin UI:** standardized in `components/app/` — **Nuxt UI**, minimal motion — never per-tenant ([ADR-018](docs/ADR-018-frontend-ui-motion-stack.md))
-- **Email v1:** Resend `mail@onlineportfolio.com.br` send-only — no mailbox; Reply-To para respostas ([ADR-017](docs/ADR-017-resend-transactional-email.md))
+- **Email v1:** Resend `mail@onlineportfolio.com.br` send-only — no mailbox; Reply-To for replies ([ADR-017](docs/ADR-017-resend-transactional-email.md))
 - **Secrets:** never commit `.env` or API keys; service role only on backend
 
 ## Roles (v1)
@@ -41,10 +41,14 @@ Conventional Commits — see `.cursor/rules/conventional-commits.mdc`
 
 ## Git flow & CI
 
-- **Workflows separados:** `ci-backend.yml` + `ci-frontend.yml` (✅ PR CI + coverage comments) + `deploy-*` (planned).
+- **Separate workflows:** `ci-backend.yml` + `ci-frontend.yml` (✅ PR CI + coverage comments) + `deploy-*`.
 - **Deploy:** production only on `main` ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)); no staging stack in v1.
 - **Before merge:** green CI + cross-stack review; PR coverage comments when CI runs. Checklist: `docs/AGENT_GUIDE.md` · `docs/ARCHITECTURE.md`
 
 ## Docs map
 
-`docs/AGENT_GUIDE.md` · `docs/ARCHITECTURE.md` · `docs/FRONTEND_COMPONENTS.md` · `docs/ADR-018-frontend-ui-motion-stack.md` · `docs/DATABASE.md` · `docs/BACKLOG.md` SEC-*
+`docs/LANGUAGE.md` · `docs/AGENT_GUIDE.md` · `docs/ARCHITECTURE.md` · `docs/FRONTEND_COMPONENTS.md` · `docs/ADR-018-frontend-ui-motion-stack.md` · `docs/DATABASE.md` · `docs/BACKLOG.md` SEC-*
+
+## Language
+
+**English** — code, docs, commits, comments. **pt-BR only** — product UI & user-facing messages. See [docs/LANGUAGE.md](docs/LANGUAGE.md).
