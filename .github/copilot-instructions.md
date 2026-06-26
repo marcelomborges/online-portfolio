@@ -55,12 +55,27 @@ Path instructions: `.github/instructions/git-workflow.instructions.md`
 ## Code conventions
 
 - Minimal scope; match BACKLOG acceptance criteria.
-- **Language:** English for code, docs, commits; **pt-BR only** for product UI — [docs/LANGUAGE.md](../docs/LANGUAGE.md).
+- **Language (inline completions + chat):** see next section and [docs/LANGUAGE.md](../docs/LANGUAGE.md). **Do not** suggest Portuguese because nearby Vue templates are pt-BR.
 - Backend: EF Core, snake_case Postgres columns, `/api/v1/` versioning.
 - Backend tests: xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` ([docs/ARCHITECTURE.md](./ARCHITECTURE.md)).
 - Frontend: Nuxt 3, host-based routing; **3 surfaces** (app/platform/tenant), per-tenant public UI — [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · [FRONTEND_COMPONENTS.md](../docs/FRONTEND_COMPONENTS.md).
 
-Path instructions: `.github/instructions/language.instructions.md` · `.github/instructions/frontend.instructions.md`
+Path instructions: `.github/instructions/language.instructions.md` · `.github/instructions/vue.instructions.md` · `.github/instructions/frontend.instructions.md`
+
+## Language — Copilot completions (required)
+
+This repo is **English-first**. Copilot must **not** default to Portuguese for the user's locale or because a file contains pt-BR UI copy.
+
+| Suggest **English** | Suggest **pt-BR** only here |
+|---|---|
+| Code comments, XML/JSDoc, log messages | Vue `<template>` user-visible text |
+| C# / TypeScript identifiers and string literals in non-UI code | API `message` fields returned to the UI |
+| Commit messages, docs, tests | Transactional email bodies to artists |
+| `<script>` blocks in `.vue` (including `statusMessage` only when dev/debug — prefer English keys + i18n later) | Labels, buttons, validation, empty states in admin/public UI |
+
+**Vue SFC rule:** pt-BR in `<template>` does **not** extend to `<script>` completions. When completing `<script>`, use English comments and English developer-facing strings unless explicitly writing a user-facing `message` for the API/UI.
+
+Full guide: [docs/LANGUAGE.md](../docs/LANGUAGE.md)
 
 ## Avoid
 
