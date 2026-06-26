@@ -40,12 +40,12 @@ docker compose up --build
 
 Stop: `Ctrl+C` or, in another terminal at the same path: `docker compose down`.
 
-Full reset (drops Postgres volume; schema via EF migrations):
+Full reset (drops Postgres volume; schema via EF migrations — see [From zero](#from-zero--docker-volume-deleted-down--v)):
 
 ```bash
 docker compose down -v
 docker compose up -d db
-cd backend && dotnet ef database update --project OnlinePortfolio.Api
+cd backend && dotnet tool restore && dotnet ef database update --project OnlinePortfolio.Api
 ```
 
 Verify tenants (after DEV-152 seed):

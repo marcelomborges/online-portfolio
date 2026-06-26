@@ -50,5 +50,6 @@ jobs:
       - name: Apply database migrations (production)
         working-directory: backend/OnlinePortfolio.Api
         env:
+          DOTNET_ENVIRONMENT: Production
           ConnectionStrings__Migration: ${{ secrets.SUPABASE_MIGRATION_CONNECTION_STRING }}
         run: dotnet ef database update --configuration Release

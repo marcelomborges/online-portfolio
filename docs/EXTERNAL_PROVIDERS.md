@@ -552,7 +552,7 @@ Set in **Environment → Environment Variables** (or `render.yaml`):
 
 | Variable | Value | Secret |
 |---|---|---|
-| `ASPNETCORE_ENVIRONMENT` | `Production` | No |
+| `DOTNET_ENVIRONMENT` | `Production` | No |
 | `ASPNETCORE_URLS` | `http://+:8080` | No |
 | `ConnectionStrings__Default` | Supabase pooler URI (`6543`) | Yes |
 | `Jwt__Secret` | API JWT signing key | Yes |
@@ -567,6 +567,8 @@ Set in **Environment → Environment Variables** (or `render.yaml`):
 **Render UI:** after saving, values are masked (eye icon to reveal). There is no separate “secret” toggle in the current dashboard — still treat `Resend__ApiKey`, `Jwt__Secret`, connection strings, and `service_role` as credentials: password manager + never in git.
 
 **Do not set** `ConnectionStrings__Migration` on Render unless you intentionally run migrations from the container (not recommended — use CI instead).
+
+**Environment name:** use **`DOTNET_ENVIRONMENT`** only (not `ASPNETCORE_ENVIRONMENT`). The API still accepts `ASPNETCORE_ENVIRONMENT` as a fallback for third-party defaults, but this project standardizes on `DOTNET_*` for host configuration.
 
 ### 7.5 Render checklist
 
