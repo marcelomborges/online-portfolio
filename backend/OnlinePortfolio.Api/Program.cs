@@ -39,6 +39,10 @@ try
 {
     Log.Information("Starting OnlinePortfolio.Api");
     await IdentityRoleSeeder.SeedAsync(app.Services);
+
+    if (app.Environment.IsDevelopment())
+        await DevDataSeeder.SeedAsync(app.Services, app.Configuration);
+
     await app.RunAsync();
 }
 finally
