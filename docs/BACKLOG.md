@@ -849,22 +849,31 @@ C# entities `Plan`, `Tenant`, `TenantSettings`, `User` with Fluent API / snake_c
 
 ---
 
-### DEV-152 — Dev seed: plans + two tenants
+### DEV-152 — Dev seed: plans + two tenants ✅
 
 **Description:**
 Seed `Starter` plan + tenants `ana` and `joao` with empty `tenant_settings`.
 
 **Acceptance criteria:**
-- [ ] Seed runs on local `docker compose up` or explicit `dotnet run --seed`
-- [ ] Two active tenants with distinct slugs
-- [ ] No artwork rows (table does not exist yet)
-- [ ] Seed PlatformAdmin user with password (dev credentials documented)
+- [x] Seed runs on local `docker compose up` or explicit `dotnet run --seed`
+- [x] Two active tenants with distinct slugs
+- [x] No artwork rows (table does not exist yet)
+- [x] Seed PlatformAdmin user with password (dev credentials documented)
 
 **Notes:**
 - **Phase:** 1.5
 - **Area:** database, backend
 - **Priority:** P0
 - **Depends on:** DEV-151
+- **Status:** ✅ **Done** (2026-06-26)
+
+**Done notes (2026-06-26):**
+- `DevDataSeeder` — seeder idempotente com dois overloads: dependências explícitas (testes) e entry point via `IServiceProvider` (Program.cs)
+- Dados seedados: plano `Starter` (500 MB, 50 artworks), tenants `ana` / `joao` + `TenantSettings` vazio, usuário `PlatformAdmin`
+- IDs fixos e determinísticos (`000...001`, `000...010`, `000...011`) — evitam drift entre resets locais
+- Credenciais dev em `appsettings.Development.json`: `admin@onlineportfolio.com.br` / `Dev@12345`
+- Seed chamado apenas em `Development` em `Program.cs`, após `IdentityRoleSeeder`
+- `Microsoft.EntityFrameworkCore.InMemory` adicionado ao projeto de testes; 4 testes unitários verdes (`DevDataSeederTests`)
 
 ---
 
@@ -2152,7 +2161,7 @@ DEV-008b · DEV-207 · DEV-400+ · DEV-403 · DEV-404 · IT-010 · SEC-009 · SE
 
 ---
 
-*Last updated: 2026-06-25 — DEV-150/151 done; Sprint 3 = Epic 1.5 (login MVP); backlog text fully in English*
+*Last updated: 2026-06-26 — DEV-150/151/152 done; próximo: DEV-153 (JWT) + DEV-154 (auth endpoints)*
 
 ---
 
