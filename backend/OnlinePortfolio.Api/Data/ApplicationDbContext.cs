@@ -6,8 +6,9 @@ using OnlinePortfolio.Api.Data.Entities;
 namespace OnlinePortfolio.Api.Data;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
+    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options), IUnitOfWork
 {
+    public Task<int> CommitAsync(CancellationToken ct = default) => SaveChangesAsync(ct);
     public DbSet<Plan> Plans => Set<Plan>();
 
     public DbSet<Tenant> Tenants => Set<Tenant>();

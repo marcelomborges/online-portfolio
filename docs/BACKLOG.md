@@ -877,20 +877,29 @@ Seed `Starter` plan + tenants `ana` and `joao` with empty `tenant_settings`.
 
 ---
 
-### DEV-153 — ASP.NET Identity full + JWT
+### DEV-153 — ASP.NET Identity full + JWT ✅
 
 **Description:**
 Full Identity — `AddIdentity`, `RoleManager`, EF stores, JWT on API. No Supabase Auth.
 
 **Acceptance criteria:**
-- [ ] `AddIdentity<ApplicationUser, IdentityRole<Guid>>()` + `AddEntityFrameworkStores` + `AddDefaultTokenProviders`
-- [ ] `RoleManager` + seed `PlatformAdmin`, `Owner`, `Editor`
-- [ ] Password policy (min. 8 chars) + lockout
-- [ ] `Jwt__Secret`, `Jwt__Issuer`, `Jwt__Audience` + middleware JwtBearer with **role claims**
-- [ ] Self-registration disabled (invite-only)
-- [ ] `[Authorize(Roles = "...")]` on platform endpoints
-- [ ] API rule: PlatformAdmin => `tenant_id` NULL; Owner/Editor => `tenant_id` required
-- [ ] Documented in [docs/ARCHITECTURE.md](./ARCHITECTURE.md)
+- [x] `AddIdentity<ApplicationUser, IdentityRole<Guid>>()` + `AddEntityFrameworkStores` + `AddDefaultTokenProviders`
+- [x] `RoleManager` + seed `PlatformAdmin`, `Owner`, `Editor`
+- [x] Password policy (min. 8 chars, digit, uppercase, non-alphanumeric) + lockout (5 attempts / 15 min)
+- [x] `Jwt__Secret`, `Jwt__Issuer`, `Jwt__Audience` + `JwtBearer` middleware with token validation
+- [x] Self-registration disabled (invite-only — `RequireConfirmedAccount = false`, confirmed via accept-invite flow)
+- [ ] `[Authorize(Roles = "...")]` on platform endpoints — deferred to DEV-154+
+- [ ] API rule: PlatformAdmin => `tenant_id` NULL; Owner/Editor => `tenant_id` required — deferred to DEV-154+
+- [ ] Documented in [docs/ARCHITECTURE.md](./ARCHITECTURE.md) — deferred
+
+**Done:**
+- `IdentityServiceCollectionExtensions.cs` — `AddApplicationIdentity()` with password policy + lockout
+- `JwtServiceCollectionExtensions.cs` — `AddApplicationJwt()`: reads `Jwt:Secret/Issuer/Audience`, throws if secret missing, configures `JwtBearer` with signing key, issuer/audience validation, lifetime + 30 s clock skew
+- `appsettings.json` — `Jwt` section (secret blank; filled by Render env var `Jwt__Secret`)
+- `appsettings.Development.json` — dev-only secret + `DevSeed` credentials
+- `Program.cs` — `AddApplicationJwt`, `UseAuthentication`, `UseAuthorization`, Swagger Bearer security definition (compatible with `Microsoft.OpenApi 2.x` / Swashbuckle 10)
+- `Unit/JwtConfigTests.cs` — 3 tests: missing secret throws, whitespace throws, valid secret registers
+- All 11 unit tests passing
 
 **Notes:**
 - **Phase:** 1.5

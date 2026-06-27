@@ -2,6 +2,17 @@
 
 Multi-tenant artist portfolio SaaS. **Full agent guide:** [docs/AGENT_GUIDE.md](../docs/AGENT_GUIDE.md)
 
+## AI instruction files — keep in sync (MANDATORY)
+
+Any time you change architecture, patterns, conventions, or project rules, update **all** AI instruction files in the same operation:
+
+- `CLAUDE.md` — Claude Code
+- `.github/copilot-instructions.md` — GitHub Copilot (this file)
+- `docs/ARCHITECTURE.md` — source of truth, update first
+- `docs/AGENT_GUIDE.md` — general agent guidance
+
+Never leave these files out of sync.
+
 ## PRIORITY #1 — Security
 
 **Security overrides speed.** Multi-tenant isolation is mandatory.
@@ -59,6 +70,16 @@ Path instructions: `.github/instructions/git-workflow.instructions.md`
 - Backend: EF Core, snake_case Postgres columns, `/api/v1/` versioning.
 - Backend tests: xUnit · Moq · FluentAssertions · Coverlet · `dotnet test` ([docs/ARCHITECTURE.md](./ARCHITECTURE.md)).
 - Frontend: Nuxt 3, host-based routing; **3 surfaces** (app/platform/tenant), per-tenant public UI — [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · [FRONTEND_COMPONENTS.md](../docs/FRONTEND_COMPONENTS.md).
+
+## Backend design patterns (mandatory)
+
+**Layer rule:** Controller → Service → Repository. Never skip. No EF Core outside repositories. No business rules in controllers or repositories.
+
+**Options Pattern:** every config block has a typed class in `Options/` (`JwtOptions`, `DevSeedOptions`, …). Register via `services.Configure<T>(config.GetSection(T.Section))`. No raw `configuration["Key"]` in services/controllers.
+
+**Result Pattern:** services return `Result<T>` from `Common/Result.cs`. Use `Error.NotFound()`, `.Conflict()`, `.Unauthorized()`, `.Forbidden()`, `.Validation()`. Controllers map with `.Match(onSuccess, onFailure)`. Exceptions only for unexpected failures.
+
+**Unit of Work:** `IUnitOfWork.CommitAsync()` called only in services. Repositories only manipulate the EF change tracker — never `SaveChanges`. `ApplicationDbContext` implements `IUnitOfWork`.
 
 Path instructions: `.github/instructions/language.instructions.md` · `.github/instructions/vue.instructions.md` · `.github/instructions/frontend.instructions.md`
 

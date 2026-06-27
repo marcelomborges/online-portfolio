@@ -2,6 +2,21 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## AI instruction files — keep in sync (MANDATORY)
+
+This project has multiple AI instruction files. **Any time you change architecture, patterns, conventions, or project rules in one file, you MUST update all others in the same operation:**
+
+| File | AI tool |
+|---|---|
+| `CLAUDE.md` (this file) | Claude Code |
+| `.github/copilot-instructions.md` | GitHub Copilot |
+| `docs/ARCHITECTURE.md` | Source of truth — always update this first |
+| `docs/AGENT_GUIDE.md` | General agent guidance |
+
+Never leave the files out of sync. A rule that exists only in one file will be ignored by the other tools.
+
+---
+
 ## What this project is
 
 Multi-tenant SaaS platform for artist portfolios. One Nuxt 3 app + one ASP.NET Core 10 API serve all tenants.
@@ -11,7 +26,7 @@ Multi-tenant SaaS platform for artist portfolios. One Nuxt 3 app + one ASP.NET C
 - **Database:** Supabase PostgreSQL via EF Core
 - **Domain:** `onlineportfolio.com.br` (prod live)
 
-Full architecture: `docs/ARCHITECTURE.md` · Schema: `docs/DATABASE.md`
+Full architecture: `docs/ARCHITECTURE.md` · Schema: `docs/DATABASE.md` · Design patterns: `docs/DESIGN_PATTERNS.md`
 
 ---
 
@@ -120,6 +135,24 @@ Full migration reference: `docs/DEV_COMMANDS.md`
 ---
 
 ## Architecture
+
+### Backend layer pattern (mandatory)
+
+| Layer | Folder | Rule |
+|---|---|---|
+| **Controller** | `Controllers/` | HTTP in/out only. No business logic. Calls services. |
+| **Service** | `Services/` | All business rules and authorization. Calls repositories + `IUnitOfWork`. Never calls `DbContext` directly. |
+| **Repository** | `Data/Repositories/` | All and only database access. No business rules. Never calls `SaveChanges`. |
+
+Never skip a layer. No EF Core outside repositories.
+
+### Design patterns (mandatory)
+
+**Options Pattern** — every config block has a typed class in `Options/` registered via `services.Configure<T>()`. No raw `configuration["Key"]` access in services or controllers.
+
+**Result Pattern** — services return `Result<T>` (from `Common/Result.cs`) for all expected outcomes. Exceptions only for unexpected failures. Controllers use `.Match(onSuccess, onFailure)` to map to HTTP responses. Use `Error.NotFound()`, `Error.Conflict()`, `Error.Unauthorized()`, `Error.Forbidden()`, `Error.Validation()` factory methods.
+
+**Unit of Work** — `IUnitOfWork.CommitAsync()` is called only in services. Repositories only manipulate the EF change tracker. `ApplicationDbContext` implements `IUnitOfWork`.
 
 ### Multi-tenant model
 

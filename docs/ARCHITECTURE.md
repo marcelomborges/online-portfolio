@@ -510,6 +510,39 @@ Browser → {tenant-host}/api/...  (Nuxt server route)
 - Public reads benefit from Vercel caching (SSG/ISR)
 - Health check: `GET /health`
 
+### Internal architecture — MVC + Service + Repository
+
+The backend follows a strict three-layer pattern:
+
+| Layer | Folder | Responsibility |
+|---|---|---|
+| **Controller** | `Controllers/` | HTTP in/out only. Validates input, calls the service, returns HTTP responses. No business logic. |
+| **Service** | `Services/` | All business rules, authorization checks, and orchestration. Calls repositories and `IUnitOfWork`. Never calls `DbContext` directly. |
+| **Repository** | `Data/Repositories/` | All and only database access. Manipulates the EF change tracker (`Add`, `Update`, `Remove`, queries). Never calls `SaveChanges`. |
+
+**Rules:**
+- Controllers call Services. Services call Repositories. Never skip a layer.
+- No EF Core (`DbContext`, LINQ queries) outside of repository classes.
+- No business rules in controllers or repositories.
+
+### Design patterns
+
+Full rationale and usage guide for every pattern: **[docs/DESIGN_PATTERNS.md](./DESIGN_PATTERNS.md)**
+
+Quick reference:
+
+| Pattern | Source / folder | Rule |
+|---|---|---|
+| Options Pattern | `Options/` + `IOptions<T>` | No raw `configuration["Key"]` in services or controllers |
+| Result Pattern | `Common/Result.cs` | Services return `Result<T>`; exceptions only for unexpected failures |
+| Unit of Work | `IUnitOfWork` / `CommitAsync()` | Called only in services; repositories never call `SaveChanges` |
+| Repository | `Data/Repositories/` | Only place EF Core is used; no business logic |
+| DI Extension Methods | `*ServiceCollectionExtensions.cs` | One class per logical group; `Program.cs` stays clean |
+| Idempotent Seeder | `IdentityRoleSeeder`, `DevDataSeeder` | Always check-before-insert; fixed GUIDs for dev data |
+| Global Query Filters | Entity configurations | Automatic `WHERE tenant_id = ?` on all tenant-scoped entities |
+| BFF | `frontend/server/api/` | Browser never calls Render or Supabase directly |
+| Multi-tenant Row Isolation | ORM + middleware + service check | `TenantId` always from JWT user row, never from request |
+
 ### Migrations at deploy
 
 - **Do not** auto-run `Migrate()` on API startup in production

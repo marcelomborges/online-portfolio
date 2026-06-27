@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OnlinePortfolio.Api.Data.Entities;
+using OnlinePortfolio.Api.Options;
 
 namespace OnlinePortfolio.Api.Data;
 
@@ -111,20 +112,22 @@ public static class DevDataSeeder
     // Public entry point called from Program.cs.
     public static async Task SeedAsync(
         IServiceProvider services,
-        IConfiguration configuration,
         CancellationToken ct = default)
     {
-        var adminEmail = configuration["DevSeed:PlatformAdminEmail"]
-            ?? throw new InvalidOperationException("DevSeed:PlatformAdminEmail is required.");
-        var adminPassword = configuration["DevSeed:PlatformAdminPassword"]
-            ?? throw new InvalidOperationException("DevSeed:PlatformAdminPassword is required.");
-
         using var scope = services.CreateScope();
         var sp = scope.ServiceProvider;
-        var db = sp.GetRequiredService<ApplicationDbContext>();
-        var userManager = sp.GetRequiredService<UserManager<ApplicationUser>>();
-        var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(DevDataSeeder));
 
-        await SeedAsync(db, userManager, adminEmail, adminPassword, logger, ct);
+        var opts = sp.GetRequiredService<IOptions<DevSeedOptions>>().Value;
+
+        if (string.IsNullOrWhiteSpace(opts.PlatformAdminEmail))
+            throw new InvalidOperationException("DevSeed:PlatformAdminEmail is required.");
+        if (string.IsNullOrWhiteSpace(opts.PlatformAdminPassword))
+            throw new InvalidOperationException("DevSeed:PlatformAdminPassword is required.");
+
+        var db          = sp.GetRequiredService<ApplicationDbContext>();
+        var userManager = sp.GetRequiredService<UserManager<ApplicationUser>>();
+        var logger      = sp.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(DevDataSeeder));
+
+        await SeedAsync(db, userManager, opts.PlatformAdminEmail, opts.PlatformAdminPassword, logger, ct);
     }
 }

@@ -18,6 +18,8 @@ public static class DatabaseServiceCollectionExtensions
                 .UseNpgsql(connectionString)
                 .UseSnakeCaseNamingConvention());
 
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
+
         return services;
     }
 }

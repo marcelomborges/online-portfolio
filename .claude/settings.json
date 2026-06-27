@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dotnet test *)"
+      "Bash(dotnet test *)",
+      "Bash(dotnet add *)",
+      "Bash(dotnet list *)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet remove *)",
+      "Bash(grep -v \"^$\")",
+      "Bash(dotnet-script)",
+      "Bash(powershell -Command ' *)"
     ]
   }
 }
