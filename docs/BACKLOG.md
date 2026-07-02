@@ -909,27 +909,38 @@ Full Identity — `AddIdentity`, `RoleManager`, EF stores, JWT on API. No Supaba
 
 ---
 
-### DEV-154 — API: auth endpoints + `GET /auth/me`
+### DEV-154 — API: auth endpoints + `GET /auth/me` ✅
 
 **Description:**
 Login, logout, accept-invite, and current user — all in API.
 
 **Acceptance criteria:**
-- [ ] `POST /api/v1/auth/login` — `SignInManager` → JWT with role claims
-- [ ] Invite uses `UserManager.AddToRoleAsync`
-- [ ] `POST /api/v1/auth/logout` — clear session/cookie
-- [ ] `POST /api/v1/auth/accept-invite` — token + password for pending invite
-- [ ] `GET /api/v1/auth/me` returns `{ user, tenant }` for Owner/Editor
-- [ ] PlatformAdmin: `tenant` null, role in response
-- [ ] Updates `users.last_login_at`
-- [ ] Inactive user or inactive tenant → 403
-- [ ] OpenAPI documented
+- [x] `POST /api/v1/auth/login` — `SignInManager` → JWT with role claims
+- [x] Invite uses `UserManager.AddToRoleAsync` (via `AcceptInviteAsync`)
+- [x] `POST /api/v1/auth/logout` — stateless 204; BFF cookie clear in DEV-157
+- [x] `POST /api/v1/auth/accept-invite` — token + password for pending invite
+- [x] `GET /api/v1/auth/me` returns `{ user, tenant }` for Owner/Editor
+- [x] PlatformAdmin: `tenant` null, role in response
+- [x] Updates `users.last_login_at`
+- [x] Inactive user or inactive tenant → 401 (user enumeration prevention; not 403)
+- [x] OpenAPI documented
 
 **Notes:**
 - **Phase:** 1.5
 - **Area:** backend, security
 - **Priority:** P0
 - **Depends on:** DEV-151, DEV-153
+- **Status:** ✅ **Done** (2026-07-01)
+
+**Done notes (2026-07-01):**
+- `AuthController` — 4 endpoints: login (200/401/423/429), logout (204), accept-invite (204/400/429), me (200/401/403)
+- `AuthService` — Result pattern throughout; `IAuthService` interface; registered via `AddApplicationServices()`
+- `IUserRepository` / `UserRepository` — `FindByIdWithTenantAsync` eager-loads `Tenant` in one query
+- Security hardening: user enumeration prevention (all login failures return identical 401), invite token reuse prevention (`EmailConfirmed` guard), failed login + lockout audit logging via `ILogger`
+- Rate limiting: `AddApplicationRateLimiter()` — `auth:login` (10 req/min/IP), `auth:invite` (5 req/min/IP); `UseForwardedHeaders()` first in pipeline for correct IP behind Render proxy
+- Root cause fix: `AddIdentity` → `AddIdentityCore` (avoids cookie scheme overriding JWT Bearer on `GET /auth/me`)
+- JWT minimum secret length: 32 chars enforced at startup; `AddApplicationJwt_ThrowsWhenSecretTooShort` test added
+- 9 `AuthServiceTests` + 4 `JwtConfigTests` = 22 total unit tests passing
 
 ---
 
@@ -2170,7 +2181,7 @@ DEV-008b · DEV-207 · DEV-400+ · DEV-403 · DEV-404 · IT-010 · SEC-009 · SE
 
 ---
 
-*Last updated: 2026-06-26 — DEV-150/151/152 done; próximo: DEV-153 (JWT) + DEV-154 (auth endpoints)*
+*Last updated: 2026-07-01 — DEV-150/151/152/153/154 done; próximo: DEV-155 (Nuxt BFF proxy + `app.` host routing)*
 
 ---
 

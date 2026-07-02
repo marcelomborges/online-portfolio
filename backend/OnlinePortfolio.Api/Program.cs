@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.OpenApi;
 using OnlinePortfolio.Api.Data;
+using OnlinePortfolio.Api.Infrastructure;
 using OnlinePortfolio.Api.Middleware;
 using OnlinePortfolio.Api.Options;
+using OnlinePortfolio.Api.Services;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +16,7 @@ builder.Services.Configure<DevSeedOptions>(builder.Configuration.GetSection(DevS
 builder.Services.AddApplicationDatabase(builder.Configuration);
 builder.Services.AddApplicationIdentity();
 builder.Services.AddApplicationJwt(builder.Configuration);
+builder.Services.AddApplicationServices();
 builder.Services.AddHealthChecks();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -33,11 +37,22 @@ builder.Services.AddSwaggerGen(options =>
         { new OpenApiSecuritySchemeReference("Bearer"), [] },
     });
 });
+builder.Services.AddApplicationRateLimiter();  // ApplicationRateLimiterExtensions
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+// Trust the reverse proxy (Render) to forward the real client IP and HTTPS scheme.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    // Clear default networks/proxies to accept forwarded headers from Render's proxy.
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
 
+app.UseForwardedHeaders();  // Must be first — resolves real client IP before rate limiter.
 app.UseSerilogRequestLogging();
 app.UseExceptionHandler();
 
@@ -50,6 +65,7 @@ if (swaggerEnabled)
     app.UseSwaggerUI(options => options.RoutePrefix = "swagger");
 }
 
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -8,8 +8,10 @@ public static class IdentityServiceCollectionExtensions
 {
     public static IServiceCollection AddApplicationIdentity(this IServiceCollection services)
     {
+        // AddIdentityCore instead of AddIdentity: does not register cookie auth schemes,
+        // leaving JWT Bearer as the sole authentication scheme for this API.
         services
-            .AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+            .AddIdentityCore<ApplicationUser>(options =>
             {
                 options.User.RequireUniqueEmail = true;
 
@@ -25,8 +27,10 @@ public static class IdentityServiceCollectionExtensions
                 options.Lockout.DefaultLockoutTimeSpan  = TimeSpan.FromMinutes(15);
                 options.Lockout.AllowedForNewUsers      = true;
             })
+            .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddSignInManager();
 
         return services;
     }

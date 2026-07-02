@@ -58,4 +58,7 @@ public readonly struct Result
     public static Result Ok()              => new(true,  null);
     public static Result Fail(Error e)     => new(false, e);
     public static Result Fail(string code, string message) => new(false, new Error(code, message));
+
+    public TOut Match<TOut>(Func<TOut> onSuccess, Func<Error, TOut> onFailure) =>
+        IsSuccess ? onSuccess() : onFailure(_error!);
 }

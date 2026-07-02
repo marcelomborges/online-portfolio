@@ -31,6 +31,18 @@ public sealed class JwtConfigTests
     }
 
     [Fact]
+    public void AddApplicationJwt_ThrowsWhenSecretTooShort()
+    {
+        var config = BuildConfig(secret: "short-secret");
+        var services = new ServiceCollection();
+
+        var act = () => services.AddApplicationJwt(config);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*32 characters*");
+    }
+
+    [Fact]
     public void AddApplicationJwt_RegistersAuthenticationWithValidSecret()
     {
         var config = BuildConfig(secret: "valid-secret-long-enough-for-hmac!!");

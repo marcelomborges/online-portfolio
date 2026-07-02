@@ -18,6 +18,9 @@ public static class JwtServiceCollectionExtensions
         if (string.IsNullOrWhiteSpace(opts.Secret))
             throw new InvalidOperationException("Jwt:Secret is required.");
 
+        if (opts.Secret.Length < 32)
+            throw new InvalidOperationException("Jwt:Secret must be at least 32 characters (256 bits) for HMAC-SHA256.");
+
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.Section));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(opts.Secret));
