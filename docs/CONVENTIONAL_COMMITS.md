@@ -85,7 +85,7 @@ fix(frontend): resolve tenant slug from subdomain host header
 ### Documentation and CI
 
 ```text
-docs: add domain map and Identity completo to architecture
+docs: add domain map and full Identity to architecture
 
 docs(db): document AspNetRoles seed for PlatformAdmin
 
@@ -99,7 +99,7 @@ build(docker): add multi-stage Dockerfile for API
 ```text
 feat(db): add initial migration for tenants and Identity tables
 
-chore(infra): document Resend noreply sender setup
+chore(infra): document Resend mail@ sender setup
 ```
 
 ### Breaking changes
@@ -158,7 +158,8 @@ Refs DEV-161
 ## Language
 
 - **Commit messages:** English (team/industry convention).
-- **PR description body:** Portuguese or English — team preference.
+- **PR description body:** English.
+- **Product UI copy:** pt-BR only — see [LANGUAGE.md](./LANGUAGE.md).
 
 ---
 

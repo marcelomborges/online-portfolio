@@ -1,0 +1,24 @@
+---
+description: Language convention — English everywhere; pt-BR product UI only
+alwaysApply: true
+---
+
+# Language — English default; pt-BR product UI only
+
+Full guide: [docs/LANGUAGE.md](../../docs/LANGUAGE.md)
+
+## Non-negotiable
+
+| Write in **English** | Write in **pt-BR** (product UI only) |
+|---|---|
+| Code, identifiers, comments, tests | Labels, buttons, headings, toasts, form errors |
+| Docs, BACKLOG, ADRs, README, agent rules | Public tenant pages (`public/tenants/{slug}/`) |
+| Commits, PR titles, API paths, JSON keys | Admin/login UI (`components/app/`, `pages/login.vue`) |
+| Logs, internal exceptions | `error.vue` user messages |
+| | API/email text **returned to users** |
+
+## Agents
+
+- Never add Portuguese to code comments or documentation (translate legacy lines when you touch them).
+- Never add English user-facing copy in the product UI unless explicitly requested.
+- Login error messages, contact validation, invite emails → **pt-BR**, generic (no user enumeration).

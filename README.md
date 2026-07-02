@@ -2,7 +2,9 @@
 
 Multi-tenant SaaS platform for artist portfolios (Nuxt 3.21 + Vue 3.5 + .NET 10 LTS).
 
-**Domain:** `onlineportfolio.com.br`
+**Domain:** `onlineportfolio.com.br` — **prod live** (`onlineportfolio.com.br`, `app.`, `api.`, `{slug}.`)
+
+**Language:** English for code and docs; **pt-BR** for product UI only — [docs/LANGUAGE.md](docs/LANGUAGE.md).
 
 ## Repository layout
 
@@ -20,71 +22,73 @@ online-portfolio/
 
 ## Local development
 
-### Docker Compose (recomendado — DEV-002)
+### Docker Compose (recommended — DEV-002)
 
-**Onde rodar:** raiz do repo (`c:\Projects\online-portfolio` ou `./online-portfolio`).
+**Run from:** repository root (`c:\Projects\online-portfolio` or `./online-portfolio`).
 
-**Pré-requisito:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) em execução.
+**Prerequisite:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) running.
 
 ```bash
 docker compose up --build
 ```
 
-| Serviço | URL |
+| Service | URL |
 |---|---|
 | **Frontend (Nuxt + HMR)** | http://localhost:3000 |
 | **API (.NET watch)** | http://localhost:8080 |
-| **Postgres** | `localhost:5432` — user `portfolio`, db `portfolio_dev`, senha `portfolio_dev` |
+| **Postgres** | `localhost:5432` — user `portfolio`, db `portfolio_dev`, password `portfolio_dev` |
 
-Parar: `Ctrl+C` ou, noutro terminal na mesma pasta: `docker compose down`.
+Stop: `Ctrl+C` or, in another terminal at the same path: `docker compose down`.
 
-Reset completo (apaga dados + re-roda seed dos 2 tenants):
+Full reset (drops Postgres volume; schema via EF migrations — see [From zero](#from-zero--docker-volume-deleted-down--v)):
 
 ```bash
 docker compose down -v
-docker compose up --build
+docker compose up -d db
+cd backend && dotnet tool restore && dotnet ef database update --project OnlinePortfolio.Api
 ```
 
-Verificar seed:
+Verify tenants (after DEV-152 seed):
 
 ```bash
 docker compose exec db psql -U portfolio -d portfolio_dev -c "SELECT slug, display_name FROM tenants;"
 ```
 
-### Sem Docker (só um serviço)
+### Without Docker (single service)
 
 ```bash
 # Frontend
 cd frontend && cp .env.example .env && npm install && npm run dev
 ```
 
-→ http://localhost:3000 · erro customizado em `/__nuxt_error` ou rota inexistente (404)
+→ http://localhost:3000 · custom error at `/__nuxt_error` or unknown routes (404)
 
 ```bash
-# Backend (Postgres via Docker Compose na raiz: docker compose up -d db)
+# Backend (Postgres via Docker Compose at repo root: docker compose up -d db)
 cd backend/OnlinePortfolio.Api && dotnet run
 ```
 
-Stack completa local = Docker Compose acima.
+Full local stack = Docker Compose above.
 
 ### EF Core migrations (DEV-004+)
 
-Ver **[docs/DEV_COMMANDS.md](./docs/DEV_COMMANDS.md)** — comandos Docker vs nativo, migrations, quando reaplicar `database update`.
+See **[docs/DEV_COMMANDS.md](./docs/DEV_COMMANDS.md)** — Docker vs native commands, migrations, when to re-run `database update`.
 
-### Testes (backend)
+### Tests (backend)
 
 ```bash
 cd backend
 dotnet test OnlinePortfolio.Api.slnx
 ```
 
-Stack: **xUnit** · **Moq** · **FluentAssertions** · **Coverlet** · `dotnet test` — detalhes em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Stack: **xUnit** · **Moq** · **FluentAssertions** · **Coverlet** · `dotnet test` — details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Documentation
 
 | Doc | Description |
 |---|---|
-| [DEV_COMMANDS.md](docs/DEV_COMMANDS.md) | **Comandos locais** (Docker, nativo, migrations) |
+| [LANGUAGE.md](docs/LANGUAGE.md) | **English vs pt-BR** — code/docs vs product UI |
+| [DEV_COMMANDS.md](docs/DEV_COMMANDS.md) | Local commands (Docker, native, migrations) |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design and decisions (ADR-015–ADR-017, …) |
 | [FRONTEND_COMPONENTS.md](docs/FRONTEND_COMPONENTS.md) | Nuxt surfaces, tenant UI, composables |
 | [DATABASE.md](docs/DATABASE.md) | PostgreSQL schema |

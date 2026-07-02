@@ -33,8 +33,9 @@ const layoutName = computed(() => {
           <NuxtLink to="/login" class="index-page__link">Ir para login</NuxtLink>
         </p>
         <p v-else-if="isDev" class="index-page__hint">
-          Preview de deploy — em produção, os domínios oficiais entram no
-          <span class="index-page__hint-em">DEV-011</span>.
+          Epic 0 concluído — prod em
+          <code>onlineportfolio.com.br</code>, <code>app.</code> e <code>api.</code>.
+          Próximo: <span class="index-page__hint-em">Epic 1.5</span> (login em <code>app.</code>).
         </p>
       </section>
       <DevRuntimeConfigPanel v-if="isDev" class="index-page__panel" />

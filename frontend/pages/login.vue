@@ -20,7 +20,7 @@ if (!isApp.value) {
       Área padronizada — mesma UI de login para todos os tenants em
       <code>app.onlineportfolio.com.br</code>.
     </p>
-    <p class="login-page__note">Formulário real: Epic 1.5 (DEV-160+).</p>
+    <p class="login-page__note">Área de login em breve.</p>
   </UiCard>
 </template>
 

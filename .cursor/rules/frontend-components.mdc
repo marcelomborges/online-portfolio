@@ -4,26 +4,33 @@ globs: frontend/**
 alwaysApply: false
 ---
 
-# Frontend — componentes e reutilização
+# Frontend — components and reuse
 
-**Prioridade:** evitar código repetitivo. ADR: `docs/ARCHITECTURE.md` docs/ARCHITECTURE.md). Guia: `docs/FRONTEND_COMPONENTS.md`.
+**Language:** English in `<script>` and comments; **pt-BR** in user-visible template copy — `docs/LANGUAGE.md`.
 
-## Três superfícies (mesma app Nuxt)
+**Priority:** avoid repetitive code. ADR-016: `docs/ARCHITECTURE.md` · ADR-018 (UI/motion): `docs/ADR-018-frontend-ui-motion-stack.md` · Guide: `docs/FRONTEND_COMPONENTS.md`.
 
-| Superfície | Host | Tema |
-|---|---|---|
-| **Tenant público** | `{slug}.*` | `theme-{slug}` — só páginas do artista (ana, joao) |
-| **Todo o resto** | `app.*`, apex, dev, error | `surface-dark` fixo |
+## Two UI philosophies (ADR-018)
 
-## Regras obrigatórias
+| Surface | Host | Stack | Motion |
+|---|---|---|---|
+| **Admin / login** | `app.*` | **Nuxt UI** — fast, responsive | ❌ No Lenis/GSAP/WebGL |
+| **Platform** | apex | **Nuxt UI** | ⚠️ Light optional |
+| **Public tenant** | `{slug}.*` | Custom `public/tenants/{slug}/` + `themes/{slug}.css` | ✅ **Heavy motion** (GSAP, Lenis, [Vue Bits](https://vue-bits.dev/), …) |
+| **Other** | dev, error | `surface-dark` | ❌ Structural only |
 
-1. **Dark (`surface-dark`)** — admin, login, platform, dev skeleton, `error.vue`, `components/app/`, layouts estruturais.
-2. **Tema artista** — somente rotas com layout `tenant` em `{slug}.*`.
-3. **Novo tenant UI** = `public/tenants/{slug}/` (`LandingHero`, `ContactSection`, …) + `themes/{slug}.css` (glob automático).
-4. **Nunca** customizar dark por tenant no admin.
+## Mandatory rules
+
+1. **Dark (`surface-dark`)** — admin, login, platform, dev skeleton, `error.vue`, `components/app/`.
+2. **Artist theme** — only on layout `tenant` routes at `{slug}.*`.
+3. **New tenant UI** = `public/tenants/{slug}/` + `themes/{slug}.css`.
+4. **Never** customize admin per tenant; **never** use Nuxt UI as the main identity of the artist site.
+5. **Never** import GSAP/Lenis/Three in `components/app/`.
 
 ## Anti-patterns
 
-- Tema claro em `/login`, `/admin`, `error.vue` ou marketing platform.
-- Imports manuais por tenant em composables.
-- Login em `{slug}.*`.
+- Heavy motion on `/login`, `/admin`, `components/app/`.
+- Generic Nuxt UI on tenant hero/gallery (use per-slug components).
+- Manual per-tenant imports in composables.
+- Login on `{slug}.*`.
+- English user-facing copy in product UI (use **pt-BR**).

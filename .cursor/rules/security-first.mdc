@@ -16,7 +16,7 @@ Full guide: `docs/AGENT_GUIDE.md` · `docs/ARCHITECTURE.md` · BACKLOG SEC-001�
 | **Secrets** | Never commit `.env`, keys, JWT secret, connection strings. Service role + Resend **only** on Render. Nothing sensitive in Nuxt client bundle. |
 | **Multi-tenant** | Every tenant row has `TenantId`. EF global filters + API membership check on **every** protected read/write. |
 | **IDOR** | Never authorize from client `tenantId` / slug in body — use JWT user + DB. Verify `resource.TenantId == user.TenantId`. |
-| **Auth** | Identity completo + API JWT. Invite-only. Lockout + password policy. Generic login errors (no user enumeration). Short JWT expiry. |
+| **Auth** | Full Identity + API JWT. Invite-only. Lockout + password policy. Generic login errors (no user enumeration). Short JWT expiry. |
 | **Public API** | Only `IsPublished` content. No draft/admin fields in public DTOs. |
 | **BFF** | Browser → Nuxt proxy → API (reduces secret exposure and CORS attack surface). |
 | **Input** | Validate all write DTOs (length, format). Reject unexpected fields. Parameterized queries only (EF). |

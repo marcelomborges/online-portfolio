@@ -4,18 +4,18 @@ PostgreSQL schema for the Online Portfolio platform. Managed via **EF Core migra
 
 **Related:** [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · [BACKLOG.md](./BACKLOG.md)
 
-**Escopo deste documento:**
+**Scope of this document:**
 
-| In scope (inicial) | Fora do escopo (migrations futuras) |
+| In scope (initial) | Out of scope (future migrations) |
 |---|---|
 | Multi-tenant core (`tenants`, `plans`) | `artworks`, `artwork_images`, `categories` |
-| Usuários admin + roles (`users`) | Metadados de Storage, mensagens de contato |
-| **Login + add user (convite PlatformAdmin)** | Convites self-service do Owner (v2) |
-| Stub mínimo `tenant_settings` | CMS completo, exposições, billing |
+| Admin users + roles (`users`) | Storage metadata, contact messages |
+| **Login + add user (PlatformAdmin invite)** | Owner self-service invites (v2) |
+| Minimal `tenant_settings` stub | Full CMS, exhibitions, billing |
 
-Credenciais via **ASP.NET Identity completo** (mesmo Postgres, migrations EF). `ApplicationUser` + roles em `AspNetRoles` / `AspNetUserRoles` — ver [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
+Credentials via **full ASP.NET Identity** (same Postgres, EF migrations). `ApplicationUser` + roles in `AspNetRoles` / `AspNetUserRoles` — see [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
-**Domínios (referência):** site público por tenant em `{slug}.onlineportfolio.com.br`; admin centralizado em `app.onlineportfolio.com.br` — ver [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
+**Domains (reference):** public site per tenant at `{slug}.onlineportfolio.com.br`; centralized admin at `app.onlineportfolio.com.br` — see [docs/ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ---
 
@@ -43,8 +43,8 @@ Credenciais via **ASP.NET Identity completo** (mesmo Postgres, migrations EF). `
 | **Shared schema** | One database, all tenants |
 | **Row isolation** | `tenant_id` on every tenant-owned row |
 | **API-only access** | No direct browser → Postgres; EF in .NET API |
-| **Auth** | **ASP.NET Identity completo** — `ApplicationUser` + `AspNetRoles` + JWT |
-| **Membership in DB** | `users`: `tenant_id` + `role` por conta |
+| **Auth** | **Full ASP.NET Identity** — `ApplicationUser` + `AspNetRoles` + JWT |
+| **Membership in DB** | `users`: `tenant_id` + `role` per account |
 | **Slug uniqueness** | Global unique on `tenants.slug`; tenant-scoped slugs later on content tables |
 | **Primary keys** | **`uuid` / `Guid`** on all domain entities — see [Primary keys & identifiers](#primary-keys--identifiers) |
 
@@ -65,7 +65,7 @@ Credenciais via **ASP.NET Identity completo** (mesmo Postgres, migrations EF). `
 - Aligns with **`IdentityUser<Guid>`** — no mixed PK types across FK graph.
 - **Non-guessable** IDs in admin API (reduces enumeration / IDOR risk vs sequential integers).
 - Safe for **distributed generation** (seeds, invites, Storage paths) without central sequences.
-- Standard for **Postgres SaaS** (Supabase, B2B products); performance cost is acceptable at this product’s scale.
+- Standard for **Postgres SaaS** (Supabase, B2B products); performance cost is acceptable at this product's scale.
 
 #### FKs in multiple tables
 
@@ -81,7 +81,7 @@ Repeating `tenant_id` (or other FKs) across tenant-owned rows is **normal relati
 #### Do not
 
 - Expose **sequential integer** PKs on public or multi-tenant admin APIs.
-- Use one “global uuid” as PK for unrelated entity types — each table has **its own** PK; FKs point to the correct parent.
+- Use one "global uuid" as PK for unrelated entity types — each table has **its own** PK; FKs point to the correct parent.
 - Store uuid as untyped string in Postgres when `uuid` type exists.
 
 **Cross-ref:** [docs/ARCHITECTURE.md](./ARCHITECTURE.md) · Identity `Guid` in [docs/ARCHITECTURE.md](./ARCHITECTURE.md)
@@ -108,26 +108,26 @@ Repeating `tenant_id` (or other FKs) across tenant-owned rows is **normal relati
 
 | Concern | Where |
 |---|---|
-| Email + senha | ASP.NET Identity (`users` / `AspNetUsers`) |
-| “Qual tenant é este usuário?” | `users.tenant_id` |
-| “Qual role?” | `AspNetUserRoles` → `AspNetRoles` (PlatformAdmin, Owner, Editor) |
-| “Pode acessar o admin?” | Role Identity + `tenants.is_active` + `users.is_active` |
-| “Quem adiciona usuários ao tenant?” | **PlatformAdmin** via API de convite — v1 |
-| JWT | Emitido e validado pela **API** (`Jwt__Secret`) |
+| Email + password | ASP.NET Identity (`users` / `AspNetUsers`) |
+| "Which tenant is this user?" | `users.tenant_id` |
+| "Which role?" | `AspNetUserRoles` → `AspNetRoles` (PlatformAdmin, Owner, Editor) |
+| "Can access admin?" | Identity role + `tenants.is_active` + `users.is_active` |
+| "Who adds users to the tenant?" | **PlatformAdmin** via invite API — v1 |
+| JWT | Issued and validated by the **API** (`Jwt__Secret`) |
 
 ### User types (summary)
 
 ```text
-PlatformAdmin (você)
+PlatformAdmin (you)
   tenant_id = NULL, role AspNetRoles = PlatformAdmin
-  → gerencia todos os tenants
-  → convida / lista / desativa usuários em qualquer tenant
+  → manages all tenants
+  → invites / lists / deactivates users in any tenant
 
-Usuário do tenant (artista/equipe)
+Tenant user (artist/team)
   tenant_id = {uuid}
   role = Owner | Editor   (AspNetUserRoles)
-  → login em app.onlineportfolio.com.br (URL única)
-  → admin só do seu tenant (conteúdo vem depois; login MVP primeiro)
+  → login at app.onlineportfolio.com.br (single URL)
+  → admin for their tenant only (content comes later; login MVP first)
 ```
 
 Each tenant has **at least one** tenant user (typically `Owner`). Multiple users per tenant are allowed (e.g. Owner + Editors).
@@ -254,35 +254,35 @@ One-to-one with tenant. Stub for login MVP — extended when gallery/settings UI
 
 ### 4.4 `AspNetUsers` / `ApplicationUser`
 
-Perfil + credenciais — tabela gerada pelo **Identity completo** (`AspNetUsers` no Postgres; documentada aqui como `users` por clareza).
+Profile + credentials — table generated by **full Identity** (`AspNetUsers` in Postgres; documented here as `users` for clarity).
 
 | Column | Type | Nullable | Description |
 |---|---|---|---|
 | `id` | `uuid` | NO | PK; Identity user id |
 | `email` | `varchar(320)` | NO | Login; unique globally |
-| `password_hash` | `text` | NO | Identity-managed (nullable só durante convite pendente) |
-| `tenant_id` | `uuid` | YES | FK → `tenants.id`; NULL só para `PlatformAdmin` |
-| `is_active` | `boolean` | NO | Default `true`; desativar sem apagar |
-| `email_confirmed` | `boolean` | NO | False até accept-invite |
+| `password_hash` | `text` | NO | Identity-managed (nullable only during pending invite) |
+| `tenant_id` | `uuid` | YES | FK → `tenants.id`; NULL only for `PlatformAdmin` |
+| `is_active` | `boolean` | NO | Default `true`; deactivate without deleting |
+| `email_confirmed` | `boolean` | NO | False until accept-invite |
 | `created_at` | `timestamptz` | NO | UTC |
-| `last_login_at` | `timestamptz` | YES | Atualizado no login ou `/auth/me` |
-| `invited_by_user_id` | `uuid` | YES | FK → `users.id`; PlatformAdmin que convidou |
+| `last_login_at` | `timestamptz` | YES | Updated on login or `/auth/me` |
+| `invited_by_user_id` | `uuid` | YES | FK → `users.id`; PlatformAdmin who invited |
 
-Mais colunas padrão Identity: `NormalizedEmail`, `SecurityStamp`, `ConcurrencyStamp`, `LockoutEnd`, etc.
+Standard Identity columns also apply: `NormalizedEmail`, `SecurityStamp`, `ConcurrencyStamp`, `LockoutEnd`, etc.
 
-**Role:** via `AspNetUserRoles` — **não** coluna `role` em `users`.
+**Role:** via `AspNetUserRoles` — **not** a `role` column on `users`.
 
 ### 4.5 Identity roles (AspNetRoles)
 
-Seed na migration:
+Seed in migration:
 
-| `name` | `tenant_id` do usuário |
+| `name` | User `tenant_id` |
 |---|---|
 | `PlatformAdmin` | NULL |
-| `Owner` | obrigatório |
-| `Editor` | obrigatório |
+| `Owner` | required |
+| `Editor` | required |
 
-Um usuário = **uma role** no v1 (`UserManager.AddToRoleAsync`).
+One user = **one role** in v1 (`UserManager.AddToRoleAsync`).
 
 **Rules:**
 - **Multiple users per tenant** allowed (`Owner`, `Editor`).
@@ -296,11 +296,11 @@ Um usuário = **uma role** no v1 (`UserManager.AddToRoleAsync`).
 
 ### Roles (AspNetRoles)
 
-| Value | `tenant_id` | Quem | v1 |
+| Value | `tenant_id` | Who | v1 |
 |---|---|---|---|
-| `PlatformAdmin` | NULL | Você (operador) | Convida/gerencia usuários em qualquer tenant |
-| `Owner` | Obrigatório | Artista / admin do studio | Admin do tenant |
-| `Editor` | Obrigatório | Assistente | Mesmo fluxo de convite que Owner |
+| `PlatformAdmin` | NULL | You (operator) | Invite/manage users in any tenant |
+| `Owner` | Required | Artist / studio admin | Tenant admin |
+| `Editor` | Required | Assistant | Same invite flow as Owner |
 
 ### Who can manage tenant users
 
@@ -318,8 +318,8 @@ Um usuário = **uma role** no v1 (`UserManager.AddToRoleAsync`).
 ALTER TABLE tenants ADD CONSTRAINT chk_tenants_slug_format
   CHECK (slug ~ '^[a-z0-9]([a-z0-9-]{1,61}[a-z0-9])?$');
 
--- Role ↔ tenant_id: validado na API (PlatformAdmin => tenant_id NULL)
--- AspNetUserRoles + regra de negócio no invite/login
+-- Role ↔ tenant_id: validated in API (PlatformAdmin => tenant_id NULL)
+-- AspNetUserRoles + business rules on invite/login
 ```
 
 ### Foreign keys
@@ -350,7 +350,7 @@ Note: email is globally unique — the same person cannot be admin of two tenant
 
 ## 7. EF Core mapping notes
 
-### Identity completo
+### Full Identity
 
 ```csharp
 public class ApplicationUser : IdentityUser<Guid>
@@ -371,15 +371,15 @@ public class ApplicationDbContext
 }
 ```
 
-| Regra | Detalhe |
+| Rule | Detail |
 |---|---|
 | **DI** | `AddIdentity<ApplicationUser, IdentityRole<Guid>>()` + `AddDefaultTokenProviders()` |
 | **Roles** | Seed `PlatformAdmin`, `Owner`, `Editor` via `RoleManager` |
 | **Invite** | `UserManager.CreateAsync` + `AddToRoleAsync(role)` |
-| **Authorize** | `[Authorize(Roles = "PlatformAdmin")]` + tenant check no service |
-| **JWT** | Claims incluem roles de `UserManager.GetRolesAsync` |
+| **Authorize** | `[Authorize(Roles = "PlatformAdmin")]` + tenant check in service |
+| **JWT** | Claims include roles from `UserManager.GetRolesAsync` |
 
-Migration EF gera todas as tabelas Identity (`AspNetUsers`, `AspNetRoles`, `AspNetUserRoles`, …).
+EF migration generates all Identity tables (`AspNetUsers`, `AspNetRoles`, `AspNetUserRoles`, …).
 
 ### DbSets (initial)
 
@@ -387,7 +387,7 @@ Migration EF gera todas as tabelas Identity (`AspNetUsers`, `AspNetRoles`, `AspN
 DbSet<Plan> Plans
 DbSet<Tenant> Tenants
 DbSet<TenantSettings> TenantSettings
-DbSet<ApplicationUser> Users   // AspNetUsers + perfil tenant
+DbSet<ApplicationUser> Users   // AspNetUsers + tenant profile
 ```
 
 ### Conventions
@@ -432,13 +432,13 @@ users:
   - PlatformAdmin: seeded with password hash (dev only)
   - Tenant users: created by invite API with email_confirmed=false until accept-invite
 
-**Platform admin (você):** seed de `users` (`PlatformAdmin`, `tenant_id` NULL) + senha.
+**Platform admin (you):** seed `users` (`PlatformAdmin`, `tenant_id` NULL) + password.
 
-**Usuários do tenant (por artista):** API de convite do PlatformAdmin → Resend → accept-invite → login.
+**Tenant users (per artist):** PlatformAdmin invite API → Resend → accept-invite → login.
 
 ```text
 1. PlatformAdmin → POST .../tenants/{tenantId}/users/invite { email, role }
-2. API → INSERT user (pending) + `AddToRoleAsync(role)` + Resend com link de convite
+2. API → INSERT user (pending) + `AddToRoleAsync(role)` + Resend with invite link
 3. Artist opens app.onlineportfolio.com.br/accept-invite?token=...
 4. POST /auth/accept-invite { token, password } → email_confirmed=true
 5. POST /auth/login → JWT + redirect to /admin
@@ -450,9 +450,9 @@ Repeat step 1 for each additional user on the same tenant (e.g. second Owner or 
 
 ## 9. Login & add user flows
 
-Admin MVP tem **duas funções**: autenticar usuários e permitir que o PlatformAdmin **adicione usuários** aos tenants. Sem auto-cadastro.
+Admin MVP has **two functions**: authenticate users and allow PlatformAdmin to **add users** to tenants. No self-signup.
 
-**URL de login (frontend):** **única** — `app.onlineportfolio.com.br/login`. Não existe login em `{slug}.onlineportfolio.com.br`.
+**Login URL (frontend):** **single** — `app.onlineportfolio.com.br/login`. There is no login at `{slug}.onlineportfolio.com.br`.
 
 ### 9.1 Login flow
 
@@ -475,7 +475,7 @@ Admin MVP tem **duas funções**: autenticar usuários e permitir que o Platform
 3. Nuxt proxy → POST /api/v1/platform/tenants/{tenantId}/users/invite
 4. API → INSERT pending user + Resend invite email (accept-invite link)
 5. Invitee sets password via POST /auth/accept-invite
-6. Invitee logs in at app.onlineportfolio.com.br/login (seção 9.1)
+6. Invitee logs in at app.onlineportfolio.com.br/login (section 9.1)
 ```
 
 ### 9.3 API endpoints (login + add user MVP)
@@ -498,9 +498,9 @@ Tenant users (`Owner`/`Editor`) **cannot** call platform user routes in v1.
 
 | Scenario | Who creates `users` row |
 |---|---|
-| PlatformAdmin (você) | Seed migration / dev seed com senha |
-| Owner / Editor do tenant | API de convite (pendente) → concluído no accept-invite |
-| Auto-cadastro | Desabilitado |
+| PlatformAdmin (you) | Seed migration / dev seed with password |
+| Tenant Owner / Editor | Invite API (pending) → completed on accept-invite |
+| Self-signup | Disabled |
 
 ```json
 { "tenant_id": "uuid", "role": "Owner" }
@@ -546,7 +546,7 @@ Not created in the **initial login migration**. Documented for alignment with [d
 | 3 | `AddArtworks` | Phase 1 gallery (later) |
 | 4 | `AddArtworkImages` | Phase 3 (later) |
 
-**Production migrations:** applied by GitHub Actions (`dotnet ef database update`) via Supabase **session pooler** (port 5432). Local dev uses **localhost** (Compose). Direct `db.*.supabase.co` is not used in this project. See [docs/ARCHITECTURE.md](./ARCHITECTURE.md) seção 7.
+**Production migrations:** applied by GitHub Actions (`dotnet ef database update`) via Supabase **session pooler** (port 5432). Local dev uses **localhost** (Compose). Direct `db.*.supabase.co` is not used in this project. See [docs/ARCHITECTURE.md](./ARCHITECTURE.md) section 7.
 
 ---
 
@@ -598,7 +598,7 @@ CREATE TABLE users (
     CONSTRAINT uq_users_email UNIQUE (email)
 );
 
--- Identity completo: migration EF também cria AspNetRoles, AspNetUserRoles,
+-- Full Identity: EF migration also creates AspNetRoles, AspNetUserRoles,
 -- AspNetUserClaims, AspNetUserTokens, AspNetRoleClaims, …
 -- Roles seed: PlatformAdmin, Owner, Editor
 
@@ -608,4 +608,4 @@ CREATE INDEX ix_tenants_is_active ON tenants(is_active);
 
 ---
 
-*Última atualização: 2025-06-21 — Identity completo + JWT; BFF; login centralizado*
+*Last updated: 2025-06-21 — full Identity + JWT; BFF; centralized login*
