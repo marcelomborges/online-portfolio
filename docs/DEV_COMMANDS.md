@@ -614,6 +614,22 @@ docker build -t online-portfolio-api -f backend\OnlinePortfolio.Api\Dockerfile b
 
 ---
 
+## CI/CD — notes
+
+### GitHub Actions versions
+
+All workflows use `@v5` for first-party actions (`actions/checkout`, `actions/setup-dotnet`, `actions/setup-node`). Do **not** downgrade to `@v4` — the `@v4` series targets Node.js 20 which was deprecated by GitHub Actions runners in September 2025; runners now force Node.js 24, producing deprecation warnings on every run. If a new action is added to a workflow, prefer `@v5` or the latest major version that declares `node24` support.
+
+### Npgsql GSSAPI warning
+
+The `mcr.microsoft.com/dotnet/aspnet:10.0` base image does not include `libgssapi_krb5.so.2`. Npgsql logs a warning about it on every startup (GSSAPI/Kerberos auth is not used — Supabase uses SCRAM-SHA-256). The warning is suppressed via `"Npgsql": "Error"` in the Serilog `Override` section of `appsettings.json`. No system package is needed; the warning is cosmetic.
+
+### EF Core retry on failure
+
+`DatabaseServiceCollectionExtensions` enables `EnableRetryOnFailure(3, 5s)` on the Npgsql provider. This handles transient Supabase timeouts during the `IdentityRoleSeeder` that runs at API startup — without it a single stream read timeout crashes the process with an unhandled `InvalidOperationException`.
+
+---
+
 ## Related documentation
 
 | Doc | Content |

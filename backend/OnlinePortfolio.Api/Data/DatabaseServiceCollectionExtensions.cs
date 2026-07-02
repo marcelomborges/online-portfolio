@@ -16,7 +16,11 @@ public static class DatabaseServiceCollectionExtensions
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options
-                .UseNpgsql(connectionString)
+                .UseNpgsql(connectionString, npgsql =>
+                    npgsql.EnableRetryOnFailure(
+                        maxRetryCount: 3,
+                        maxRetryDelay: TimeSpan.FromSeconds(5),
+                        errorCodesToAdd: null))
                 .UseSnakeCaseNamingConvention());
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
