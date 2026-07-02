@@ -247,6 +247,7 @@ dotnet ef database update --project OnlinePortfolio.Api
 | **Prod migrate (CI)** | — | Session pooler `:5432` → GitHub secret |
 
 - **Local:** development and `dotnet ef` always use **localhost** (Docker Compose).
+- **Prod runtime:** Transaction pooler (`:6543`) with `No Reset On Close=true` — the documented Supabase + Npgsql configuration. `No Reset On Close=true` prevents Npgsql from sending `DISCARD ALL` on connection return, which is incompatible with PgBouncer transaction mode.
 - **CI:** `SUPABASE_MIGRATION_CONNECTION_STRING` = **Session pooler** (`aws-*-*.pooler.supabase.com:5432`, user `postgres.[ref]`).
 - **Direct** (`db.*.supabase.co`): **do not** use in this project. Optional only for manual tools (pg_dump, GUI).
 - **Never** use Transaction pooler (`:6543`) for `dotnet ef database update`.
@@ -622,7 +623,17 @@ All workflows use `@v5` for first-party actions (`actions/checkout`, `actions/se
 
 ### Npgsql GSSAPI warning
 
-The `mcr.microsoft.com/dotnet/aspnet:10.0` base image does not include `libgssapi_krb5.so.2`. Npgsql logs a warning about it on every startup (GSSAPI/Kerberos auth is not used — Supabase uses SCRAM-SHA-256). The warning is suppressed via `"Npgsql": "Error"` in the Serilog `Override` section of `appsettings.json`. No system package is needed; the warning is cosmetic.
+The `mcr.microsoft.com/dotnet/aspnet:10.0` base image does not include `libgssapi_krb5.so.2`. Npgsql probes for this library at startup to detect GSSAPI/Kerberos capability. When the library is missing, the Linux dynamic linker writes the error directly to process stderr — bypassing all .NET/Serilog logging infrastructure, so log-level overrides have no effect.
+
+Fix: `backend/OnlinePortfolio.Api/Dockerfile` installs `libgssapi-krb5-2` in the runtime stage:
+
+```dockerfile
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgssapi-krb5-2 \
+    && rm -rf /var/lib/apt/lists/*
+```
+
+GSSAPI is never used (Supabase authenticates via SCRAM-SHA-256); the package is installed only to silence the loader error. `"Npgsql": "Error"` in the Serilog override remains — it suppresses other Npgsql ILogger messages but is unrelated to this specific error.
 
 ### EF Core retry on failure
 

@@ -38,6 +38,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 builder.Services.AddApplicationRateLimiter();  // ApplicationRateLimiterExtensions
+builder.Services.AddHostedService<StartupSeederBackgroundService>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
@@ -75,11 +76,7 @@ app.MapControllers();
 try
 {
     Log.Information("Starting OnlinePortfolio.Api");
-    await IdentityRoleSeeder.SeedAsync(app.Services);
-
-    if (app.Environment.IsDevelopment())
-        await DevDataSeeder.SeedAsync(app.Services);
-
+    // Seeding runs in StartupSeederBackgroundService after Kestrel binds the port.
     await app.RunAsync();
 }
 finally
