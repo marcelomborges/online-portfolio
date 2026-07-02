@@ -1,92 +1,92 @@
-name: Backend CI
-
-on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
-    paths:
-      - 'backend/**'
-      - 'docs/DATABASE.md'
-      - '.github/workflows/ci-backend.yml'
-      - '.github/workflows/deploy-backend.yml'
-
-concurrency:
-  group: backend-ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: read
-  pull-requests: write
-
-jobs:
-  test-and-build:
-    name: Backend CI
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Detect backend changes
-        uses: dorny/paths-filter@v3
-        id: changes
-        with:
-          filters: |
-            backend:
-              - 'backend/**'
-              - 'docs/DATABASE.md'
-              - '.github/workflows/ci-backend.yml'
-              - '.github/workflows/deploy-backend.yml'
-
-      - name: Skip (no backend paths)
-        if: steps.changes.outputs.backend != 'true'
-        run: echo "No backend paths changed — skipping tests."
-
-      - name: Setup .NET
-        if: steps.changes.outputs.backend == 'true'
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
-
-      - name: Restore
-        if: steps.changes.outputs.backend == 'true'
-        run: dotnet restore OnlinePortfolio.Api.slnx
-
-      - name: Test with coverage
-        if: steps.changes.outputs.backend == 'true'
-        run: dotnet test OnlinePortfolio.Api.slnx --no-restore --configuration Release --collect:"XPlat Code Coverage" --results-directory TestResults
-
-      - name: Coverage summary
-        if: github.event_name == 'pull_request' && steps.changes.outputs.backend == 'true'
-        uses: irongut/CodeCoverageSummary@v1.3.0
-        with:
-          filename: backend/TestResults/**/coverage.cobertura.xml
-          badge: true
-          fail_below_min: false
-          format: markdown
-          hide_branch_rate: false
-          hide_complexity: true
-          indicators: true
-          output: both
-          thresholds: '60 80'
-
-      - name: Format PR comment
-        if: github.event_name == 'pull_request' && steps.changes.outputs.backend == 'true'
-        working-directory: ${{ github.workspace }}
-        run: |
-          {
-            echo "## Backend coverage"
-            echo ""
-            cat code-coverage-results.md
-          } > backend-coverage-comment.md
-
-      - name: Publish coverage on PR
-        if: github.event_name == 'pull_request' && steps.changes.outputs.backend == 'true'
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          header: backend-coverage
-          path: backend-coverage-comment.md
+name: Backend CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'docs/DATABASE.md'
+      - '.github/workflows/ci-backend.yml'
+      - '.github/workflows/deploy-backend.yml'
+
+concurrency:
+  group: backend-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  test-and-build:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Detect backend changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'docs/DATABASE.md'
+              - '.github/workflows/ci-backend.yml'
+              - '.github/workflows/deploy-backend.yml'
+
+      - name: Skip (no backend paths)
+        if: steps.changes.outputs.backend != 'true'
+        run: echo "No backend paths changed — skipping tests."
+
+      - name: Setup .NET
+        if: steps.changes.outputs.backend == 'true'
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        if: steps.changes.outputs.backend == 'true'
+        run: dotnet restore OnlinePortfolio.Api.slnx
+
+      - name: Test with coverage
+        if: steps.changes.outputs.backend == 'true'
+        run: dotnet test OnlinePortfolio.Api.slnx --no-restore --configuration Release --collect:"XPlat Code Coverage" --results-directory TestResults
+
+      - name: Coverage summary
+        if: github.event_name == 'pull_request' && steps.changes.outputs.backend == 'true'
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: backend/TestResults/**/coverage.cobertura.xml
+          badge: true
+          fail_below_min: false
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: '60 80'
+
+      - name: Format PR comment
+        if: github.event_name == 'pull_request' && steps.changes.outputs.backend == 'true'
+        working-directory: ${{ github.workspace }}
+        run: |
+          {
+            echo "## Backend coverage"
+            echo ""
+            cat code-coverage-results.md
+          } > backend-coverage-comment.md
+
+      - name: Publish coverage on PR
+        if: github.event_name == 'pull_request' && steps.changes.outputs.backend == 'true'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: backend-coverage
+          path: backend-coverage-comment.md
