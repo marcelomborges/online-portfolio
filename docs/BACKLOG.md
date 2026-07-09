@@ -944,22 +944,29 @@ Login, logout, accept-invite, and current user — all in API.
 
 ---
 
-### DEV-155 — Nuxt: BFF proxy + `app.` host routing
+### DEV-155 — Nuxt: BFF proxy + `app.` host routing ✅
 
 **Description:**
 Server routes proxy `/api/**` to Render API. Route `app.localhost` / `app.onlineportfolio.com.br` to admin app. **No Supabase client.** Partial host routing already in DEV-104 (`resolve-host.global.ts`); this ticket focuses on **BFF proxy** and auth guards.
 
 **Acceptance criteria:**
-- [ ] Catch-all server route forwards to `NUXT_API_INTERNAL_BASE` / Render URL
-- [ ] Forwards cookies and auth headers to API
+- [x] Catch-all server route forwards to `NUXT_API_INTERNAL_BASE` / Render URL
+- [x] Forwards cookies and auth headers to API
 - [x] Middleware: host `app.*` → admin layout; `{slug}.*` → public (stub — DEV-104)
-- [ ] Browser never calls `api.onlineportfolio.com.br` directly (admin)
+- [x] Browser never calls `api.onlineportfolio.com.br` directly (admin)
 
 **Notes:**
 - **Phase:** 1.5
 - **Area:** frontend
 - **Priority:** P0
 - **Depends on:** DEV-005
+- **Status:** ✅ **Done** (2026-07-02)
+
+**Done notes (2026-07-02):**
+- `frontend/server/api/[...].ts` — catch-all proxy via h3 `proxyRequest`
+- Forwards all HTTP methods, request headers (Authorization, Cookie, Content-Type) e response headers (Set-Cookie, status) integralmente
+- `apiInternalBase` → `http://localhost:8080` (dev Docker) / `https://api.onlineportfolio.com.br` (prod via `NUXT_API_INTERNAL_BASE` no Vercel)
+- Browser sempre chama `/api/**`; Nuxt roteia server-side para `apiInternalBase/**` — nunca expõe Render ao cliente
 
 ---
 
@@ -2181,7 +2188,7 @@ DEV-008b · DEV-207 · DEV-400+ · DEV-403 · DEV-404 · IT-010 · SEC-009 · SE
 
 ---
 
-*Last updated: 2026-07-01 — DEV-150/151/152/153/154 done; próximo: DEV-155 (Nuxt BFF proxy + `app.` host routing)*
+*Last updated: 2026-07-02 — DEV-155 done; próximo: DEV-156 (admin login page)*
 
 ---
 
