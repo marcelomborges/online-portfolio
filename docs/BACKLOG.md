@@ -1000,22 +1000,28 @@ Login UI at `/login` on **centralized** `app.{host}` — form posts via Nuxt pro
 
 ---
 
-### DEV-157 — Admin session: logout + cookie forwarding
+### DEV-157 — Admin session: logout + cookie forwarding ✅
 
 **Description:**
 Logout via API; composable `useAuth` calls `/auth/me` through proxy.
 
 **Acceptance criteria:**
-- [ ] Logout → proxy → `POST /auth/logout` + redirect to `/login`
-- [ ] Composable `useAuth` wraps `/auth/me` via server proxy
-- [ ] All admin API calls go through Nuxt proxy (no direct Render from browser)
-- [ ] JWT/cookie never exposed to client JS if using httpOnly cookie
+- [x] Logout → proxy → `POST /auth/logout` + redirect to `/login`
+- [x] Composable `useAuth` wraps `/auth/me` via server proxy
+- [x] All admin API calls go through Nuxt proxy (no direct Render from browser)
+- [x] JWT/cookie never exposed to client JS if using httpOnly cookie
 
 **Notes:**
 - **Phase:** 1.5
 - **Area:** frontend, backend
 - **Priority:** P0
 - **Depends on:** DEV-156, DEV-154
+- **Status:** ✅ **Done** (2026-07-02)
+
+**Done notes (2026-07-02):**
+- `useAuth.fetchMe()` trocado de `$fetch` para `useRequestFetch()` — em SSR, `$fetch` não encaminha os cookies do browser; `useRequestFetch()` encaminha, permitindo que o proxy leia `auth_token` e injete `Authorization: Bearer` no request server-to-server
+- `AppShellHeader.vue` — botão "Sair" exibido condicionalmente via `isAuthenticated`; chama `logout()` (limpa cookie + `POST /auth/logout`) e redireciona para `/login`
+- Cookie `auth_token` com `sameSite: strict` previne CSRF; upgrade para httpOnly adiado para SEC-007
 
 ---
 
@@ -2197,7 +2203,7 @@ DEV-008b · DEV-207 · DEV-400+ · DEV-403 · DEV-404 · IT-010 · SEC-009 · SE
 
 ---
 
-*Last updated: 2026-07-02 — DEV-155/156 done; próximo: DEV-157 (admin session: logout + cookie forwarding)*
+*Last updated: 2026-07-02 — DEV-155/156/157 done; próximo: DEV-158 (protected admin shell)*
 
 ---
 
