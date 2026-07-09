@@ -7,7 +7,7 @@ export default defineEventHandler((event) => {
   // API's Bearer middleware receives it on every proxied request.
   const token = getCookie(event, 'auth_token')
   if (token)
-    setRequestHeader(event, 'authorization', `Bearer ${token}`)
+    event.node.req.headers['authorization'] = `Bearer ${token}`
 
   return proxyRequest(event, target)
 })

@@ -22,10 +22,11 @@ export function useAuth() {
   }
 
   async function fetchMe(): Promise<MeResponse> {
-    // useRequestFetch forwards the browser's Cookie header during SSR so the
-    // proxy can inject Authorization: Bearer from auth_token on the server side.
-    const fetch = useRequestFetch()
-    return await fetch<MeResponse>('/api/v1/auth/me')
+    // Forward Cookie header during SSR so the proxy can read auth_token and
+    // inject Authorization: Bearer. On the client side, the browser sends
+    // cookies automatically, so useRequestHeaders returns {} and that's fine.
+    const headers = useRequestHeaders(['cookie'])
+    return await $fetch<MeResponse>('/api/v1/auth/me', { headers })
   }
 
   return { token, isAuthenticated, login, logout, fetchMe }
