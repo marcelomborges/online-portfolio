@@ -13,6 +13,7 @@ builder.Host.UseSerilog((context, _, configuration) =>
 
 builder.Services.AddControllers();
 builder.Services.Configure<DevSeedOptions>(builder.Configuration.GetSection(DevSeedOptions.Section));
+builder.Services.Configure<AdminSeedOptions>(builder.Configuration.GetSection(AdminSeedOptions.Section));
 builder.Services.AddApplicationDatabase(builder.Configuration);
 builder.Services.AddApplicationIdentity();
 builder.Services.AddApplicationJwt(builder.Configuration);

@@ -1053,21 +1053,30 @@ Logout via API; composable `useAuth` calls `/auth/me` through proxy.
 
 ---
 
-### DEV-159 — Platform admin seed + invite tenant users
+### DEV-159 — Platform admin seed + invite tenant users ✅
 
 **Description:**
 Seed your PlatformAdmin user; thin wrapper for first invite (full add-user API in DEV-161).
 
 **Acceptance criteria:**
-- [ ] Seed PlatformAdmin: `UserManager.CreateAsync` + `AddToRoleAsync("PlatformAdmin")` + password (dev)
-- [ ] First tenant user invite works end-to-end via DEV-161 endpoint
-- [ ] Manual test: invite Owner for `ana` and `joao`; each logs in via login flow (DEV-156–157)
+- [x] Seed PlatformAdmin: `UserManager.CreateAsync` + `AddToRoleAsync("PlatformAdmin")` + password (dev)
+- [ ] First tenant user invite works end-to-end via DEV-161 endpoint ← validar após DEV-161
+- [ ] Manual test: invite Owner for `ana` and `joao`; each logs in via login flow ← validar após DEV-162
 
 **Notes:**
 - **Phase:** 1.5
 - **Area:** backend, infra
 - **Priority:** P0
 - **Depends on:** DEV-154, DEV-152
+- **Status:** ✅ **Done** (2026-07-02)
+
+**Done notes (2026-07-02):**
+- Dev: PlatformAdmin já seedado pelo `DevDataSeeder` (DEV-152) — `admin@onlineportfolio.com.br` / `Dev@12345`
+- Prod: `PlatformAdminSeeder` — no-op se `AdminSeed__Email` / `AdminSeed__Password` não configurados; quando configurados cria o usuário e atribui `PlatformAdmin` role (idempotente)
+- `AdminSeedOptions` (Options Pattern) registrado em `Program.cs`; seção `AdminSeed` em `appsettings.json`
+- `StartupSeederBackgroundService` chama `PlatformAdminSeeder.SeedAsync` em todos os ambientes, entre roles e DevDataSeeder
+- Para bootstrap em produção: setar `AdminSeed__Email` + `AdminSeed__Password` como env vars no Render no primeiro deploy; remover após confirmar login
+- 22 testes passando
 
 ---
 
@@ -2210,7 +2219,7 @@ DEV-008b · DEV-207 · DEV-400+ · DEV-403 · DEV-404 · IT-010 · SEC-009 · SE
 
 ---
 
-*Last updated: 2026-07-02 — DEV-155/156/157/158 done; próximo: DEV-159 (platform admin seed + invite)*
+*Last updated: 2026-07-02 — DEV-155–159 done; próximo: DEV-161 (platform API: list & invite users)*
 
 ---
 

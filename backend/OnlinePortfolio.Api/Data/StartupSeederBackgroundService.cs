@@ -10,6 +10,7 @@ public sealed class StartupSeederBackgroundService(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await SeedRolesAsync(stoppingToken);
+        await PlatformAdminSeeder.SeedAsync(services, stoppingToken);
 
         if (env.IsDevelopment())
             await DevDataSeeder.SeedAsync(services, stoppingToken);
