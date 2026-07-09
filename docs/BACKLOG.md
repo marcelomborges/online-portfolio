@@ -970,7 +970,7 @@ Server routes proxy `/api/**` to Render API. Route `app.localhost` / `app.online
 
 ---
 
-### DEV-156 — Admin login page
+### DEV-156 — Admin login page ✅
 
 **Description:**
 Login UI at `/login` on **centralized** `app.{host}` — form posts via Nuxt proxy to `POST /auth/login`. UI in `components/app/` (standardized, no per-tenant variants — ADR-016). **Dark mode** (`surface-dark`) — see [docs/FRONTEND_COMPONENTS.md](./FRONTEND_COMPONENTS.md).
@@ -978,16 +978,25 @@ Login UI at `/login` on **centralized** `app.{host}` — form posts via Nuxt pro
 **Acceptance criteria:**
 - [x] Page at `app.{host}/login` only (stub `pages/login.vue` + guard; not on tenant subdomains)
 - [x] Dark mode (`surface-dark`) on app surface
-- [ ] Email + password → proxy → API login
-- [ ] Error messages for invalid credentials (no user enumeration)
-- [ ] Redirect: Owner/Editor → `/admin`; PlatformAdmin → `/platform/tenants`
-- [ ] Already authenticated → redirect per role
+- [x] Email + password → proxy → API login
+- [x] Error messages for invalid credentials (no user enumeration)
+- [x] Redirect: Owner/Editor → `/admin`; PlatformAdmin → `/platform/tenants`
+- [x] Already authenticated → redirect per role
 
 **Notes:**
 - **Phase:** 1.5
 - **Area:** frontend
 - **Priority:** P0
 - **Depends on:** DEV-155, DEV-154
+- **Status:** ✅ **Done** (2026-07-02)
+
+**Done notes (2026-07-02):**
+- `types/auth.ts` — `TokenResponse`, `MeResponse`, `TenantInfo` alinhados com os records do backend
+- `composables/useAuth.ts` — `login()`, `logout()`, `fetchMe()`, token em `useCookie('auth_token', { sameSite: 'strict', maxAge: 3600 })`
+- `server/api/[...].ts` — proxy agora lê cookie `auth_token` e injeta `Authorization: Bearer` antes de `proxyRequest`; browser nunca envia o header diretamente
+- `components/app/AppLoginForm.vue` — form com loading state, erros genéricos (sem user enumeration: 401/403 → mesma mensagem), 423 lockout, 429 rate limit
+- `pages/login.vue` — usa `AppLoginForm`, redireciona por role (`PlatformAdmin` → `/platform/tenants`, demais → `/admin`), checa token existente no `onMounted`
+- `components/ui/UiButton.vue` — adicionado prop `disabled`
 
 ---
 
@@ -2188,7 +2197,7 @@ DEV-008b · DEV-207 · DEV-400+ · DEV-403 · DEV-404 · IT-010 · SEC-009 · SE
 
 ---
 
-*Last updated: 2026-07-02 — DEV-155 done; próximo: DEV-156 (admin login page)*
+*Last updated: 2026-07-02 — DEV-155/156 done; próximo: DEV-157 (admin session: logout + cookie forwarding)*
 
 ---
 

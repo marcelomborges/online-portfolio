@@ -1,9 +1,6 @@
 <script setup lang="ts">
-definePageMeta({
-  layout: 'app',
-})
+definePageMeta({ layout: 'app' })
 
-// Guard: login only on app host (DEV-104 will harden)
 const { isApp } = useRequestSurface()
 
 if (!isApp.value) {
@@ -12,27 +9,26 @@ if (!isApp.value) {
     statusMessage: 'Login disponível apenas em app.onlineportfolio.com.br',
   })
 }
+
+const { isAuthenticated, fetchMe } = useAuth()
+
+function redirectByRole(role: string) {
+  return navigateTo(role === 'PlatformAdmin' ? '/platform/tenants' : '/admin')
+}
+
+onMounted(async () => {
+  if (!isAuthenticated.value) return
+  try {
+    const me = await fetchMe()
+    await redirectByRole(me.role)
+  } catch {
+    // Token inválido ou expirado — permanece na página de login
+  }
+})
 </script>
 
 <template>
-  <UiCard title="Login" aria-label="Admin login">
-    <p class="login-page__lead">
-      Área padronizada — mesma UI de login para todos os tenants em
-      <code>app.onlineportfolio.com.br</code>.
-    </p>
-    <p class="login-page__note">Área de login em breve.</p>
+  <UiCard title="Login" aria-label="Login na área administrativa">
+    <AppLoginForm @success="redirectByRole" />
   </UiCard>
 </template>
-
-<style scoped>
-.login-page__lead {
-  color: var(--op-color-muted);
-  line-height: 1.5;
-  margin: 0 0 1rem;
-}
-
-.login-page__note {
-  font-size: 0.875rem;
-  margin: 0;
-}
-</style>
