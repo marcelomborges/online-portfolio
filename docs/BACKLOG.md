@@ -1080,25 +1080,36 @@ Seed your PlatformAdmin user; thin wrapper for first invite (full add-user API i
 
 ---
 
-### DEV-161 — Platform API: list & add user (invite) per tenant
+### DEV-161 — Platform API: list & add user (invite) per tenant ✅
 
 **Description:**
 **Add user** — PlatformAdmin lists and invites users to any tenant. Core MVP alongside login.
 
 **Acceptance criteria:**
-- [ ] `GET /api/v1/platform/tenants/{tenantId}/users` — list users (email, role, is_active, last_login_at)
-- [ ] `POST .../users/invite` → `CreateAsync` + `AddToRoleAsync(role)` + Resend
-- [ ] `PATCH /api/v1/platform/tenants/{tenantId}/users/{userId}` — deactivate or change role (Owner/Editor)
-- [ ] Duplicate invite to same email on same tenant → clear error
-- [ ] Tenant users (Owner/Editor) receive **403** on all `/platform/*` routes
-- [ ] Cannot deactivate last Owner without replacement (business rule)
-- [ ] OpenAPI documented
+- [x] `GET /api/v1/platform/tenants/{tenantId}/users` — list users (email, role, is_active, last_login_at)
+- [x] `POST .../users/invite` → `CreateAsync` + `AddToRoleAsync(role)` + Resend
+- [x] `PATCH /api/v1/platform/tenants/{tenantId}/users/{userId}` — deactivate or change role (Owner/Editor)
+- [x] Duplicate invite to same email on same tenant → clear error
+- [x] Tenant users (Owner/Editor) receive **403** on all `/platform/*` routes
+- [x] Cannot deactivate last Owner without replacement (business rule)
+- [x] OpenAPI documented
 
 **Notes:**
 - **Phase:** 1.5
 - **Area:** backend, security
 - **Priority:** P0
 - **Depends on:** DEV-154, DEV-159
+- **Status:** ✅ **Done** (2026-07-09)
+
+**Done notes (2026-07-09):**
+- `PlatformController` — `[Authorize(Roles = "PlatformAdmin")]` at controller level; 3 endpoints: GET users, POST invite, PATCH update
+- `IPlatformService` / `PlatformService` — business logic: list users with roles (N+1 via UserManager acceptable for small tenants), invite (create + role + Resend email), update (deactivate/change role with last-Owner guard)
+- `IEmailService` / `ResendEmailService` — sends invite email via `Resend` NuGet v0.6.0; `IResend` injected via `AddResend()`
+- `Options/ResendOptions.cs` + `Options/AppOptions.cs` (BaseUrl for invite link) — registered in `Program.cs`
+- `ITenantRepository` / `TenantRepository` + new `IUserRepository` methods (`ListByTenantAsync`, `ExistsByEmailAndTenantAsync`)
+- `Resend.Log` / `Serilog.Log` conflict resolved via `using SerilogLog = Serilog.Log` alias in `Program.cs`
+- `appsettings.json` + `appsettings.Development.json` — added `App.BaseUrl`; dev invite links point to `http://localhost:3000`
+- 22 unit tests still passing
 
 ---
 
@@ -2219,7 +2230,7 @@ DEV-008b · DEV-207 · DEV-400+ · DEV-403 · DEV-404 · IT-010 · SEC-009 · SE
 
 ---
 
-*Last updated: 2026-07-02 — DEV-155–159 done; próximo: DEV-161 (platform API: list & invite users)*
+*Last updated: 2026-07-09 — DEV-161 done; próximo: DEV-162 (platform admin UI: list users + invite form)*
 
 ---
 

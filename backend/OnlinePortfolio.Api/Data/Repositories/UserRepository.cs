@@ -12,4 +12,13 @@ public sealed class UserRepository(ApplicationDbContext db) : IUserRepository
         db.Users
             .Include(u => u.Tenant)
             .FirstOrDefaultAsync(u => u.Id == id, ct);
+
+    public async Task<IReadOnlyList<ApplicationUser>> ListByTenantAsync(Guid tenantId, CancellationToken ct = default) =>
+        await db.Users
+            .Where(u => u.TenantId == tenantId)
+            .OrderBy(u => u.CreatedAt)
+            .ToListAsync(ct);
+
+    public Task<bool> ExistsByEmailAndTenantAsync(string normalizedEmail, Guid tenantId, CancellationToken ct = default) =>
+        db.Users.AnyAsync(u => u.NormalizedEmail == normalizedEmail && u.TenantId == tenantId, ct);
 }

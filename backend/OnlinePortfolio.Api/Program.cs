@@ -5,7 +5,9 @@ using OnlinePortfolio.Api.Infrastructure;
 using OnlinePortfolio.Api.Middleware;
 using OnlinePortfolio.Api.Options;
 using OnlinePortfolio.Api.Services;
+using Resend;
 using Serilog;
+using SerilogLog = Serilog.Log;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((context, _, configuration) =>
@@ -14,6 +16,10 @@ builder.Host.UseSerilog((context, _, configuration) =>
 builder.Services.AddControllers();
 builder.Services.Configure<DevSeedOptions>(builder.Configuration.GetSection(DevSeedOptions.Section));
 builder.Services.Configure<AdminSeedOptions>(builder.Configuration.GetSection(AdminSeedOptions.Section));
+builder.Services.Configure<ResendOptions>(builder.Configuration.GetSection(ResendOptions.Section));
+builder.Services.Configure<AppOptions>(builder.Configuration.GetSection(AppOptions.Section));
+builder.Services.AddResend(options =>
+    options.ApiToken = builder.Configuration[$"{ResendOptions.Section}:ApiKey"] ?? string.Empty);
 builder.Services.AddApplicationDatabase(builder.Configuration);
 builder.Services.AddApplicationIdentity();
 builder.Services.AddApplicationJwt(builder.Configuration);
@@ -76,11 +82,11 @@ app.MapControllers();
 
 try
 {
-    Log.Information("Starting OnlinePortfolio.Api");
+    SerilogLog.Information("Starting OnlinePortfolio.Api");
     // Seeding runs in StartupSeederBackgroundService after Kestrel binds the port.
     await app.RunAsync();
 }
 finally
 {
-    Log.CloseAndFlush();
+    SerilogLog.CloseAndFlush();
 }
