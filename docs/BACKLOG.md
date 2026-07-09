@@ -1025,24 +1025,31 @@ Logout via API; composable `useAuth` calls `/auth/me` through proxy.
 
 ---
 
-### DEV-158 — Protected admin shell (empty dashboard)
+### DEV-158 — Protected admin shell (empty dashboard) ✅
 
 **Description:**
 `/admin` for tenant users; PlatformAdmin also has link to `/platform/tenants` for add user. Inherits structural **dark mode** (`surface-dark`, `layouts/app.vue`).
 
 **Acceptance criteria:**
-- [ ] Unauthenticated access → redirect `/login`
+- [x] Unauthenticated access → redirect `/login`
 - [x] Dark layout and tokens (`surface-dark`) — same pattern as login, platform, and error
-- [ ] Shows logged-in email, role, tenant name (from `/auth/me`)
-- [ ] Logout control visible
-- [ ] **PlatformAdmin:** nav link to `/platform/tenants` (add user flow)
-- [ ] **Owner/Editor:** placeholder (pt-BR product copy: "Dashboard em construção") — no add user UI
+- [x] Shows logged-in email, role, tenant name (from `/auth/me`)
+- [x] Logout control visible
+- [x] **PlatformAdmin:** nav link to `/platform/tenants` (add user flow)
+- [x] **Owner/Editor:** placeholder (pt-BR product copy: "Dashboard em construção") — no add user UI
 
 **Notes:**
 - **Phase:** 1.5
 - **Area:** frontend
 - **Priority:** P0
 - **Depends on:** DEV-157
+- **Status:** ✅ **Done** (2026-07-02)
+
+**Done notes (2026-07-02):**
+- `middleware/auth.ts` — `defineNuxtRouteMiddleware` que verifica `isAuthenticated` (cookie `auth_token`) e redireciona para `/login`; aplicado via `definePageMeta({ middleware: 'auth' })`
+- `pages/admin/index.vue` — `useAsyncData` chama `fetchMe()` com SSR; se falhar (token expirado), redireciona para `/login`; mostra email, role (label pt-BR), tenant se houver
+- PlatformAdmin vê link para `/platform/tenants`; Owner/Editor vê "Dashboard em construção"
+- Logout visível via `AppShellHeader` (DEV-157)
 
 ---
 
@@ -2203,7 +2210,7 @@ DEV-008b · DEV-207 · DEV-400+ · DEV-403 · DEV-404 · IT-010 · SEC-009 · SE
 
 ---
 
-*Last updated: 2026-07-02 — DEV-155/156/157 done; próximo: DEV-158 (protected admin shell)*
+*Last updated: 2026-07-02 — DEV-155/156/157/158 done; próximo: DEV-159 (platform admin seed + invite)*
 
 ---
 
